@@ -93,6 +93,8 @@ src/lib/auth.ts          passwords (scrypt), sessions, one-time codes, reset
 src/lib/notify.ts        the outbox: email and WhatsApp, composed and recorded
 src/lib/orders.ts        fulfilOrder — the once-only claim
 src/lib/renewals.ts      licence expiry dates, and the reminder sweep
+src/lib/invoice.ts       the tax invoice and the commercial one
+src/lib/pdf.ts           a small PDF writer — two built-in fonts, no library
 src/lib/stripe.ts        client, and the simulated-payment guard
 src/lib/market.ts        market resolution, restricted countries, GSTIN shape
 src/lib/money.ts         integer minor units, per currency; inclusive-tax split
@@ -135,6 +137,12 @@ infra/main.bicep         the whole Azure estate
   signed in.
 - **Licence keys never go over WhatsApp.** A key forwarded in a chat is
   somebody else's licence.
+- **An invoice is a record, not a query.** Every figure on it is read from the
+  order, so a later price change, tax-rate change or renamed product cannot
+  rewrite a document already in somebody's files — and it is dated by the
+  order, so downloading it next year does not produce a document dated next
+  year. A tax invoice missing the seller's GSTIN prints "INCOMPLETE DOCUMENT"
+  on its face rather than looking official and not being.
 - **Nothing renews itself, and nothing expires unannounced.** There is no card
   on file to charge. The expiry date is written onto the order line at
   fulfilment — not derived on read — so a licence sold under an older term keeps
@@ -249,9 +257,9 @@ before writing to it, drop one a release later.
       nothing about a licence that has already expired — "expires in -3 days"
       is worse than silence — so a licence that slipped past while the schedule
       was down is visible in the account and nowhere else.
-- [ ] Attach the invoice PDF to the confirmation email — the GST invoice for
-      India, the commercial invoice elsewhere. The email refers to it; nothing
-      generates it yet.
+- [ ] Attach the invoice PDF to the confirmation email. It is generated and
+      linked from the email and the order page; Resend takes attachments and
+      wiring one up is the remaining step.
 - [ ] Automate seat assignment with the publishers' partner APIs. Keys are
       currently generated locally as placeholders, not redeemed from
       Microsoft, Adobe or Autodesk.

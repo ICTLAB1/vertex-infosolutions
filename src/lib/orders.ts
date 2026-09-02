@@ -115,6 +115,7 @@ export async function fulfilOrder(
       total: formatMoney(order.totalMinor, currency),
       orderUrl,
       invoiceKind: order.country === "IN" ? "GST invoice" : "commercial invoice",
+      invoiceUrl: `${orderUrl}/invoice`,
     },
   );
 

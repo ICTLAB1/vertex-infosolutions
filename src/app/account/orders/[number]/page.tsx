@@ -69,7 +69,7 @@ export default async function OrderPage(
         </h1>
         <p className="mt-1 text-[15px] text-ink">
           {paid
-            ? `Payment received. Your keys are below and a ${domestic ? "GST" : "commercial"} invoice is on its way to ${order.email}.`
+            ? `Payment received. Your keys are below, and your ${domestic ? "GST" : "commercial"} invoice can be downloaded from this page.`
             : `We have emailed our bank details to ${order.email}. Keys are issued once the funds clear.`}
         </p>
         <p className="mt-2 font-mono text-[14px] text-muted">
@@ -163,9 +163,25 @@ export default async function OrderPage(
       ))}
 
       <section className="mt-4 rounded-lg border border-line bg-surface p-4">
-        <h2 className="text-[16px] font-bold text-ink">
-          {domestic ? "Tax invoice" : "Commercial invoice"}
-        </h2>
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h2 className="text-[16px] font-bold text-ink">
+            {domestic ? "Tax invoice" : "Commercial invoice"}
+          </h2>
+          {/*
+            A plain link rather than a button: it is a GET of a document, so it
+            opens in a new tab, can be bookmarked, and works with the browser's
+            own save. `download` names the file if the customer saves it.
+          */}
+          <a
+            href={`/account/orders/${order.number}/invoice`}
+            target="_blank"
+            rel="noopener"
+            download={`${domestic ? "tax-invoice" : "invoice"}-${order.number}.pdf`}
+            className="rounded-full border border-line px-4 py-1.5 text-[13px] font-semibold text-link hover:bg-ground/60"
+          >
+            Download PDF
+          </a>
+        </div>
 
         <div className="mt-2 grid gap-4 sm:grid-cols-2">
           <div className="text-[13px]">

@@ -63,9 +63,17 @@ export default async function OrdersPage() {
                     {order.number}
                   </Link>
                   <span className="ml-3 text-[13px] text-muted">
-                    {order.createdAt.toISOString().slice(0, 10)} ·{" "}
-                    {order.country === "IN" ? "GST invoice" : "Export invoice"}
+                    {order.createdAt.toISOString().slice(0, 10)}
                   </span>
+                  <a
+                    href={`/account/orders/${order.number}/invoice`}
+                    target="_blank"
+                    rel="noopener"
+                    className="ml-3 text-[13px] text-link hover:underline"
+                  >
+                    {order.country === "IN" ? "GST invoice" : "Commercial invoice"}{" "}
+                    (PDF)
+                  </a>
                 </span>
                 <span className="flex items-center gap-3">
                   <span

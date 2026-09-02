@@ -73,6 +73,7 @@ describe("what may travel over WhatsApp", () => {
       total: "₹9,200",
       orderUrl: "https://example.com/account/orders/VX-2026-123456",
       invoiceKind: "GST invoice",
+      invoiceUrl: "https://example.com/account/orders/VX-2026-123456/invoice",
     });
 
     expect(paid.whatsapp).toBeDefined();
@@ -99,6 +100,7 @@ describe("template contents", () => {
           total: "$1",
           orderUrl: "https://x",
           invoiceKind: "commercial invoice",
+          invoiceUrl: "https://x/invoice",
         },
       ],
       ["order.keys", { name: "A", number: "VX-1", keys: "k", orderUrl: "https://x" }],
