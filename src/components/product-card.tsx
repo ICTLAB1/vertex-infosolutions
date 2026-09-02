@@ -3,22 +3,29 @@ import Link from "next/link";
 import { Glyph } from "@/components/glyph";
 import { Stars } from "@/components/stars";
 import { ratingOf, type ListedProduct } from "@/lib/catalogue";
-import {
-  estimateDelivery,
-  formatDeliveryDate,
-  FREE_SHIPPING_THRESHOLD_MINOR,
-} from "@/lib/delivery";
 import { discountPercent, formatMoney } from "@/lib/money";
+import { estimateArrival, formatArrival, zoneFor } from "@/lib/shipping";
 
-export function ProductCard({ product }: { product: ListedProduct }) {
+export function ProductCard({
+  product,
+  country,
+}: {
+  product: ListedProduct;
+  /** Where the shopper is, when known — the arrival estimate depends on it. */
+  country?: string | null;
+}) {
   const cheapest = product.variants.reduce((low, variant) =>
     variant.priceMinor < low.priceMinor ? variant : low,
   );
   const { average, count } = ratingOf(product.reviews);
-  const off = discountPercent(cheapest.mrpMinor, cheapest.priceMinor);
+  const off = discountPercent(cheapest.listPriceMinor, cheapest.priceMinor);
   const isLicence = product.kind === "LICENCE";
   const inStock =
     isLicence || product.variants.some((v) => (v.stockOnHand ?? 0) > 0);
+
+  const zone = country ? zoneFor(country) : null;
+  const freeShipping =
+    zone !== null && cheapest.priceMinor >= zone.freeOverMinor;
 
   return (
     <article className="group flex h-full flex-col rounded-lg border border-line bg-surface p-3 transition-shadow hover:shadow-md">
@@ -55,16 +62,14 @@ export function ProductCard({ product }: { product: ListedProduct }) {
 
         <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
           {off > 0 ? (
-            <span className="text-[13px] font-semibold text-deal">
-              -{off}%
-            </span>
+            <span className="text-[13px] font-semibold text-deal">-{off}%</span>
           ) : null}
           <span className="text-[19px] font-bold text-ink">
             {formatMoney(cheapest.priceMinor)}
           </span>
           {off > 0 ? (
             <span className="text-[12px] text-faint line-through">
-              {formatMoney(cheapest.mrpMinor)}
+              {formatMoney(cheapest.listPriceMinor)}
             </span>
           ) : null}
         </div>
@@ -83,14 +88,22 @@ export function ProductCard({ product }: { product: ListedProduct }) {
             </p>
           ) : inStock ? (
             <p className="text-muted">
-              {cheapest.priceMinor >= FREE_SHIPPING_THRESHOLD_MINOR
-                ? "Free delivery by "
-                : "Delivery by "}
-              <span className="font-semibold text-ink">
-                {formatDeliveryDate(
-                  estimateDelivery(null, cheapest.leadDays ?? 3),
-                )}
-              </span>
+              {freeShipping ? (
+                <span className="font-semibold text-ok">Free shipping</span>
+              ) : null}
+              {freeShipping ? " · " : null}
+              {zone ? (
+                <>
+                  Arrives{" "}
+                  <span className="font-semibold text-ink">
+                    {formatArrival(
+                      estimateArrival(country ?? null, cheapest.leadDays ?? 3),
+                    )}
+                  </span>
+                </>
+              ) : (
+                "Ships worldwide · duties payable on arrival"
+              )}
             </p>
           ) : (
             <p className="font-semibold text-deal">Currently out of stock</p>

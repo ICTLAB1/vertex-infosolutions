@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 
 import { Glyph } from "@/components/glyph";
 import { prisma } from "@/lib/db";
-import { formatDeliveryDate } from "@/lib/delivery";
 import { formatMoney, formatMoneyExact } from "@/lib/money";
-import { STATUS_LABELS } from "@/lib/types";
+import { countryName, formatDay } from "@/lib/shipping";
+import { PAYMENT_METHOD_LABELS, STATUS_LABELS } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Your order",
@@ -17,17 +17,15 @@ export const metadata: Metadata = {
  * The confirmation, and afterwards the order's own page.
  *
  * A mixed order is shown as what it is: one payment, and beneath it each
- * fulfilment with its own state. A shipment still in transit next to a licence
- * already in the customer's inbox is the normal case here, not an error state
- * to explain away.
+ * fulfilment with its own state. A shipment still clearing customs next to a
+ * licence already in the customer's inbox is the normal case here, not an error
+ * state to explain away.
  *
  * The order number alone reaches this page, which is fine for a demo and not
  * fine in production — a real deployment gates it behind a signed link or an
  * account, because an order number is short enough to guess at.
  */
-export default async function OrderPage(
-  props: PageProps<"/order/[number]">,
-) {
+export default async function OrderPage(props: PageProps<"/order/[number]">) {
   const { number } = await props.params;
 
   const order = await prisma.order.findUnique({
@@ -59,8 +57,8 @@ export default async function OrderPage(
         </h1>
         <p className="mt-1 text-[15px] text-ink">
           {paid
-            ? `Payment received. A tax invoice is on its way to ${maskedEmail}.`
-            : `You will pay the courier on delivery. A confirmation has gone to ${maskedEmail}.`}
+            ? `Payment received. A commercial invoice is on its way to ${maskedEmail}.`
+            : `We have emailed our bank details to ${maskedEmail}. The order is prepared once the funds clear.`}
         </p>
         <p className="mt-2 font-mono text-[14px] text-muted">
           Order {order.number}
@@ -86,11 +84,15 @@ export default async function OrderPage(
 
               {isShipment ? (
                 <div className="mt-3 text-[14px]">
-                  {fulfilment.promisedBy ? (
+                  {fulfilment.promisedFrom && fulfilment.promisedBy ? (
                     <p className="text-ink">
-                      Arriving by{" "}
+                      Arriving between{" "}
                       <span className="font-semibold">
-                        {formatDeliveryDate(fulfilment.promisedBy)}
+                        {formatDay(fulfilment.promisedFrom)}
+                      </span>{" "}
+                      and{" "}
+                      <span className="font-semibold">
+                        {formatDay(fulfilment.promisedBy)}
                       </span>
                     </p>
                   ) : null}
@@ -106,13 +108,19 @@ export default async function OrderPage(
                         </>
                       ) : null}
                       <br />
-                      {order.shipCity}, {order.shipState} {order.shipPincode}
+                      {order.shipCity}
+                      {order.shipRegion ? `, ${order.shipRegion}` : ""}{" "}
+                      {order.shipPostcode}
+                      <br />
+                      {order.shipCountry
+                        ? countryName(order.shipCountry)
+                        : null}
                     </address>
                   ) : null}
-                  {fulfilment.awb ? (
+                  {fulfilment.trackingRef ? (
                     <p className="mt-2 text-muted">
-                      {fulfilment.courier} ·{" "}
-                      <span className="font-mono">{fulfilment.awb}</span>
+                      {fulfilment.carrier} ·{" "}
+                      <span className="font-mono">{fulfilment.trackingRef}</span>
                       {fulfilment.trackingUrl ? (
                         <>
                           {" · "}
@@ -130,9 +138,17 @@ export default async function OrderPage(
                   ) : (
                     <p className="mt-2 text-[13px] text-muted">
                       A tracking number appears here once the parcel is handed
-                      to the courier.
+                      to the carrier.
                     </p>
                   )}
+                  <p className="mt-2 text-[13px] text-muted">
+                    Import duty and taxes are charged by{" "}
+                    {order.shipCountry
+                      ? countryName(order.shipCountry)
+                      : "your country"}{" "}
+                    and collected by the carrier before delivery. They are not
+                    part of the total below.
+                  </p>
                 </div>
               ) : (
                 <p className="mt-3 text-[14px] text-muted">
@@ -169,9 +185,8 @@ export default async function OrderPage(
                       </p>
                       <p className="font-mono text-[12px] text-faint">
                         {item.sku}
-                        {item.hsnSac
-                          ? ` · ${item.kind === "LICENCE" ? "SAC" : "HSN"} ${item.hsnSac}`
-                          : ""}
+                        {item.hsCode ? ` · HS ${item.hsCode}` : ""}
+                        {item.origin ? ` · origin ${item.origin}` : ""}
                       </p>
 
                       {item.licenceKey ? (
@@ -182,12 +197,15 @@ export default async function OrderPage(
 
                       <p className="mt-1.5 text-[12px] text-faint">
                         {item.returnable
-                          ? "Returnable within 7 days of delivery, unopened and undamaged."
+                          ? "Returnable within 14 days of delivery, unopened and undamaged."
                           : "Not returnable — the licence key has been revealed."}
                       </p>
                     </div>
                     <span className="shrink-0 text-right text-[15px] font-semibold text-ink">
-                      {formatMoney(item.unitPriceMinor * item.qty)}
+                      {formatMoney(
+                        item.unitPriceMinor * item.qty,
+                        order.currency,
+                      )}
                     </span>
                   </li>
                 ))}
@@ -202,28 +220,29 @@ export default async function OrderPage(
         <dl className="mt-2 space-y-1 text-[14px]">
           <div className="flex justify-between">
             <dt className="text-muted">Items</dt>
-            <dd>{formatMoneyExact(order.itemsMinor)}</dd>
+            <dd>{formatMoneyExact(order.itemsMinor, order.currency)}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted">Delivery</dt>
+            <dt className="text-muted">Shipping</dt>
             <dd>
               {order.shippingMinor === 0
                 ? "Free"
-                : formatMoneyExact(order.shippingMinor)}
+                : formatMoneyExact(order.shippingMinor, order.currency)}
             </dd>
-          </div>
-          <div className="flex justify-between text-muted">
-            <dt>of which GST</dt>
-            <dd>{formatMoneyExact(order.taxMinor)}</dd>
           </div>
           <div className="flex justify-between border-t border-line-soft pt-2 text-[17px] font-bold text-ink">
             <dt>Total</dt>
-            <dd>{formatMoneyExact(order.totalMinor)}</dd>
+            <dd>
+              {formatMoneyExact(order.totalMinor, order.currency)}{" "}
+              <span className="text-[13px] font-normal text-faint">
+                {order.currency}
+              </span>
+            </dd>
           </div>
         </dl>
         <p className="mt-2 text-[13px] text-muted">
-          Paid by {order.paymentMethod.toLowerCase().replace("_", " ")} ·{" "}
-          {paid ? "payment received" : "payable on delivery"}
+          {PAYMENT_METHOD_LABELS[order.paymentMethod]} ·{" "}
+          {paid ? "payment received" : "awaiting funds"}
         </p>
       </section>
 

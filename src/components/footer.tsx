@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { configWarnings, getSiteConfig } from "@/lib/site";
+import { STORE_CURRENCY } from "@/lib/money";
 
 const COLUMNS = [
   {
@@ -9,24 +10,26 @@ const COLUMNS = [
       { href: "/s", label: "Full catalogue" },
       { href: "/s?category=software", label: "Software licences" },
       { href: "/s?category=laptops", label: "Business laptops" },
-      { href: "/delivery", label: "Delivery and pincodes" },
+      { href: "/shipping", label: "Shipping & delivery" },
     ],
   },
   {
     heading: "Your order",
     links: [
       { href: "/orders", label: "Track an order" },
-      { href: "/returns", label: "Returns and refunds" },
+      { href: "/returns", label: "Returns & refunds" },
+      { href: "/warranty", label: "Warranty" },
       { href: "/cart", label: "Your cart" },
     ],
   },
   {
-    heading: "Policies",
+    heading: "Legal",
     links: [
       { href: "/terms", label: "Terms of sale" },
+      { href: "/website-terms", label: "Website terms of use" },
       { href: "/privacy", label: "Privacy policy" },
-      { href: "/returns", label: "Refund policy" },
-      { href: "/grievance", label: "Grievance redressal" },
+      { href: "/cookies", label: "Cookie policy" },
+      { href: "/export-compliance", label: "Export compliance" },
     ],
   },
 ];
@@ -72,7 +75,7 @@ export function Footer() {
               {config.supportPhone ? (
                 <li>
                   <a
-                    href={`tel:${config.supportPhone.replace(/\s+/g, "")}`}
+                    href={`tel:${config.supportPhone.replace(/[^\d+]/g, "")}`}
                     className="hover:underline"
                   >
                     {config.supportPhone}
@@ -89,15 +92,18 @@ export function Footer() {
                   </a>
                 </li>
               ) : null}
-              <li className="pt-1 text-white/60">
-                Monday to Saturday, 9:30 am – 6:30 pm IST
+              <li className="pt-1 text-white/60">{config.supportHours}</li>
+              <li>
+                <Link href="/contact" className="hover:underline">
+                  Contact &amp; complaints
+                </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* The identity block. Required by the e-commerce rules, and the first
-            thing a cautious buyer scrolls down to look for. */}
+        {/* The identity block. A cross-border buyer cannot walk into the shop,
+            so this is the closest thing they get to seeing one. */}
         <div className="border-t border-white/15">
           <div className="mx-auto max-w-[1500px] px-4 py-6 text-[13px] leading-relaxed text-white/65">
             <p className="font-semibold text-white/90">
@@ -105,28 +111,41 @@ export function Footer() {
             </p>
             {config.address ? <p>{config.address}</p> : null}
             <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[12px]">
-              {config.gstin ? <span>GSTIN {config.gstin}</span> : null}
-              {config.cin ? <span>CIN {config.cin}</span> : null}
+              {config.taxIdNumber ? (
+                <span>
+                  {config.taxIdLabel} {config.taxIdNumber}
+                </span>
+              ) : null}
+              {config.registrationNumber ? (
+                <span>
+                  {config.registrationLabel} {config.registrationNumber}
+                </span>
+              ) : null}
             </p>
-            {config.grievanceName ? (
+            {config.complaintsName ? (
               <p className="mt-3">
-                Grievance officer: {config.grievanceName}
-                {config.grievanceEmail ? (
+                Complaints: {config.complaintsName}
+                {config.complaintsEmail ? (
                   <>
                     {" · "}
                     <a
-                      href={`mailto:${config.grievanceEmail}`}
+                      href={`mailto:${config.complaintsEmail}`}
                       className="underline"
                     >
-                      {config.grievanceEmail}
+                      {config.complaintsEmail}
                     </a>
                   </>
                 ) : null}
-                {config.grievancePhone ? ` · ${config.grievancePhone}` : null}
               </p>
             ) : null}
             <p className="mt-3 text-white/50">
-              Prices include GST. A tax invoice is issued with every order.
+              All prices in {STORE_CURRENCY}. Goods ship from{" "}
+              {config.shipsFrom}. Import duties and destination taxes are not
+              included and are payable by the recipient — see{" "}
+              <Link href="/shipping" className="underline">
+                shipping &amp; delivery
+              </Link>
+              .
             </p>
           </div>
         </div>

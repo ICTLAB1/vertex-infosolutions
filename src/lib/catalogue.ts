@@ -11,7 +11,7 @@ export const productSelect = {
   summary: true,
   bullets: true,
   specs: true,
-  hsnSac: true,
+  hsCode: true,
   origin: true,
   glyph: true,
   featured: true,
@@ -22,21 +22,16 @@ export const productSelect = {
       id: true,
       sku: true,
       name: true,
-      mrpMinor: true,
+      listPriceMinor: true,
       priceMinor: true,
-      gstRatePercent: true,
       stockOnHand: true,
       leadDays: true,
+      weightGrams: true,
     },
     orderBy: { priceMinor: "asc" },
   },
   reviews: { select: { rating: true } },
 } as const;
-
-export type CatalogueProduct = Awaited<ReturnType<typeof getProduct>>;
-
-/** A product as it appears in a grid — the shape `productSelect` returns. */
-export type ListedProduct = Awaited<ReturnType<typeof getFeatured>>[number];
 
 export async function getProduct(slug: string) {
   return prisma.product.findUnique({
@@ -47,6 +42,7 @@ export async function getProduct(slug: string) {
         select: {
           id: true,
           author: true,
+          country: true,
           rating: true,
           title: true,
           body: true,
@@ -58,6 +54,11 @@ export async function getProduct(slug: string) {
     },
   });
 }
+
+export type CatalogueProduct = Awaited<ReturnType<typeof getProduct>>;
+
+/** A product as it appears in a grid — the shape `productSelect` returns. */
+export type ListedProduct = Awaited<ReturnType<typeof getFeatured>>[number];
 
 export async function getCategories() {
   return prisma.category.findMany({ orderBy: { position: "asc" } });
@@ -91,11 +92,11 @@ export type BrowseFilters = {
 };
 
 /**
- * Browse and search share one query. SQLite has no full-text index here, so a
- * search is a set of LIKE clauses across the fields a shopper would expect to
- * match — name, summary, brand and SKU. It is honest about being simple: at
- * catalogue sizes below a few thousand rows it is indistinguishable from
- * something cleverer, and above that it should be replaced rather than tuned.
+ * Browse and search share one query. Matching is a set of case-insensitive
+ * contains clauses across the fields a shopper would expect to match — name,
+ * summary, brand, category and SKU. It is honest about being simple: below a
+ * few thousand rows it is indistinguishable from something cleverer, and above
+ * that it should be replaced with Postgres full-text search rather than tuned.
  */
 export async function browse(filters: BrowseFilters) {
   const terms = (filters.q ?? "")
@@ -111,11 +112,19 @@ export async function browse(filters: BrowseFilters) {
         filters.brand ? { brand: { slug: filters.brand } } : {},
         ...terms.map((term) => ({
           OR: [
-            { name: { contains: term } },
-            { summary: { contains: term } },
-            { brand: { name: { contains: term } } },
-            { category: { name: { contains: term } } },
-            { variants: { some: { sku: { contains: term } } } },
+            { name: { contains: term, mode: "insensitive" as const } },
+            { summary: { contains: term, mode: "insensitive" as const } },
+            { brand: { name: { contains: term, mode: "insensitive" as const } } },
+            {
+              category: {
+                name: { contains: term, mode: "insensitive" as const },
+              },
+            },
+            {
+              variants: {
+                some: { sku: { contains: term, mode: "insensitive" as const } },
+              },
+            },
           ],
         })),
       ],
@@ -186,23 +195,15 @@ export function ratingOf(reviews: { rating: number }[]): {
   return { average: total / reviews.length, count: reviews.length };
 }
 
-export function parseBullets(json: string): string[] {
-  try {
-    const value: unknown = JSON.parse(json);
-    return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
-  } catch {
+/**
+ * Spec rows. `specs` is a JSON column rather than a table because nothing ever
+ * queries across it — it is displayed as a block and edited as a whole.
+ */
+export function specRows(specs: unknown): [string, string][] {
+  if (specs === null || typeof specs !== "object" || Array.isArray(specs)) {
     return [];
   }
-}
-
-export function parseSpecs(json: string): [string, string][] {
-  try {
-    const value: unknown = JSON.parse(json);
-    if (value === null || typeof value !== "object" || Array.isArray(value)) return [];
-    return Object.entries(value as Record<string, unknown>).filter(
-      (entry): entry is [string, string] => typeof entry[1] === "string",
-    );
-  } catch {
-    return [];
-  }
+  return Object.entries(specs as Record<string, unknown>).filter(
+    (entry): entry is [string, string] => typeof entry[1] === "string",
+  );
 }

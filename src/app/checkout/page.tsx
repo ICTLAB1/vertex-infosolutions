@@ -4,16 +4,28 @@ import { redirect } from "next/navigation";
 
 import { CheckoutForm } from "@/components/checkout-form";
 import { getCart, totalsFor } from "@/lib/cart";
-import { formatMoney } from "@/lib/money";
+import { formatMoney, STORE_CURRENCY } from "@/lib/money";
+import { countryName } from "@/lib/shipping";
 import { methodsFor } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Checkout", robots: { index: false } };
+export const metadata: Metadata = {
+  title: "Checkout",
+  robots: { index: false },
+};
 
 export default async function CheckoutPage() {
   const cart = await getCart();
   if (!cart || cart.items.length === 0) redirect("/cart");
 
-  const totals = totalsFor(cart.items);
+  const country = cart.country ?? null;
+  const totals = totalsFor(cart.items, country);
+
+  // A destination the store cannot serve is stopped at the cart, where there
+  // is something the customer can do about it, rather than after they have
+  // filled in an address.
+  if (totals.shipping.known && "blocked" in totals.shipping) {
+    redirect("/cart");
+  }
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-6">
@@ -57,28 +69,44 @@ export default async function CheckoutPage() {
             <dd>{formatMoney(totals.itemsMinor)}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted">Delivery</dt>
+            <dt className="text-muted">
+              Shipping
+              {totals.shipping.known && !("blocked" in totals.shipping)
+                ? ` to ${countryName(totals.shipping.country)}`
+                : ""}
+            </dt>
             <dd>
-              {totals.shippingMinor === 0
-                ? "Free"
-                : formatMoney(totals.shippingMinor)}
+              {!totals.hasPhysical
+                ? "None"
+                : totals.shippingMinor === 0
+                  ? "Free"
+                  : formatMoney(totals.shippingMinor)}
             </dd>
           </div>
           <div className="flex justify-between border-t border-line-soft pt-2 text-[17px] font-bold text-ink">
             <dt>Total</dt>
-            <dd>{formatMoney(totals.totalMinor)}</dd>
+            <dd>
+              {formatMoney(totals.totalMinor)}{" "}
+              <span className="text-[13px] font-normal text-faint">
+                {STORE_CURRENCY}
+              </span>
+            </dd>
           </div>
           <p className="text-[12px] text-faint">
-            Includes {formatMoney(totals.taxMinor)} GST. This is the final
-            amount — nothing is added on the next screen.
+            This is the final amount we charge — nothing is added on the next
+            screen.
+            {totals.hasPhysical
+              ? " Import duty and destination taxes are charged separately by your country when the parcel arrives."
+              : ""}
           </p>
         </dl>
       </div>
 
       <CheckoutForm
         needsAddress={totals.hasPhysical}
-        methods={methodsFor(totals.hasLicence)}
+        methods={methodsFor(totals.licencesOnly)}
         total={formatMoney(totals.totalMinor)}
+        defaultCountry={country}
       />
     </div>
   );

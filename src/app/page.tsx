@@ -2,36 +2,41 @@ import Link from "next/link";
 
 import { Glyph } from "@/components/glyph";
 import { ProductCard } from "@/components/product-card";
+import { getCart } from "@/lib/cart";
 import { getByCategory, getCategories, getFeatured } from "@/lib/catalogue";
-import { FREE_SHIPPING_THRESHOLD_MINOR } from "@/lib/delivery";
-import { formatMoney } from "@/lib/money";
+import { STORE_CURRENCY } from "@/lib/money";
+import { ZONES } from "@/lib/shipping";
 
 export default async function HomePage() {
-  const [categories, featured, laptops, software] = await Promise.all([
+  const [cart, categories, featured, laptops, software] = await Promise.all([
+    getCart(),
     getCategories(),
     getFeatured(),
-    getByCategory("laptops", 4),
-    getByCategory("software", 4),
+    getByCategory("laptops", 6),
+    getByCategory("software", 6),
   ]);
+  const country = cart?.country ?? null;
 
   return (
     <div className="pb-4">
-      {/* The opening band carries the two things a first-time buyer wants to
-          know — what this shop sells, and what happens after they pay. */}
+      {/* The opening band carries the three things a cross-border buyer wants
+          settled before they scroll: what this shop sells, what it costs to
+          get it to them, and who pays the duty. */}
       <section className="bg-nav-2 text-white">
         <div className="mx-auto grid max-w-[1500px] gap-6 px-4 py-8 lg:grid-cols-[1.4fr_1fr] lg:py-12">
           <div className="max-w-2xl">
             <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-amber">
-              Business IT, bought like retail
+              Business IT, shipped worldwide
             </p>
             <h1 className="mt-2 text-3xl font-bold leading-tight sm:text-4xl">
-              Laptops, monitors and licences — priced online, delivered with a
-              GST invoice.
+              Laptops, monitors and licences — priced in {STORE_CURRENCY},
+              delivered to your door.
             </h1>
             <p className="mt-3 text-white/75">
               No quotation to chase and no callback to wait for. Pick what you
-              need, pay by UPI or card, and get a tax invoice the same day.
-              Licence keys arrive by email the moment payment clears.
+              need, pay by card or PayPal, and get a commercial invoice the same
+              day. Software licences arrive by email the moment payment clears —
+              wherever you are.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
@@ -52,16 +57,16 @@ export default async function HomePage() {
           <ul className="grid content-start gap-3 text-sm">
             {[
               {
-                title: "Free delivery over " + formatMoney(FREE_SHIPPING_THRESHOLD_MINOR),
-                body: "Flat ₹79 below that, charged only on items we actually ship.",
+                title: `Free shipping from $${ZONES.GULF.freeOverMinor / 100}`,
+                body: "Threshold varies by region — the exact figure for your country is shown in the cart, before you enter an address.",
               },
               {
                 title: "Keys issued on payment",
-                body: "Software is delivered to your inbox in seconds, not in a working day.",
+                body: "Software is delivered to your inbox in seconds. No shipment, no customs, no waiting.",
               },
               {
-                title: "7-day returns on hardware",
-                body: "Unopened and undamaged, collected from your address.",
+                title: "Duties are not hidden",
+                body: "Prices exclude import duty and destination tax, which the carrier collects on arrival. We say so up front rather than at the door.",
               },
             ].map((item) => (
               <li
@@ -95,17 +100,50 @@ export default async function HomePage() {
           ))}
         </section>
 
-        <Row title="Picked for small teams" href="/s" products={featured} />
+        <Row
+          title="Picked for small teams"
+          href="/s"
+          products={featured}
+          country={country}
+        />
         <Row
           title="Business laptops"
           href="/s?category=laptops"
           products={laptops}
+          country={country}
         />
         <Row
           title="Licences, delivered by email"
           href="/s?category=software"
           products={software}
+          country={country}
         />
+
+        <section className="mt-6 grid gap-3 rounded-lg border border-line bg-surface p-5 sm:grid-cols-3">
+          {Object.values(ZONES)
+            .filter((zone) => zone.id !== "ROW")
+            .map((zone) => (
+              <div key={zone.id}>
+                <p className="text-[14px] font-semibold text-ink">
+                  {zone.label}
+                </p>
+                <p className="text-[13px] text-muted">
+                  ${zone.shippingMinor / 100} shipping, free over $
+                  {zone.freeOverMinor / 100} · {zone.transitDays[0]}–
+                  {zone.transitDays[1]} business days
+                </p>
+              </div>
+            ))}
+          <p className="text-[13px] text-muted sm:col-span-3">
+            Everywhere else is ${ZONES.ROW.shippingMinor / 100}, free over $
+            {ZONES.ROW.freeOverMinor / 100}, {ZONES.ROW.transitDays[0]}–
+            {ZONES.ROW.transitDays[1]} business days.{" "}
+            <Link href="/shipping" className="text-link underline">
+              Full shipping terms
+            </Link>
+            .
+          </p>
+        </section>
       </div>
     </div>
   );
@@ -127,10 +165,12 @@ function Row({
   title,
   href,
   products,
+  country,
 }: {
   title: string;
   href: string;
   products: Awaited<ReturnType<typeof getFeatured>>;
+  country: string | null;
 }) {
   if (products.length === 0) return null;
   return (
@@ -150,7 +190,7 @@ function Row({
             key={product.id}
             className="w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23%] xl:w-[19%]"
           >
-            <ProductCard product={product} />
+            <ProductCard product={product} country={country} />
           </li>
         ))}
       </ul>

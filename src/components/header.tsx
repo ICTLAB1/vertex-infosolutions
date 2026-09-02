@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { setDestination } from "@/app/actions";
+import { CountrySelect } from "@/components/country-select";
 import { getCart, totalsFor } from "@/lib/cart";
 import { getCategories } from "@/lib/catalogue";
 
@@ -37,7 +39,8 @@ function Wordmark() {
 
 export async function Header() {
   const [cart, categories] = await Promise.all([getCart(), getCategories()]);
-  const count = cart ? totalsFor(cart.items).count : 0;
+  const count = cart ? totalsFor(cart.items, cart.country).count : 0;
+  const destination = cart?.country ?? null;
 
   return (
     <header className="on-dark sticky top-0 z-40">
@@ -51,28 +54,27 @@ export async function Header() {
             <Wordmark />
           </Link>
 
-          <Link
-            href="/delivery"
-            className="hidden shrink-0 items-center gap-1.5 rounded px-2 py-1 text-white/85 hover:bg-white/10 lg:flex"
+          {/* Where the parcel is going decides carriage and the arrival
+              estimate, so it is asked for in the header rather than sprung on
+              the customer at the payment step. */}
+          <form
+            action={setDestination}
+            className="hidden shrink-0 items-center gap-1.5 rounded px-2 py-1 lg:flex"
           >
-            <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
-              <path
-                d="M10 18s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-              />
-              <circle cx="10" cy="8" r="2.2" fill="currentColor" />
+            <svg viewBox="0 0 20 20" className="h-4 w-4 text-white/70" aria-hidden="true">
+              <circle cx="10" cy="10" r="7.2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M2.8 10h14.4M10 2.8c3.4 3.6 3.4 10.8 0 14.4-3.4-3.6-3.4-10.8 0-14.4z" fill="none" stroke="currentColor" strokeWidth="1.5" />
             </svg>
             <span className="leading-tight">
-              <span className="block text-[11px] text-white/60">
-                Deliver to
-              </span>
-              <span className="block text-[13px] font-semibold">
-                Check pincode
-              </span>
+              <span className="block text-[11px] text-white/60">Deliver to</span>
+              <CountrySelect
+                id="header-country"
+                label="Destination country"
+                value={destination}
+                className="-ml-1 max-w-[10.5rem] truncate bg-transparent text-[13px] font-semibold text-white outline-none [&>option]:text-ink"
+              />
             </span>
-          </Link>
+          </form>
 
           {/* Search is the header's centre of gravity, so it takes the whole
               remaining row and drops to its own line on a narrow screen. */}
@@ -180,7 +182,7 @@ export async function Header() {
             </Link>
           ))}
           <span className="ml-auto hidden shrink-0 px-2.5 py-1 text-white/60 lg:block">
-            GST invoice on every order
+            Ships worldwide · commercial invoice with every order
           </span>
         </div>
       </nav>

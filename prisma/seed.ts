@@ -2,29 +2,33 @@
  * Sample catalogue.
  *
  * Everything here is illustrative — plausible IT reseller stock at plausible
- * Indian street prices, so the storefront can be judged with something that
- * looks like real inventory rather than "Product 1". Replace it with the real
- * catalogue before the store goes anywhere near a customer.
+ * international street prices in USD, so the storefront can be judged with
+ * something that looks like real inventory rather than "Product 1". Replace it
+ * with the real catalogue before the store goes anywhere near a customer.
+ *
+ * Physical goods carry an HS code and a country of origin because both are
+ * printed on the commercial invoice that travels with the parcel. Licences
+ * carry neither: nothing crosses a border.
  */
 import "dotenv/config";
 
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../src/generated/prisma/client";
 
-const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
 });
 const prisma = new PrismaClient({ adapter });
 
 type SeedVariant = {
   sku: string;
   name: string;
-  mrp: number;
+  list: number;
   price: number;
-  gst?: number;
   stock?: number | null;
   leadDays?: number | null;
+  grams?: number | null;
 };
 
 type SeedProduct = {
@@ -36,12 +40,19 @@ type SeedProduct = {
   summary: string;
   bullets: string[];
   specs: Record<string, string>;
-  hsnSac: string;
-  origin: string;
+  hsCode?: string;
+  origin?: string;
   glyph: string;
   featured?: boolean;
   variants: SeedVariant[];
-  reviews?: { author: string; rating: number; title: string; body: string; verified?: boolean }[];
+  reviews?: {
+    author: string;
+    country?: string;
+    rating: number;
+    title: string;
+    body: string;
+    verified?: boolean;
+  }[];
 };
 
 const CATEGORIES = [
@@ -54,13 +65,13 @@ const CATEGORIES = [
 ];
 
 const BRANDS = [
-  "Dell", "HP", "Lenovo", "Acer", "ASUS", "Samsung", "LG", "Canon", "Epson",
-  "TP-Link", "Ubiquiti", "Cisco", "Seagate", "Western Digital", "APC",
-  "Microsoft", "Adobe", "Autodesk", "Tally", "Logitech",
+  "Dell", "HP", "Lenovo", "Samsung", "LG", "Canon", "Epson", "TP-Link",
+  "Ubiquiti", "Seagate", "APC", "Microsoft", "Adobe", "Autodesk", "Veeam",
+  "Logitech",
 ];
 
-// Rupees, written as whole numbers and converted to paise on the way in.
-const R = (rupees: number) => rupees * 100;
+/** Dollars in, cents out. */
+const D = (dollars: number) => Math.round(dollars * 100);
 
 const PRODUCTS: SeedProduct[] = [
   {
@@ -85,21 +96,21 @@ const PRODUCTS: SeedProduct[] = [
       Display: "15.6-inch FHD anti-glare",
       Ports: "2 x USB-C (Thunderbolt 4), 2 x USB-A, HDMI 2.1, RJ-45",
       Weight: "1.79 kg",
-      Warranty: "1 year onsite, upgradeable",
+      Warranty: "1 year international, upgradeable to onsite",
     },
-    hsnSac: "8471",
+    hsCode: "8471.30",
     origin: "China",
     glyph: "laptop",
     featured: true,
     variants: [
-      { sku: "DEL-LAT3550-16-512", name: "16 GB RAM / 512 GB SSD", mrp: R(92_000), price: R(74_499), stock: 12, leadDays: 1 },
-      { sku: "DEL-LAT3550-16-1TB", name: "16 GB RAM / 1 TB SSD", mrp: R(101_000), price: R(82_999), stock: 6, leadDays: 1 },
-      { sku: "DEL-LAT3550-32-1TB", name: "32 GB RAM / 1 TB SSD", mrp: R(118_000), price: R(97_499), stock: 3, leadDays: 2 },
+      { sku: "DEL-LAT3550-16-512", name: "16 GB RAM / 512 GB SSD", list: D(1149), price: D(899), stock: 12, leadDays: 1, grams: 2600 },
+      { sku: "DEL-LAT3550-16-1TB", name: "16 GB RAM / 1 TB SSD", list: D(1279), price: D(999), stock: 6, leadDays: 1, grams: 2600 },
+      { sku: "DEL-LAT3550-32-1TB", name: "32 GB RAM / 1 TB SSD", list: D(1479), price: D(1199), stock: 3, leadDays: 2, grams: 2600 },
     ],
     reviews: [
-      { author: "Rakesh M.", rating: 5, title: "Exactly what our field team needed", body: "Bought nine of these for our service engineers. Six months in, no failures, and the RAM upgrade took ten minutes per machine. The anti-glare screen genuinely helps on site.", verified: true },
-      { author: "Sneha P.", rating: 4, title: "Solid, but the screen is average", body: "No complaints about performance or build. The display is only 250 nits though, so it struggles near a window. Fine for office use.", verified: true },
-      { author: "Imran S.", rating: 4, title: "Good value against the T-series", body: "Half the price of the ThinkPads we were quoted and the difference in daily use is small. Battery is about 6 hours realistically, not the claimed number.", verified: false },
+      { author: "Rakesh M.", country: "United Arab Emirates", rating: 5, title: "Exactly what our field team needed", body: "Bought nine of these for our service engineers. Six months in, no failures, and the RAM upgrade took ten minutes per machine. The anti-glare screen genuinely helps on site.", verified: true },
+      { author: "Sneha P.", country: "Singapore", rating: 4, title: "Solid, but the screen is average", body: "No complaints about performance or build. The display is only 250 nits though, so it struggles near a window. Fine for office use.", verified: true },
+      { author: "Daniel W.", country: "United States", rating: 4, title: "Good value against the T-series", body: "Two thirds the price of the ThinkPads we were quoted and the difference in daily use is small. Customs paperwork was correct, which is more than I can say for the last supplier.", verified: true },
     ],
   },
   {
@@ -124,19 +135,19 @@ const PRODUCTS: SeedProduct[] = [
       Display: "14-inch WUXGA IPS, 300 nits",
       Ports: "1 x USB-C 3.2, 1 x USB4, 2 x USB-A, HDMI 2.1, RJ-45",
       Weight: "1.41 kg",
-      Warranty: "1 year carry-in",
+      Warranty: "1 year international carry-in",
     },
-    hsnSac: "8471",
+    hsCode: "8471.30",
     origin: "China",
     glyph: "laptop",
     featured: true,
     variants: [
-      { sku: "LEN-E14G6-16-512", name: "16 GB RAM / 512 GB SSD", mrp: R(89_000), price: R(71_990), stock: 8, leadDays: 1 },
-      { sku: "LEN-E14G6-24-1TB", name: "24 GB RAM / 1 TB SSD", mrp: R(104_000), price: R(86_500), stock: 0, leadDays: 5 },
+      { sku: "LEN-E14G6-16-512", name: "16 GB RAM / 512 GB SSD", list: D(1049), price: D(869), stock: 8, leadDays: 1, grams: 2200 },
+      { sku: "LEN-E14G6-24-1TB", name: "24 GB RAM / 1 TB SSD", list: D(1259), price: D(1039), stock: 0, leadDays: 5, grams: 2200 },
     ],
     reviews: [
-      { author: "Devika R.", rating: 5, title: "The keyboard is why you buy this", body: "Typing all day on this is genuinely comfortable in a way the Dells in our office are not. Runs cool too.", verified: true },
-      { author: "Arun K.", rating: 3, title: "Fan noise under load", body: "Performance is fine but the fan is audible whenever you push it. In a quiet office you notice. Otherwise a good machine.", verified: true },
+      { author: "Devika R.", country: "United Kingdom", rating: 5, title: "The keyboard is why you buy this", body: "Typing all day on this is genuinely comfortable in a way the Dells in our office are not. Runs cool too.", verified: true },
+      { author: "Arun K.", country: "Australia", rating: 3, title: "Fan noise under load", body: "Performance is fine but the fan is audible whenever you push it. In a quiet office you notice. Otherwise a good machine.", verified: true },
     ],
   },
   {
@@ -159,16 +170,16 @@ const PRODUCTS: SeedProduct[] = [
       Storage: "512 GB NVMe SSD",
       Display: "15.6-inch FHD IPS, 300 nits",
       Weight: "1.79 kg",
-      Warranty: "1 year onsite",
+      Warranty: "1 year international",
     },
-    hsnSac: "8471",
+    hsCode: "8471.30",
     origin: "China",
     glyph: "laptop",
     variants: [
-      { sku: "HP-PB450G11-16-512", name: "16 GB RAM / 512 GB SSD", mrp: R(96_500), price: R(79_990), stock: 5, leadDays: 2 },
+      { sku: "HP-PB450G11-16-512", name: "16 GB RAM / 512 GB SSD", list: D(1149), price: D(949), stock: 5, leadDays: 2, grams: 2500 },
     ],
     reviews: [
-      { author: "Manish T.", rating: 4, title: "Does the job", body: "Standard corporate laptop, nothing surprising. Wolf Security was easy to roll out across the fleet.", verified: true },
+      { author: "Manish T.", country: "Qatar", rating: 4, title: "Does the job", body: "Standard corporate laptop, nothing surprising. Wolf Security was easy to roll out across the fleet.", verified: true },
     ],
   },
   {
@@ -194,17 +205,17 @@ const PRODUCTS: SeedProduct[] = [
       Ports: "1 x HDMI 2.1, 1 x DisplayPort 1.4, 1 x USB-C (90 W), 4 x USB-A",
       Warranty: "3 years, with advance exchange",
     },
-    hsnSac: "8528",
+    hsCode: "8528.52",
     origin: "China",
     glyph: "monitor",
     featured: true,
     variants: [
-      { sku: "DEL-U2724D", name: "27-inch QHD", mrp: R(52_000), price: R(41_499), stock: 14, leadDays: 1 },
+      { sku: "DEL-U2724D", name: "27-inch QHD", list: D(619), price: D(509), stock: 14, leadDays: 1, grams: 7400 },
     ],
     reviews: [
-      { author: "Priya N.", rating: 5, title: "The single-cable setup is the selling point", body: "One USB-C to the laptop and everything works — display, keyboard, mouse, ethernet, charging. Cleared half the cables off my desk.", verified: true },
-      { author: "Vikram J.", rating: 5, title: "IPS Black is a real improvement", body: "Side by side with our older U2722D the blacks are visibly better. Worth the difference if you look at documents all day.", verified: true },
-      { author: "Anonymous", rating: 2, title: "Arrived with a stuck pixel", body: "Panel had one stuck pixel out of the box. Replacement was arranged without argument but it cost me a week.", verified: true },
+      { author: "Priya N.", country: "Germany", rating: 5, title: "The single-cable setup is the selling point", body: "One USB-C to the laptop and everything works — display, keyboard, mouse, ethernet, charging. Cleared half the cables off my desk.", verified: true },
+      { author: "Viktor J.", country: "Netherlands", rating: 5, title: "IPS Black is a real improvement", body: "Side by side with our older U2722D the blacks are visibly better. Worth the difference if you look at documents all day.", verified: true },
+      { author: "Anonymous", country: "Canada", rating: 2, title: "Arrived with a stuck pixel", body: "Panel had one stuck pixel out of the box. Replacement was arranged without argument but it cost me two weeks including the return shipping.", verified: true },
     ],
   },
   {
@@ -227,14 +238,14 @@ const PRODUCTS: SeedProduct[] = [
       "Colour gamut": "95% DCI-P3",
       Warranty: "3 years",
     },
-    hsnSac: "8528",
+    hsCode: "8528.52",
     origin: "South Korea",
     glyph: "monitor",
     variants: [
-      { sku: "LG-27UQ850V", name: "27-inch 4K", mrp: R(64_000), price: R(52_990), stock: 4, leadDays: 2 },
+      { sku: "LG-27UQ850V", name: "27-inch 4K", list: D(799), price: D(649), stock: 4, leadDays: 2, grams: 7800 },
     ],
     reviews: [
-      { author: "Farah A.", rating: 4, title: "Great panel, mediocre menus", body: "Colour accuracy out of the box is excellent. The on-screen controls are fiddly but you only use them once.", verified: true },
+      { author: "Farah A.", country: "United Arab Emirates", rating: 4, title: "Great panel, mediocre menus", body: "Colour accuracy out of the box is excellent. The on-screen controls are fiddly but you only use them once.", verified: true },
     ],
   },
   {
@@ -257,11 +268,11 @@ const PRODUCTS: SeedProduct[] = [
       Curvature: "1000R",
       Warranty: "3 years",
     },
-    hsnSac: "8528",
+    hsCode: "8528.52",
     origin: "Vietnam",
     glyph: "monitor",
     variants: [
-      { sku: "SAM-S6-34UW", name: "34-inch WQHD", mrp: R(58_000), price: R(46_990), stock: 7, leadDays: 2 },
+      { sku: "SAM-S6-34UW", name: "34-inch WQHD", list: D(699), price: D(569), stock: 7, leadDays: 2, grams: 9600 },
     ],
   },
   {
@@ -285,17 +296,17 @@ const PRODUCTS: SeedProduct[] = [
       "Paper capacity": "250-sheet cassette + 100-sheet tray",
       Connectivity: "Gigabit ethernet, Wi-Fi, USB",
       "Duty cycle": "80,000 pages/month",
-      Warranty: "1 year onsite",
+      Warranty: "1 year",
     },
-    hsnSac: "8443",
+    hsCode: "8443.31",
     origin: "Vietnam",
     glyph: "printer",
     variants: [
-      { sku: "CAN-MF445DW", name: "Single unit", mrp: R(44_000), price: R(34_499), stock: 9, leadDays: 2 },
+      { sku: "CAN-MF445DW", name: "Single unit", list: D(529), price: D(419), stock: 9, leadDays: 2, grams: 16400 },
     ],
     reviews: [
-      { author: "Office Admin, Pune", rating: 5, title: "Fast and forgettable, in a good way", body: "Replaced an ageing HP that jammed weekly. This has done 14,000 pages without a single jam. Duplex scanning is quick.", verified: true },
-      { author: "Sunil B.", rating: 4, title: "Toner is the real cost", body: "Printer is cheap, toner is not. Buy the high-yield cartridges from the start and the maths works out.", verified: true },
+      { author: "Office Manager", country: "United Kingdom", rating: 5, title: "Fast and forgettable, in a good way", body: "Replaced an ageing unit that jammed weekly. This has done 14,000 pages without a single jam. Duplex scanning is quick.", verified: true },
+      { author: "Sunil B.", country: "Kenya", rating: 4, title: "Toner is the real cost", body: "Printer is cheap, toner is not. Buy the high-yield cartridges from the start and the maths works out.", verified: true },
     ],
   },
   {
@@ -318,11 +329,11 @@ const PRODUCTS: SeedProduct[] = [
       Connectivity: "Ethernet, Wi-Fi, USB",
       Warranty: "1 year or 30,000 pages",
     },
-    hsnSac: "8443",
+    hsCode: "8443.31",
     origin: "Indonesia",
     glyph: "printer",
     variants: [
-      { sku: "EPS-L6580", name: "Single unit", mrp: R(52_000), price: R(43_999), stock: 6, leadDays: 3 },
+      { sku: "EPS-L6580", name: "Single unit", list: D(649), price: D(529), stock: 6, leadDays: 3, grams: 13200 },
     ],
   },
   {
@@ -347,17 +358,17 @@ const PRODUCTS: SeedProduct[] = [
       Coverage: "Up to 140 m² indoors",
       Warranty: "1 year",
     },
-    hsnSac: "8517",
+    hsCode: "8517.62",
     origin: "Vietnam",
     glyph: "router",
     featured: true,
     variants: [
-      { sku: "UBI-U7-PRO", name: "Single access point", mrp: R(21_500), price: R(17_299), stock: 22, leadDays: 1 },
-      { sku: "UBI-U7-PRO-5PK", name: "5-pack", mrp: R(104_000), price: R(83_500), stock: 4, leadDays: 3 },
+      { sku: "UBI-U7-PRO", name: "Single access point", list: D(229), price: D(199), stock: 22, leadDays: 1, grams: 900 },
+      { sku: "UBI-U7-PRO-5PK", name: "5-pack", list: D(1145), price: D(949), stock: 4, leadDays: 3, grams: 4200 },
     ],
     reviews: [
-      { author: "Nikhil D.", rating: 5, title: "Replaced six APs across two floors", body: "Roaming is seamless now and the controller makes troubleshooting actually possible. No licence fees is the reason we moved off Cisco.", verified: true },
-      { author: "Rohit V.", rating: 4, title: "You need the PoE budget", body: "Works exactly as advertised, but check your switch has the PoE+ headroom before ordering five of them. Ours did not.", verified: true },
+      { author: "Nikhil D.", country: "Singapore", rating: 5, title: "Replaced six APs across two floors", body: "Roaming is seamless now and the controller makes troubleshooting actually possible. No licence fees is the reason we moved.", verified: true },
+      { author: "Tom R.", country: "United States", rating: 4, title: "You need the PoE budget", body: "Works exactly as advertised, but check your switch has the PoE+ headroom before ordering five of them. Ours did not.", verified: true },
     ],
   },
   {
@@ -380,11 +391,11 @@ const PRODUCTS: SeedProduct[] = [
       Form: "1U rack-mount",
       Warranty: "3 years",
     },
-    hsnSac: "8517",
+    hsCode: "8517.62",
     origin: "China",
     glyph: "router",
     variants: [
-      { sku: "TPL-SG3428X", name: "24-port", mrp: R(34_000), price: R(26_499), stock: 5, leadDays: 2 },
+      { sku: "TPL-SG3428X", name: "24-port", list: D(399), price: D(319), stock: 5, leadDays: 2, grams: 3900 },
     ],
   },
   {
@@ -407,15 +418,15 @@ const PRODUCTS: SeedProduct[] = [
       Endurance: "600 TBW (1 TB)",
       Warranty: "5 years",
     },
-    hsnSac: "8523",
+    hsCode: "8523.51",
     origin: "South Korea",
     glyph: "ssd",
     variants: [
-      { sku: "SAM-990EP-1TB", name: "1 TB", mrp: R(11_500), price: R(8_299), stock: 40, leadDays: 1 },
-      { sku: "SAM-990EP-2TB", name: "2 TB", mrp: R(21_000), price: R(15_499), stock: 18, leadDays: 1 },
+      { sku: "SAM-990EP-1TB", name: "1 TB", list: D(139), price: D(99), stock: 40, leadDays: 1, grams: 120 },
+      { sku: "SAM-990EP-2TB", name: "2 TB", list: D(249), price: D(179), stock: 18, leadDays: 1, grams: 120 },
     ],
     reviews: [
-      { author: "Karthik S.", rating: 5, title: "Cloned our fleet onto these", body: "Twenty drives, no failures, and the boot time difference on older machines is dramatic. Good value at this price.", verified: true },
+      { author: "Karthik S.", country: "Australia", rating: 5, title: "Cloned our fleet onto these", body: "Twenty drives, no failures, and the boot time difference on older machines is dramatic. Good value at this price.", verified: true },
     ],
   },
   {
@@ -438,12 +449,12 @@ const PRODUCTS: SeedProduct[] = [
       Workload: "550 TB/year",
       Warranty: "5 years + 3 years Rescue",
     },
-    hsnSac: "8471",
+    hsCode: "8471.70",
     origin: "Thailand",
     glyph: "ssd",
     variants: [
-      { sku: "SEA-IWP-8TB", name: "8 TB", mrp: R(28_000), price: R(21_990), stock: 11, leadDays: 2 },
-      { sku: "SEA-IWP-16TB", name: "16 TB", mrp: R(48_500), price: R(38_499), stock: 3, leadDays: 4 },
+      { sku: "SEA-IWP-8TB", name: "8 TB", list: D(309), price: D(249), stock: 11, leadDays: 2, grams: 900 },
+      { sku: "SEA-IWP-16TB", name: "16 TB", list: D(539), price: D(429), stock: 3, leadDays: 4, grams: 900 },
     ],
   },
   {
@@ -466,14 +477,14 @@ const PRODUCTS: SeedProduct[] = [
       Runtime: "~7 minutes at full load",
       Warranty: "3 years (2 years on battery)",
     },
-    hsnSac: "8504",
+    hsCode: "8504.40",
     origin: "India",
     glyph: "ups",
     variants: [
-      { sku: "APC-SMT1500", name: "1500 VA tower", mrp: R(42_000), price: R(33_990), stock: 8, leadDays: 3 },
+      { sku: "APC-SMT1500", name: "1500 VA tower", list: D(629), price: D(499), stock: 8, leadDays: 3, grams: 24500 },
     ],
     reviews: [
-      { author: "Ganesh R.", rating: 5, title: "Rock solid through a bad monsoon", body: "We lost mains eleven times in one week and the server never blinked. The management card is worth adding.", verified: true },
+      { author: "Ganesh R.", country: "Kenya", rating: 5, title: "Rock solid through a bad rainy season", body: "We lost mains eleven times in one week and the server never blinked. The management card is worth adding.", verified: true },
     ],
   },
   {
@@ -495,11 +506,11 @@ const PRODUCTS: SeedProduct[] = [
       Devices: "Up to 3, switchable",
       Warranty: "1 year",
     },
-    hsnSac: "8471",
+    hsCode: "8471.60",
     origin: "China",
     glyph: "keyboard",
     variants: [
-      { sku: "LOG-MXKEYS-COMBO", name: "Keyboard + mouse", mrp: R(19_995), price: R(14_499), stock: 26, leadDays: 1 },
+      { sku: "LOG-MXKEYS-COMBO", name: "Keyboard + mouse", list: D(229), price: D(179), stock: 26, leadDays: 1, grams: 1600 },
     ],
   },
   {
@@ -520,22 +531,20 @@ const PRODUCTS: SeedProduct[] = [
     specs: {
       "Licence type": "Annual subscription, per user",
       "Minimum term": "12 months",
-      Delivery: "Electronic — issued on payment",
+      Delivery: "Electronic — issued on payment, no shipment",
       Platform: "Windows, macOS, iOS, Android, web",
       Support: "Microsoft standard support",
     },
-    hsnSac: "9973",
-    origin: "United States",
     glyph: "licence",
     featured: true,
     variants: [
-      { sku: "MS-365-BS-1U", name: "1 user, 1 year", mrp: R(13_500), price: R(11_800), gst: 18, stock: null, leadDays: null },
-      { sku: "MS-365-BS-5U", name: "5 users, 1 year", mrp: R(67_500), price: R(56_500), gst: 18, stock: null, leadDays: null },
-      { sku: "MS-365-BS-10U", name: "10 users, 1 year", mrp: R(135_000), price: R(109_000), gst: 18, stock: null, leadDays: null },
+      { sku: "MS-365-BS-1U", name: "1 user, 1 year", list: D(180), price: D(149), stock: null, leadDays: null, grams: null },
+      { sku: "MS-365-BS-5U", name: "5 users, 1 year", list: D(900), price: D(720), stock: null, leadDays: null, grams: null },
+      { sku: "MS-365-BS-10U", name: "10 users, 1 year", list: D(1800), price: D(1400), stock: null, leadDays: null, grams: null },
     ],
     reviews: [
-      { author: "Deepa L.", rating: 5, title: "Keys arrived in under a minute", body: "Ordered ten seats at 9pm and the keys were in my inbox before I closed the laptop. Redemption was straightforward.", verified: true },
-      { author: "Ashok G.", rating: 4, title: "Cheaper than going direct", body: "Roughly 12% under the Microsoft store price for the same thing. Renewal reminder came a month ahead, which was useful.", verified: true },
+      { author: "Deepa L.", country: "United States", rating: 5, title: "Keys arrived in under a minute", body: "Ordered ten seats at 9pm and the keys were in my inbox before I closed the laptop. Redemption was straightforward.", verified: true },
+      { author: "Ashok G.", country: "United Kingdom", rating: 4, title: "Cheaper than going direct", body: "Roughly 15% under the list price for the same thing. Renewal reminder came a month ahead, which was useful.", verified: true },
     ],
   },
   {
@@ -554,49 +563,46 @@ const PRODUCTS: SeedProduct[] = [
     specs: {
       "Licence type": "Annual subscription, per seat",
       "Minimum term": "12 months",
-      Delivery: "Electronic — issued on payment",
+      Delivery: "Electronic — issued on payment, no shipment",
       Platform: "Windows, macOS",
     },
-    hsnSac: "9973",
-    origin: "United States",
     glyph: "licence",
     variants: [
-      { sku: "ADB-CCT-ALL-1S", name: "1 seat, 1 year", mrp: R(72_000), price: R(63_900), stock: null, leadDays: null },
-      { sku: "ADB-CCT-ALL-5S", name: "5 seats, 1 year", mrp: R(360_000), price: R(309_500), stock: null, leadDays: null },
+      { sku: "ADB-CCT-ALL-1S", name: "1 seat, 1 year", list: D(900), price: D(780), stock: null, leadDays: null, grams: null },
+      { sku: "ADB-CCT-ALL-5S", name: "5 seats, 1 year", list: D(4500), price: D(3780), stock: null, leadDays: null, grams: null },
     ],
     reviews: [
-      { author: "Studio Lead, Mumbai", rating: 4, title: "Seat reassignment is the win", body: "Being able to move a seat when someone leaves has saved us buying spares. Invoicing was clean for our accounts team.", verified: true },
+      { author: "Studio Lead", country: "Germany", rating: 4, title: "Seat reassignment is the win", body: "Being able to move a seat when someone leaves has saved us buying spares. Invoicing was clean for our accounts team.", verified: true },
     ],
   },
   {
-    slug: "tally-prime-silver",
-    name: "TallyPrime Silver — Single User",
+    slug: "veeam-data-platform-essentials",
+    name: "Veeam Data Platform Essentials",
     kind: "LICENCE",
-    brand: "Tally",
+    brand: "Veeam",
     category: "software",
-    summary: "Perpetual single-user licence for TallyPrime, with GST filing and e-invoicing built in.",
+    summary:
+      "Backup, recovery and ransomware protection for small estates, licensed per socket bundle.",
     bullets: [
-      "Perpetual licence for one user on one computer",
-      "GST, e-invoicing and e-way bill generation",
-      "Inventory, payroll and banking modules",
-      "First year of TSS updates included",
+      "Backup and instant recovery for VMware, Hyper-V, physical and cloud",
+      "Immutable backup copies against ransomware",
+      "5-instance bundle, expandable",
+      "Includes one year of production support",
     ],
     specs: {
-      "Licence type": "Perpetual, single user",
-      Delivery: "Electronic — serial and activation key on payment",
-      Platform: "Windows",
-      Updates: "First year of Tally Software Services included",
+      "Licence type": "Annual subscription",
+      Delivery: "Electronic — licence file issued on payment",
+      Platform: "VMware vSphere, Microsoft Hyper-V, AHV, physical",
+      Support: "24/7 production support included",
     },
-    hsnSac: "9973",
-    origin: "India",
     glyph: "licence",
     featured: true,
     variants: [
-      { sku: "TLY-PRIME-SILVER", name: "Single user, perpetual", mrp: R(22_500), price: R(19_800), stock: null, leadDays: null },
+      { sku: "VEEAM-DPE-5I", name: "5 instances, 1 year", list: D(1450), price: D(1195), stock: null, leadDays: null, grams: null },
     ],
     reviews: [
-      { author: "Mahesh A.", rating: 5, title: "Standard purchase, no surprises", body: "Serial key came through immediately and activated first time. This is our third licence from them.", verified: true },
-      { author: "Rupal S.", rating: 3, title: "Fine, but read what TSS covers", body: "The licence is exactly as described. Just be aware the first year of updates is included and renewal is extra — that was not obvious to me.", verified: true },
+      { author: "Mahesh A.", country: "United Arab Emirates", rating: 5, title: "Standard purchase, no surprises", body: "Licence file came through immediately and applied first time. This is our third renewal from them.", verified: true },
+      { author: "Rupal S.", country: "South Africa", rating: 3, title: "Fine, but read what support covers", body: "The licence is exactly as described. Just be aware the first year of support is included and renewal is extra — that was not obvious to me.", verified: true },
     ],
   },
   {
@@ -614,14 +620,12 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned on payment, no shipment",
       Platform: "Windows, macOS, web, mobile",
     },
-    hsnSac: "9973",
-    origin: "United States",
     glyph: "licence",
     variants: [
-      { sku: "ADSK-ACAD-1Y", name: "1 user, 1 year", mrp: R(215_000), price: R(186_000), stock: null, leadDays: null },
+      { sku: "ADSK-ACAD-1Y", name: "1 user, 1 year", list: D(2555), price: D(2190), stock: null, leadDays: null, grams: null },
     ],
   },
 ];
@@ -669,29 +673,32 @@ async function main() {
         brandId,
         categoryId,
         summary: product.summary,
-        bullets: JSON.stringify(product.bullets),
-        specs: JSON.stringify(product.specs),
-        hsnSac: product.hsnSac,
-        origin: product.origin,
+        bullets: product.bullets,
+        specs: product.specs,
+        // A licence crosses no border, so it carries neither an HS code nor a
+        // country of origin — the columns stay null rather than being filled
+        // with a value that would be wrong on a customs form.
+        hsCode: product.kind === "LICENCE" ? null : (product.hsCode ?? null),
+        origin: product.kind === "LICENCE" ? null : (product.origin ?? null),
         glyph: product.glyph,
         featured: product.featured ?? false,
         variants: {
           create: product.variants.map((variant) => ({
             sku: variant.sku,
             name: variant.name,
-            mrpMinor: variant.mrp,
+            listPriceMinor: variant.list,
             priceMinor: variant.price,
-            gstRatePercent: variant.gst ?? 18,
-            // A licence has no stock and no lead time; the columns stay null
-            // rather than being filled with a number that means nothing.
             stockOnHand:
               product.kind === "LICENCE" ? null : (variant.stock ?? 0),
             leadDays: product.kind === "LICENCE" ? null : (variant.leadDays ?? 3),
+            weightGrams:
+              product.kind === "LICENCE" ? null : (variant.grams ?? null),
           })),
         },
         reviews: {
           create: (product.reviews ?? []).map((review) => ({
             author: review.author,
+            country: review.country ?? null,
             rating: review.rating,
             title: review.title,
             body: review.body,
@@ -702,14 +709,13 @@ async function main() {
     });
   }
 
-  const counts = {
+  console.log("Done.", {
     categories: await prisma.category.count(),
     brands: await prisma.brand.count(),
     products: await prisma.product.count(),
     variants: await prisma.variant.count(),
     reviews: await prisma.review.count(),
-  };
-  console.log("Done.", counts);
+  });
 }
 
 main()

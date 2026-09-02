@@ -5,19 +5,15 @@ import { notFound } from "next/navigation";
 import { addToCart, buyNow } from "@/app/actions";
 import { Glyph } from "@/components/glyph";
 import { Stars } from "@/components/stars";
+import { getProduct, ratingOf, specRows } from "@/lib/catalogue";
+import { getCart, maxQtyFor } from "@/lib/cart";
+import { discountPercent, formatMoney, STORE_CURRENCY } from "@/lib/money";
 import {
-  getProduct,
-  parseBullets,
-  parseSpecs,
-  ratingOf,
-} from "@/lib/catalogue";
-import { maxQtyFor } from "@/lib/cart";
-import {
-  estimateDelivery,
-  formatDeliveryDate,
-  FREE_SHIPPING_THRESHOLD_MINOR,
-} from "@/lib/delivery";
-import { discountPercent, formatMoney, taxComponent } from "@/lib/money";
+  countryName,
+  estimateArrival,
+  formatArrival,
+  zoneFor,
+} from "@/lib/shipping";
 
 export async function generateMetadata(
   props: PageProps<"/product/[slug]">,
@@ -28,17 +24,18 @@ export async function generateMetadata(
   return { title: product.name, description: product.summary };
 }
 
-export default async function ProductPage(
-  props: PageProps<"/product/[slug]">,
-) {
+export default async function ProductPage(props: PageProps<"/product/[slug]">) {
   const { slug } = await props.params;
   const search = (await props.searchParams) as Record<
     string,
     string | string[] | undefined
   >;
 
-  const product = await getProduct(slug);
+  const [product, cart] = await Promise.all([getProduct(slug), getCart()]);
   if (!product) notFound();
+
+  const country = cart?.country ?? null;
+  const zone = country ? zoneFor(country) : null;
 
   const requestedSku = Array.isArray(search.sku) ? search.sku[0] : search.sku;
   const variant =
@@ -46,12 +43,12 @@ export default async function ProductPage(
 
   const isLicence = product.kind === "LICENCE";
   const { average, count } = ratingOf(product.reviews);
-  const off = discountPercent(variant.mrpMinor, variant.priceMinor);
-  const gst = taxComponent(variant.priceMinor, variant.gstRatePercent);
+  const off = discountPercent(variant.listPriceMinor, variant.priceMinor);
   const ceiling = maxQtyFor(variant.stockOnHand);
   const available = isLicence || (variant.stockOnHand ?? 0) > 0;
-  const bullets = parseBullets(product.bullets);
-  const specs = parseSpecs(product.specs);
+  const specs = specRows(product.specs);
+  const freeShipping =
+    zone !== null && variant.priceMinor >= zone.freeOverMinor;
 
   return (
     <div className="mx-auto max-w-[1500px] px-4 py-4">
@@ -111,25 +108,30 @@ export default async function ProductPage(
             <span className="text-3xl font-bold text-ink">
               {formatMoney(variant.priceMinor)}
             </span>
+            <span className="text-[13px] text-faint">{STORE_CURRENCY}</span>
           </div>
           {off > 0 ? (
             <p className="mt-0.5 text-[13px] text-muted">
-              M.R.P.{" "}
+              List price{" "}
               <span className="line-through">
-                {formatMoney(variant.mrpMinor)}
+                {formatMoney(variant.listPriceMinor)}
               </span>
             </p>
           ) : null}
           <p className="mt-1 text-[13px] text-muted">
-            Inclusive of {variant.gstRatePercent}% GST ({formatMoney(gst)})
-            {product.hsnSac ? (
+            {isLicence ? (
               <>
-                {" · "}
-                <span className="font-mono text-[12px]">
-                  {isLicence ? "SAC" : "HSN"} {product.hsnSac}
-                </span>
+                Electronic delivery. No shipping, no customs, no duty.
               </>
-            ) : null}
+            ) : (
+              <>
+                Excludes shipping and any import duty or tax the destination
+                charges on arrival.{" "}
+                <Link href="/shipping" className="text-link underline">
+                  How this works
+                </Link>
+              </>
+            )}
           </p>
 
           {product.variants.length > 1 ? (
@@ -140,8 +142,7 @@ export default async function ProductPage(
               <div className="flex flex-wrap gap-2">
                 {product.variants.map((option) => {
                   const chosen = option.sku === variant.sku;
-                  const soldOut =
-                    !isLicence && (option.stockOnHand ?? 0) <= 0;
+                  const soldOut = !isLicence && (option.stockOnHand ?? 0) <= 0;
                   return (
                     <Link
                       key={option.sku}
@@ -168,38 +169,41 @@ export default async function ProductPage(
             </div>
           ) : null}
 
-          {bullets.length > 0 ? (
+          {product.bullets.length > 0 ? (
             <section className="mt-5">
               <h2 className="mb-2 text-[15px] font-bold text-ink">
                 About this item
               </h2>
               <ul className="list-disc space-y-1.5 pl-5 text-[14px] text-muted marker:text-faint">
-                {bullets.map((bullet) => (
+                {product.bullets.map((bullet) => (
                   <li key={bullet}>{bullet}</li>
                 ))}
               </ul>
             </section>
           ) : null}
 
-          {specs.length > 0 ? (
-            <section className="mt-5">
-              <h2 className="mb-2 text-[15px] font-bold text-ink">
-                Technical details
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-[13px]">
-                  <tbody>
-                    {specs.map(([name, value]) => (
-                      <tr key={name} className="border-b border-line-soft">
-                        <th
-                          scope="row"
-                          className="w-2/5 bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
-                        >
-                          {name}
-                        </th>
-                        <td className="px-3 py-2 text-muted">{value}</td>
-                      </tr>
-                    ))}
+          <section className="mt-5">
+            <h2 className="mb-2 text-[15px] font-bold text-ink">
+              Technical details
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[13px]">
+                <tbody>
+                  {specs.map(([name, value]) => (
+                    <tr key={name} className="border-b border-line-soft">
+                      <th
+                        scope="row"
+                        className="w-2/5 bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
+                      >
+                        {name}
+                      </th>
+                      <td className="px-3 py-2 text-muted">{value}</td>
+                    </tr>
+                  ))}
+                  {/* Customs data. Printed on the commercial invoice that
+                      travels with the parcel, and shown here because a buyer
+                      importing goods often has to declare it themselves. */}
+                  {product.origin ? (
                     <tr className="border-b border-line-soft">
                       <th
                         scope="row"
@@ -209,22 +213,48 @@ export default async function ProductPage(
                       </th>
                       <td className="px-3 py-2 text-muted">{product.origin}</td>
                     </tr>
-                    <tr>
+                  ) : null}
+                  {product.hsCode ? (
+                    <tr className="border-b border-line-soft">
                       <th
                         scope="row"
                         className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
                       >
-                        SKU
+                        HS code
                       </th>
                       <td className="px-3 py-2 font-mono text-[12px] text-muted">
-                        {variant.sku}
+                        {product.hsCode}
                       </td>
                     </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          ) : null}
+                  ) : null}
+                  {variant.weightGrams ? (
+                    <tr className="border-b border-line-soft">
+                      <th
+                        scope="row"
+                        className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
+                      >
+                        Shipping weight
+                      </th>
+                      <td className="px-3 py-2 text-muted">
+                        {(variant.weightGrams / 1000).toFixed(2)} kg
+                      </td>
+                    </tr>
+                  ) : null}
+                  <tr>
+                    <th
+                      scope="row"
+                      className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
+                    >
+                      SKU
+                    </th>
+                    <td className="px-3 py-2 font-mono text-[12px] text-muted">
+                      {variant.sku}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
 
         {/* Buy box */}
@@ -236,28 +266,28 @@ export default async function ProductPage(
 
             {isLicence ? (
               <p className="mt-2 text-[13px] text-muted">
-                <span className="font-semibold text-ok">
-                  Delivered by email
-                </span>{" "}
-                — the key is issued to your inbox as soon as payment clears.
+                <span className="font-semibold text-ok">Delivered by email</span>{" "}
+                — the key is issued to your inbox as soon as payment clears,
+                anywhere in the world.
+              </p>
+            ) : zone ? (
+              <p className="mt-2 text-[13px] text-muted">
+                {freeShipping ? (
+                  <span className="font-semibold text-ok">FREE shipping</span>
+                ) : (
+                  <>${zone.shippingMinor / 100} shipping</>
+                )}{" "}
+                to {countryName(country!)} · arrives{" "}
+                <span className="font-semibold text-ink">
+                  {formatArrival(
+                    estimateArrival(country, variant.leadDays ?? 3),
+                  )}
+                </span>
               </p>
             ) : (
               <p className="mt-2 text-[13px] text-muted">
-                {variant.priceMinor >= FREE_SHIPPING_THRESHOLD_MINOR
-                  ? "FREE delivery "
-                  : "Delivery "}
-                <span className="font-semibold text-ink">
-                  {formatDeliveryDate(
-                    estimateDelivery(null, variant.leadDays ?? 3),
-                  )}
-                </span>
-                {variant.priceMinor < FREE_SHIPPING_THRESHOLD_MINOR ? (
-                  <>
-                    {" "}
-                    · ₹79 delivery, free over{" "}
-                    {formatMoney(FREE_SHIPPING_THRESHOLD_MINOR)}
-                  </>
-                ) : null}
+                Ships worldwide. Choose your country in the header for a
+                delivery date and shipping cost.
               </p>
             )}
 
@@ -293,13 +323,11 @@ export default async function ProductPage(
                     defaultValue="1"
                     className="w-full rounded-md border border-line bg-ground/50 px-3 py-2 text-[14px]"
                   >
-                    {Array.from({ length: ceiling }, (_, index) => index + 1).map(
-                      (n) => (
-                        <option key={n} value={n}>
-                          {n}
-                        </option>
-                      ),
-                    )}
+                    {Array.from({ length: ceiling }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
                   </select>
                   <button
                     type="submit"
@@ -322,34 +350,38 @@ export default async function ProductPage(
               </div>
             ) : (
               <p className="mt-4 rounded-md border border-line bg-ground/50 p-3 text-[13px] text-muted">
-                We can source this to order. Call us and we will confirm a date
-                before you pay.
+                We can source this to order. Email us and we will confirm a date
+                and a freight cost before you pay.
               </p>
             )}
 
             <dl className="mt-4 space-y-1.5 border-t border-line-soft pt-3 text-[13px]">
               <div className="flex gap-2">
-                <dt className="w-20 shrink-0 text-faint">Sold by</dt>
+                <dt className="w-24 shrink-0 text-faint">Sold by</dt>
                 <dd className="text-ink">Vertex Infosolutions</dd>
               </div>
               <div className="flex gap-2">
-                <dt className="w-20 shrink-0 text-faint">Payment</dt>
+                <dt className="w-24 shrink-0 text-faint">Payment</dt>
                 <dd className="text-ink">
-                  UPI, card or net banking on the gateway&apos;s own page
+                  Card or PayPal, on the provider&apos;s own page
                 </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="w-20 shrink-0 text-faint">Returns</dt>
+                <dt className="w-24 shrink-0 text-faint">Returns</dt>
                 <dd className="text-ink">
                   {isLicence
                     ? "Not returnable once the key is revealed"
-                    : "7 days, unopened and undamaged"}
+                    : "14 days, unopened and undamaged"}
                 </dd>
               </div>
-              <div className="flex gap-2">
-                <dt className="w-20 shrink-0 text-faint">Origin</dt>
-                <dd className="text-ink">{product.origin}</dd>
-              </div>
+              {!isLicence ? (
+                <div className="flex gap-2">
+                  <dt className="w-24 shrink-0 text-faint">Duties</dt>
+                  <dd className="text-ink">
+                    Payable by the recipient on arrival
+                  </dd>
+                </div>
+              ) : null}
             </dl>
           </div>
         </aside>
@@ -368,6 +400,7 @@ function Reviews({
   reviews: {
     id: string;
     author: string;
+    country: string | null;
     rating: number;
     title: string;
     body: string;
@@ -438,7 +471,10 @@ function Reviews({
 
           <ul className="space-y-5">
             {reviews.map((review) => (
-              <li key={review.id} className="border-b border-line-soft pb-4 last:border-0">
+              <li
+                key={review.id}
+                className="border-b border-line-soft pb-4 last:border-0"
+              >
                 <p className="text-[14px] font-semibold text-ink">
                   {review.author}
                 </p>
@@ -448,11 +484,18 @@ function Reviews({
                     {review.title}
                   </span>
                 </div>
-                {review.verified ? (
-                  <p className="mt-1 text-[12px] font-semibold text-ok">
-                    Verified purchase
-                  </p>
-                ) : null}
+                <p className="mt-1 flex flex-wrap gap-x-3 text-[12px]">
+                  {review.country ? (
+                    <span className="text-faint">
+                      Reviewed in {review.country}
+                    </span>
+                  ) : null}
+                  {review.verified ? (
+                    <span className="font-semibold text-ok">
+                      Verified purchase
+                    </span>
+                  ) : null}
+                </p>
                 <p className="mt-1.5 text-[14px] leading-relaxed text-muted">
                   {review.body}
                 </p>

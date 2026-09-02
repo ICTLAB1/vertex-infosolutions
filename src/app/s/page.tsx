@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ProductCard } from "@/components/product-card";
+import { getCart } from "@/lib/cart";
 import { browse, getBrands, getCategories } from "@/lib/catalogue";
 import { formatMoney } from "@/lib/money";
 
@@ -16,9 +17,9 @@ function one(params: Params, key: string): string | undefined {
 }
 
 const PRICE_BANDS = [
-  { label: "Under ₹15,000", max: 15_000_00 },
-  { label: "Under ₹50,000", max: 50_000_00 },
-  { label: "Under ₹1,00,000", max: 100_000_00 },
+  { label: "Under $200", max: 200_00 },
+  { label: "Under $600", max: 600_00 },
+  { label: "Under $1,200", max: 1_200_00 },
 ];
 
 const SORTS = [
@@ -43,7 +44,8 @@ export default async function BrowsePage(props: PageProps<"/s">) {
   const maxPrice = maxPriceRaw ? Number.parseInt(maxPriceRaw, 10) : undefined;
   const minRating = minRatingRaw ? Number.parseInt(minRatingRaw, 10) : undefined;
 
-  const [products, categories, brands] = await Promise.all([
+  const [cart, products, categories, brands] = await Promise.all([
+    getCart(),
     browse({
       q,
       category,
@@ -56,6 +58,7 @@ export default async function BrowsePage(props: PageProps<"/s">) {
     getCategories(),
     getBrands(),
   ]);
+  const country = cart?.country ?? null;
 
   /** A link that keeps the current filters and changes one of them. */
   function withParam(key: string, value: string | undefined): string {
@@ -199,7 +202,11 @@ export default async function BrowsePage(props: PageProps<"/s">) {
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  country={country}
+                />
               ))}
             </div>
           )}

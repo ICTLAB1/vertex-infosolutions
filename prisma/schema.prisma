@@ -1,18 +1,24 @@
 // Vertex Infosolutions — storefront schema.
 //
-// Two things drive the shape of this file.
+// Three things drive the shape of this file.
 //
-// A basket can hold a monitor and a licence key at once. Those are one payment
-// with two different afterlives: the monitor is reserved, packed, couriered and
-// returnable; the licence is issued, emailed and generally not. So `Order` is
-// the money object — one total, one GST computation, one payment — and
+// **A basket can hold a monitor and a licence key at once.** Those are one
+// payment with two different afterlives: the monitor is packed, couriered,
+// cleared through customs and returnable; the licence is issued, emailed and
+// generally not. So `Order` is the money object — one total, one payment — and
 // `Fulfilment` sits beneath it carrying status. An order can be delivered
 // digitally and in transit physically at the same time, and nothing about that
 // is a special case.
 //
-// SQLite has no enums and no scalar lists. Union-typed strings stand in for
-// enums (the allowed values are in `src/lib/types.ts`, which is the one place
-// they are written down), and lists are JSON text.
+// **The customer is outside India.** Prices are held in the store's selling
+// currency in minor units, goods carry an HS code and a country of origin for
+// the commercial invoice, and shipping is priced by destination zone. Import
+// duties and destination taxes are the recipient's, so no tax is added at
+// checkout — `taxMinor` exists for the day the store registers for EU IOSS or
+// UK VAT and starts collecting at the point of sale.
+//
+// **This runs on Azure Database for PostgreSQL.** Enums are real enums here,
+// unlike the SQLite draft this replaces.
 
 generator client {
   provider = "prisma-client"
@@ -20,7 +26,43 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+}
+
+/// Whether a thing needs a courier or an inbox. Almost every branch in the
+/// fulfilment logic comes back to this one distinction.
+enum ProductKind {
+  PHYSICAL
+  LICENCE
+}
+
+enum FulfilmentKind {
+  SHIPMENT
+  DIGITAL
+}
+
+enum FulfilmentStatus {
+  PENDING
+  PACKED
+  SHIPPED
+  IN_CUSTOMS
+  DELIVERED
+  ISSUED
+}
+
+/// Cash on delivery is not offered: it does not survive a customs boundary,
+/// and it cannot apply to a licence at all.
+enum PaymentMethod {
+  CARD
+  PAYPAL
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
 }
 
 model Category {
@@ -40,29 +82,34 @@ model Brand {
 }
 
 model Product {
-  id         String  @id @default(cuid())
-  slug       String  @unique
+  id         String      @id @default(cuid())
+  slug       String      @unique
   name       String
-  /// "PHYSICAL" | "LICENCE" — decides whether this needs an address, stock and
-  /// a courier, or an inbox. See `ProductKind`.
-  kind       String
+  kind       ProductKind
   brandId    String
   categoryId String
   summary    String
-  /// JSON array of strings — the "About this item" bullets.
-  bullets    String  @default("[]")
-  /// JSON object of spec name to value, rendered as the spec table.
-  specs      String  @default("{}")
-  /// Goods are taxed under an HSN code, licences under a SAC code. Printed on
-  /// the invoice, so it is stored rather than guessed at print time.
-  hsnSac     String?
-  /// Required on every listing sold in India by the Legal Metrology rules.
-  /// Licences carry the publisher's country.
-  origin     String
-  /// Which glyph to draw in place of a photograph. See `src/components/glyph`.
-  glyph      String  @default("box")
-  featured   Boolean @default(false)
-  createdAt  DateTime @default(now())
+  /// The "About this item" bullets.
+  bullets    String[]    @default([])
+  /// Spec table rows, as {"Processor": "…"}. Order is preserved on write.
+  specs      Json        @default("{}")
+
+  /// The Harmonised System code this is classified under for customs, and the
+  /// country it was made in. Both are printed on the commercial invoice that
+  /// travels with the parcel; a wrong or missing HS code is the single most
+  /// common reason a shipment is held at the destination border.
+  ///
+  /// A licence crosses no border and needs neither, so both are optional.
+  hsCode String?
+  origin String?
+
+  /// Shipping and customs both price by weight, so it is a property of the
+  /// variant rather than something guessed at the point of sale.
+  glyph    String  @default("box")
+  featured Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   brand    Brand     @relation(fields: [brandId], references: [id])
   category Category  @relation(fields: [categoryId], references: [id])
@@ -77,23 +124,28 @@ model Variant {
   id        String @id @default(cuid())
   productId String
   sku       String @unique
-  /// "8 GB / 512 GB", "5 seats, 1 year" — what distinguishes this from its
+  /// "16 GB / 512 GB", "5 seats, 1 year" — what distinguishes this from its
   /// siblings. A product with one variant repeats the product name.
   name      String
 
-  /// Money is always minor units (paise). No floats anywhere near a price.
-  /// `mrpMinor` is the printed maximum retail price and only exists to be
-  /// struck through; `priceMinor` is what is actually charged.
-  mrpMinor       Int
+  /// Money is integer minor units of `Store.currency` — cents, while the store
+  /// sells in USD. No float goes anywhere near a price.
+  ///
+  /// `listPriceMinor` is the manufacturer's list price and exists only to be
+  /// struck through; `priceMinor` is what is actually charged, before shipping
+  /// and before any duty the destination levies on arrival.
+  listPriceMinor Int
   priceMinor     Int
-  gstRatePercent Int @default(18)
 
   /// Null for a licence, which cannot run out. A number for anything shipped,
-  /// and it is the only thing standing between the catalogue and overselling.
+  /// and the only thing standing between the catalogue and overselling.
   stockOnHand Int?
-  /// Working days from dispatch, used for the delivery estimate. Null for a
-  /// licence, which arrives on payment.
+  /// Working days before the item leaves the warehouse. Transit on top of that
+  /// depends on the destination zone.
   leadDays    Int?
+  /// Shipped weight including packaging. Feeds the shipping quote and the
+  /// customs declaration.
+  weightGrams Int?
 
   product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   cartItems  CartItem[]
@@ -106,6 +158,9 @@ model Review {
   id        String   @id @default(cuid())
   productId String
   author    String
+  /// Where the reviewer is, shown as "Reviewed in Germany". Cross-border
+  /// buyers weigh a review from their own market more heavily.
+  country   String?
   rating    Int
   title     String
   body      String
@@ -125,6 +180,9 @@ model Review {
 model Cart {
   id        String     @id @default(cuid())
   token     String     @unique
+  /// Remembered from the last quote so the basket can price shipping without
+  /// asking again on every visit.
+  country   String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   items     CartItem[]
@@ -146,62 +204,78 @@ model CartItem {
 
 model Order {
   id     String @id @default(cuid())
-  /// Human-facing and quoted down the phone, so it is generated rather than
-  /// being the primary key.
+  /// Human-facing and quoted in email, so it is generated rather than being
+  /// the primary key.
   number String @unique
 
   email String
   phone String
 
+  /// ISO 4217, stored on the order because an order is a record of what was
+  /// charged, and the store's selling currency can change afterwards.
+  currency String @db.Char(3)
+
   /// Null when every line is a licence — there is nothing to deliver, so
   /// demanding an address would be theatre.
-  shipName    String?
-  shipLine1   String?
-  shipLine2   String?
-  shipCity    String?
-  shipState   String?
-  shipPincode String?
+  shipName     String?
+  shipLine1    String?
+  shipLine2    String?
+  shipCity     String?
+  /// State, province or region. Optional because much of the world does not
+  /// use one, and a required field that half the planet cannot fill in is a
+  /// checkout that half the planet abandons.
+  shipRegion   String?
+  shipPostcode String?
+  /// ISO 3166-1 alpha-2. Decides the shipping zone, the transit estimate and
+  /// whether we are allowed to ship at all.
+  shipCountry  String? @db.Char(2)
 
-  /// The order total, decomposed so the invoice can show its working and the
+  /// The total, decomposed so the invoice can show its working and the
   /// customer is never surprised at the payment step.
   itemsMinor    Int
   shippingMinor Int
-  taxMinor      Int
+  /// Tax collected by us at checkout. Zero while the store ships DAP and the
+  /// destination collects its own duties on arrival.
+  taxMinor      Int @default(0)
   totalMinor    Int
 
-  /// "PENDING" | "PAID" | "FAILED" | "REFUNDED"
-  paymentStatus String @default("PENDING")
-  /// "UPI" | "CARD" | "NETBANKING" | "COD"
-  paymentMethod String
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod
+  /// The gateway's reference, kept for reconciliation and refunds.
+  paymentRef    String?
   paidAt        DateTime?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   items       OrderItem[]
   fulfilments Fulfilment[]
+
+  @@index([email])
 }
 
 /// One per order per fulfilment kind: at most a shipment and a digital
 /// delivery. Status lives here rather than on the order, because a mixed
 /// basket has no single true status.
 model Fulfilment {
-  id      String @id @default(cuid())
+  id      String         @id @default(cuid())
   orderId String
-  /// "SHIPMENT" | "DIGITAL"
-  kind    String
+  kind    FulfilmentKind
 
-  /// Shipment: "PENDING" -> "PACKED" -> "SHIPPED" -> "DELIVERED".
-  /// Digital:  "PENDING" -> "ISSUED".
-  status String @default("PENDING")
+  /// Shipment: PENDING -> PACKED -> SHIPPED -> IN_CUSTOMS -> DELIVERED.
+  /// Digital:  PENDING -> ISSUED.
+  status FulfilmentStatus @default(PENDING)
 
-  courier     String?
-  awb         String?
+  carrier     String?
+  trackingRef String?
   trackingUrl String?
 
   /// What the customer was promised when they paid, so a slipped delivery is
-  /// visible rather than quietly rewritten.
-  promisedBy  DateTime?
-  completedAt DateTime?
+  /// visible rather than quietly rewritten. Two dates because a cross-border
+  /// estimate is a range and pretending otherwise invites a complaint.
+  promisedFrom DateTime?
+  promisedBy   DateTime?
+  completedAt  DateTime?
 
   order Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
   items OrderItem[]
@@ -222,11 +296,11 @@ model OrderItem {
   sku            String
   name           String
   variantName    String
-  kind           String
+  kind           ProductKind
   qty            Int
   unitPriceMinor Int
-  gstRatePercent Int
-  hsnSac         String?
+  hsCode         String?
+  origin         String?
 
   /// A shipped item can come back within the return window. A licence key
   /// cannot once it has been revealed, and the order page says so rather than

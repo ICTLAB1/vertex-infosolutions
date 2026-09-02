@@ -1,27 +1,26 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { placeOrder, type CheckoutError } from "@/app/actions";
-import { PAYMENT_METHOD_LABELS, type PaymentMethod } from "@/lib/types";
+import { COUNTRIES } from "@/lib/shipping";
+import {
+  PAYMENT_METHOD_LABELS,
+  PAYMENT_METHOD_NOTES,
+} from "@/lib/types";
+import type { PaymentMethod } from "@/generated/prisma/enums";
 
-const STATES = [
-  "Andhra Pradesh", "Assam", "Bihar", "Chhattisgarh", "Delhi", "Goa",
-  "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
-  "Kerala", "Madhya Pradesh", "Maharashtra", "Odisha", "Punjab", "Rajasthan",
-  "Tamil Nadu", "Telangana", "Uttar Pradesh", "Uttarakhand", "West Bengal",
-];
-
-function SubmitButton({ total }: { total: string }) {
+function SubmitButton({ total, method }: { total: string; method: PaymentMethod }) {
   const { pending } = useFormStatus();
+  const verb = method === "BANK_TRANSFER" ? "Place order for" : "Pay";
   return (
     <button
       type="submit"
       disabled={pending}
       className="btn-amber w-full rounded-full py-3 text-[15px] font-semibold"
     >
-      {pending ? "Placing your order…" : `Pay ${total} and place order`}
+      {pending ? "Placing your order…" : `${verb} ${total}`}
     </button>
   );
 }
@@ -30,15 +29,18 @@ export function CheckoutForm({
   needsAddress,
   methods,
   total,
+  defaultCountry,
 }: {
   needsAddress: boolean;
   methods: readonly PaymentMethod[];
   total: string;
+  defaultCountry: string | null;
 }) {
   const [error, action] = useActionState<CheckoutError | null, FormData>(
     placeOrder,
     null,
   );
+  const [method, setMethod] = useState<PaymentMethod>(methods[0]);
 
   const invalid = (field: string) =>
     error?.field === field ? "border-deal ring-1 ring-deal" : "border-line";
@@ -66,16 +68,17 @@ export function CheckoutForm({
               type="email"
               autoComplete="email"
               className={invalid("email")}
-              hint="Invoice, order updates and any licence keys go here."
+              hint="Invoice, shipping updates and any licence keys go here."
               required
             />
             <Field
-              label="Mobile number"
+              label="Phone number"
               name="phone"
               type="tel"
-              autoComplete="tel-national"
+              autoComplete="tel"
+              placeholder="+1 555 010 0000"
               className={invalid("phone")}
-              hint="Used by the courier only."
+              hint="With country code. Used by the courier for delivery and customs."
               required
             />
           </div>
@@ -87,10 +90,32 @@ export function CheckoutForm({
               Delivery address
             </legend>
             <p className="mt-1 text-[13px] text-muted">
-              Needed for the items in this order that we ship. The licences do
-              not use it.
+              Needed for the items in this order that we ship. Any licences in
+              the same order are emailed and do not use it.
             </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className="block">
+                  <span className="block text-[13px] font-semibold text-ink">
+                    Country
+                  </span>
+                  <select
+                    name="shipCountry"
+                    required
+                    defaultValue={defaultCountry ?? ""}
+                    className={`mt-1 w-full rounded-md border bg-white px-3 py-2 text-[14px] ${invalid("shipCountry")}`}
+                  >
+                    <option value="" disabled>
+                      Choose a country
+                    </option>
+                    {COUNTRIES.map((country) => (
+                      <option key={country.code} value={country.code}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
               <Field
                 label="Full name"
                 name="shipName"
@@ -99,16 +124,15 @@ export function CheckoutForm({
                 required
               />
               <Field
-                label="Pincode"
-                name="shipPincode"
-                inputMode="numeric"
+                label="Postal or ZIP code"
+                name="shipPostcode"
                 autoComplete="postal-code"
-                className={invalid("shipPincode")}
-                required
+                className={invalid("shipPostcode")}
+                hint="Leave blank if your country does not use one."
               />
               <div className="sm:col-span-2">
                 <Field
-                  label="Flat, building, street"
+                  label="Address line 1"
                   name="shipLine1"
                   autoComplete="address-line1"
                   className={invalid("shipLine1")}
@@ -117,45 +141,40 @@ export function CheckoutForm({
               </div>
               <div className="sm:col-span-2">
                 <Field
-                  label="Area, landmark (optional)"
+                  label="Address line 2 (optional)"
                   name="shipLine2"
                   autoComplete="address-line2"
                   className={invalid("shipLine2")}
                 />
               </div>
               <Field
-                label="Town or city"
+                label="City or town"
                 name="shipCity"
                 autoComplete="address-level2"
                 className={invalid("shipCity")}
                 required
               />
-              <label className="block">
-                <span className="block text-[13px] font-semibold text-ink">
-                  State
-                </span>
-                <select
-                  name="shipState"
-                  required
-                  defaultValue=""
-                  className={`mt-1 w-full rounded-md border bg-white px-3 py-2 text-[14px] ${invalid("shipState")}`}
-                >
-                  <option value="" disabled>
-                    Choose a state
-                  </option>
-                  {STATES.map((state) => (
-                    <option key={state} value={state}>
-                      {state}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Field
+                label="State, province or region (optional)"
+                name="shipRegion"
+                autoComplete="address-level1"
+                className={invalid("shipRegion")}
+              />
             </div>
+
+            <p className="mt-3 rounded-md border border-line bg-ground/50 p-3 text-[13px] text-muted">
+              <span className="font-semibold text-ink">
+                Import duty and taxes are not included.
+              </span>{" "}
+              Your country charges these on arrival and the carrier collects
+              them before delivery. They are not ours to quote, and we would
+              rather say so here than let you find out at the door.
+            </p>
           </fieldset>
         ) : (
           <p className="rounded-lg border border-line bg-surface p-4 text-[14px] text-muted">
             Everything in this order is delivered by email, so there is no
-            address to fill in.
+            address to fill in and nothing to clear through customs.
           </p>
         )}
 
@@ -164,35 +183,35 @@ export function CheckoutForm({
             How would you like to pay?
           </legend>
           <div className="mt-2 space-y-2">
-            {methods.map((method, index) => (
+            {methods.map((option) => (
               <label
-                key={method}
+                key={option}
                 className="flex cursor-pointer items-start gap-3 rounded-md border border-line p-3 hover:bg-ground/50 has-checked:border-brand has-checked:bg-brand/5"
               >
                 <input
                   type="radio"
                   name="paymentMethod"
-                  value={method}
-                  defaultChecked={index === 0}
+                  value={option}
+                  defaultChecked={option === methods[0]}
+                  onChange={() => setMethod(option)}
                   className="mt-1"
                 />
                 <span>
                   <span className="block text-[14px] font-semibold text-ink">
-                    {PAYMENT_METHOD_LABELS[method]}
+                    {PAYMENT_METHOD_LABELS[option]}
                   </span>
                   <span className="block text-[13px] text-muted">
-                    {method === "COD"
-                      ? "Pay the courier when it arrives. Hardware only."
-                      : "You are taken to the gateway's own page. Vertex never sees your card or UPI credentials."}
+                    {PAYMENT_METHOD_NOTES[option]}
                   </span>
                 </span>
               </label>
             ))}
           </div>
-          {!methods.includes("COD") ? (
+          {!methods.includes("BANK_TRANSFER") ? (
             <p className="mt-3 text-[13px] text-muted">
-              Cash on delivery is not offered on orders containing a licence —
-              there is nothing for a courier to hand over.
+              Bank transfer is not offered here because the whole point of this
+              order is that the keys arrive in seconds, and a transfer takes
+              days to clear.
             </p>
           ) : null}
         </fieldset>
@@ -200,10 +219,11 @@ export function CheckoutForm({
 
       <aside className="lg:sticky lg:top-32 lg:self-start">
         <div className="rounded-lg border border-line bg-surface p-4">
-          <SubmitButton total={total} />
+          <SubmitButton total={total} method={method} />
           <p className="mt-3 text-[12px] leading-relaxed text-faint">
-            By placing this order you agree to the terms of sale. A tax invoice
-            is issued to the email address above.
+            By placing this order you agree to the terms of sale. A commercial
+            invoice is issued to the email address above and travels with the
+            shipment.
           </p>
         </div>
       </aside>
@@ -231,7 +251,9 @@ function Field({
         className={`mt-1 w-full rounded-md border bg-white px-3 py-2 text-[14px] ${className}`}
         {...rest}
       />
-      {hint ? <span className="mt-1 block text-[12px] text-faint">{hint}</span> : null}
+      {hint ? (
+        <span className="mt-1 block text-[12px] text-faint">{hint}</span>
+      ) : null}
     </label>
   );
 }

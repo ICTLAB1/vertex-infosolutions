@@ -1,0 +1,45 @@
+# Local development against the same database engine that runs in production.
+#
+# Developing on SQLite and deploying on Postgres is how you discover, in
+# production, that a case-insensitive search behaves differently. This brings up
+# the real thing.
+#
+#   docker compose up -d db      # just Postgres, run Next.js on the host
+#   docker compose up --build    # the whole stack, as it ships
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vertex
+      POSTGRES_PASSWORD: vertex
+      POSTGRES_DB: vertex
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vertex -d vertex"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # `db` resolves on the compose network; no TLS locally, so no sslmode.
+      DATABASE_URL: postgresql://vertex:vertex@db:5432/vertex?schema=public
+      STORE_CURRENCY: USD
+      COMPANY_TRADING_NAME: Vertex Infosolutions
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
