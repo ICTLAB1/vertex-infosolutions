@@ -36,19 +36,24 @@ export default function PrivacyPage() {
           after 30 days.
         </li>
         <li>
-          <strong className="text-ink">Your destination country</strong>, so
-          shipping can be priced. Stored against the basket, not against you.
+          <strong className="text-ink">Your market</strong> — India or
+          international — so prices and tax can be shown correctly. Stored
+          against the basket and in one cookie, not against you.
         </li>
         <li>
           <strong className="text-ink">Your order.</strong> Email address, phone
-          number, and — only when something has to be physically delivered — a
-          delivery address. An order of licences alone never asks for an address,
-          because there is nothing to deliver.
+          number, and the billing details your invoice is made out to. There is
+          no delivery address, because nothing is delivered anywhere but an
+          inbox.
+        </li>
+        <li>
+          <strong className="text-ink">Your GSTIN</strong>, if you are an Indian
+          business and choose to give one, so it can appear on the tax invoice.
         </li>
         <li>
           <strong className="text-ink">What you bought</strong>, kept for as long
-          as tax and customs law requires, because an export invoice has to be
-          reproducible.
+          as tax law requires, because an invoice has to be reproducible years
+          later.
         </li>
       </Ul>
 
@@ -67,12 +72,13 @@ export default function PrivacyPage() {
       <Ul>
         <li>
           <strong className="text-ink">To perform the contract</strong> — we
-          cannot deliver an order without an address, or issue a licence without
-          an email.
+          cannot issue a licence without an email address, or invoice you
+          without a name and a country.
         </li>
         <li>
           <strong className="text-ink">To comply with a legal obligation</strong>{" "}
-          — export declarations, invoices and tax records.
+          — GST invoices, export records and the sanctions screening every
+          order goes through.
         </li>
         <li>
           <strong className="text-ink">Legitimate interests</strong> — preventing
@@ -91,13 +97,9 @@ export default function PrivacyPage() {
           take the payment.
         </li>
         <li>
-          The carrier and the customs authorities at both ends, which need the
-          delivery address, phone number and the contents of the parcel. This is
-          unavoidable for a cross-border shipment.
-        </li>
-        <li>
-          The publisher, for a licence that has to be registered to a named end
-          user.
+          The publisher — Microsoft, Adobe or Autodesk — for a licence that has
+          to be registered or assigned to a named end user. They receive the
+          email address the seat is assigned to and nothing more.
         </li>
         <li>
           Microsoft Azure, which hosts this website and its database on our
@@ -121,8 +123,8 @@ export default function PrivacyPage() {
       <Ul>
         <li>Baskets: 30 days.</li>
         <li>
-          Orders, invoices and export declarations: eight years, which is what
-          Indian tax and customs law requires.
+          Orders and invoices: eight years, which is what Indian tax law
+          requires for GST records and export documentation.
         </li>
         <li>
           Support correspondence: three years from the last message.
@@ -139,8 +141,8 @@ export default function PrivacyPage() {
         whom, and the answer is the list above.
       </p>
       <p>
-        Deletion applies to everything except records that tax and customs law
-        requires us to keep — we will tell you exactly what has to stay and why.
+        Deletion applies to everything except records that tax law requires us
+        to keep — we will tell you exactly what has to stay and why.
         We answer within 30 days.
       </p>
       <p>
@@ -161,8 +163,9 @@ export default function PrivacyPage() {
 
       <H2>Cookies</H2>
       <p>
-        One, holding the basket token. It is strictly necessary for the store to
-        work and there is no tracking cookie to consent to. Detail in the{" "}
+        Two: one holding the basket token, one remembering whether you chose
+        INR or USD. Both are strictly necessary for the store to work and there
+        is no tracking cookie to consent to. Detail in the{" "}
         <Link href="/cookies" className="text-link underline">
           cookie policy
         </Link>

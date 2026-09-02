@@ -1,9 +1,9 @@
 import Link from "next/link";
 
-import { setDestination } from "@/app/actions";
-import { CountrySelect } from "@/components/country-select";
-import { getCart, totalsFor } from "@/lib/cart";
-import { getCategories } from "@/lib/catalogue";
+import { setMarket } from "@/app/actions";
+import { CurrencySelect } from "@/components/currency-select";
+import { getCart, getMarket, totalsFor } from "@/lib/cart";
+import { getBrands, getCategories } from "@/lib/catalogue";
 
 /**
  * The wordmark. A vertex is the point where two lines meet, so the mark is
@@ -38,9 +38,14 @@ function Wordmark() {
 }
 
 export async function Header() {
-  const [cart, categories] = await Promise.all([getCart(), getCategories()]);
-  const count = cart ? totalsFor(cart.items, cart.country).count : 0;
-  const destination = cart?.country ?? null;
+  const [cart, market, categories, brands] = await Promise.all([
+    getCart(),
+    getMarket(),
+    getCategories(),
+    getBrands(),
+  ]);
+  const count = cart ? totalsFor(cart.items, market).count : 0;
+  const locked = (cart?.items.length ?? 0) > 0;
 
   return (
     <header className="on-dark sticky top-0 z-40">
@@ -54,25 +59,51 @@ export async function Header() {
             <Wordmark />
           </Link>
 
-          {/* Where the parcel is going decides carriage and the arrival
-              estimate, so it is asked for in the header rather than sprung on
-              the customer at the payment step. */}
+          {/* The market switch. Prices, tax treatment and payment methods all
+              follow from it, so it sits beside the wordmark rather than in a
+              footer. Locked once the basket holds something — see getMarket —
+              so a total cannot change under the customer. */}
           <form
-            action={setDestination}
+            action={setMarket}
             className="hidden shrink-0 items-center gap-1.5 rounded px-2 py-1 lg:flex"
           >
-            <svg viewBox="0 0 20 20" className="h-4 w-4 text-white/70" aria-hidden="true">
-              <circle cx="10" cy="10" r="7.2" fill="none" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M2.8 10h14.4M10 2.8c3.4 3.6 3.4 10.8 0 14.4-3.4-3.6-3.4-10.8 0-14.4z" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <svg
+              viewBox="0 0 20 20"
+              className="h-4 w-4 text-white/70"
+              aria-hidden="true"
+            >
+              <circle
+                cx="10"
+                cy="10"
+                r="7.2"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M2.8 10h14.4M10 2.8c3.4 3.6 3.4 10.8 0 14.4-3.4-3.6-3.4-10.8 0-14.4z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
             </svg>
             <span className="leading-tight">
-              <span className="block text-[11px] text-white/60">Deliver to</span>
-              <CountrySelect
-                id="header-country"
-                label="Destination country"
-                value={destination}
-                className="-ml-1 max-w-[10.5rem] truncate bg-transparent text-[13px] font-semibold text-white outline-none [&>option]:text-ink"
-              />
+              <span className="block text-[11px] text-white/60">
+                {locked ? "Priced in" : "Prices in"}
+              </span>
+              {locked ? (
+                <span className="block text-[13px] font-semibold">
+                  {market.currency === "INR"
+                    ? "₹ India (INR)"
+                    : "$ International (USD)"}
+                </span>
+              ) : (
+                <CurrencySelect
+                  id="header-currency"
+                  value={market.currency}
+                  className="-ml-1 max-w-[12rem] bg-transparent text-[13px] font-semibold text-white outline-none [&>option]:text-ink"
+                />
+              )}
             </span>
           </form>
 
@@ -92,7 +123,7 @@ export async function Header() {
               id="site-search"
               type="search"
               name="q"
-              placeholder="Search laptops, monitors, licences…"
+              placeholder="Search Microsoft, Adobe, Autodesk…"
               className="min-w-0 flex-1 bg-transparent px-3 text-[15px] text-ink outline-none placeholder:text-faint"
             />
             <button
@@ -123,7 +154,7 @@ export async function Header() {
             href="/orders"
             className="hidden shrink-0 rounded px-2 py-1 leading-tight hover:bg-white/10 sm:block"
           >
-            <span className="block text-[11px] text-white/60">Returns</span>
+            <span className="block text-[11px] text-white/60">Your keys</span>
             <span className="block text-[13px] font-semibold">&amp; Orders</span>
           </Link>
 
@@ -162,7 +193,7 @@ export async function Header() {
       </div>
 
       <nav
-        aria-label="Product categories"
+        aria-label="Publishers and categories"
         className="bg-nav-2 text-white/90 shadow-sm"
       >
         <div className="mx-auto flex max-w-[1500px] items-center gap-1 overflow-x-auto px-2 py-1.5 text-[13px] sm:px-3">
@@ -172,6 +203,18 @@ export async function Header() {
           >
             All
           </Link>
+          {brands.map((brand) => (
+            <Link
+              key={brand.slug}
+              href={`/s?brand=${brand.slug}`}
+              className="shrink-0 rounded px-2.5 py-1 font-semibold hover:bg-white/10"
+            >
+              {brand.name}
+            </Link>
+          ))}
+          <span className="shrink-0 px-1 text-white/25" aria-hidden="true">
+            |
+          </span>
           {categories.map((category) => (
             <Link
               key={category.slug}
@@ -182,7 +225,9 @@ export async function Header() {
             </Link>
           ))}
           <span className="ml-auto hidden shrink-0 px-2.5 py-1 text-white/60 lg:block">
-            Ships worldwide · commercial invoice with every order
+            {market.currency === "INR"
+              ? "GST invoice on every order"
+              : "Keys by email, worldwide"}
           </span>
         </div>
       </nav>

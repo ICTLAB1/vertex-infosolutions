@@ -3,9 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { CheckoutForm } from "@/components/checkout-form";
-import { getCart, totalsFor } from "@/lib/cart";
-import { formatMoney, STORE_CURRENCY } from "@/lib/money";
-import { countryName } from "@/lib/shipping";
+import { getCart, getMarket, totalsFor } from "@/lib/cart";
+import { formatMoney } from "@/lib/money";
 import { methodsFor } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -14,18 +13,13 @@ export const metadata: Metadata = {
 };
 
 export default async function CheckoutPage() {
-  const cart = await getCart();
+  const [cart, market] = await Promise.all([getCart(), getMarket()]);
   if (!cart || cart.items.length === 0) redirect("/cart");
 
-  const country = cart.country ?? null;
-  const totals = totalsFor(cart.items, country);
-
-  // A destination the store cannot serve is stopped at the cart, where there
-  // is something the customer can do about it, rather than after they have
-  // filled in an address.
-  if (totals.shipping.known && "blocked" in totals.shipping) {
-    redirect("/cart");
-  }
+  const totals = totalsFor(cart.items, market);
+  // Something priced in the other market cannot be checked out. The cart page
+  // says which line and offers to remove it.
+  if (totals.unpriced > 0) redirect("/cart");
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-6">
@@ -43,70 +37,75 @@ export default async function CheckoutPage() {
           What you are paying for
         </h2>
         <ul className="mt-2 divide-y divide-line-soft text-[14px]">
-          {cart.items.map((line) => (
-            <li key={line.id} className="flex justify-between gap-4 py-2">
-              <span className="min-w-0">
-                <span className="block truncate text-ink">
-                  {line.variant.product.name}
+          {cart.items.map((line) => {
+            const price = line.variant.prices.find(
+              (p) => p.currency === totals.currency,
+            );
+            return (
+              <li key={line.id} className="flex justify-between gap-4 py-2">
+                <span className="min-w-0">
+                  <span className="block truncate text-ink">
+                    {line.variant.product.name}
+                  </span>
+                  <span className="block text-[13px] text-muted">
+                    {line.variant.name} · quantity {line.qty}
+                    {line.variant.seats > 1
+                      ? ` · ${line.variant.seats * line.qty} seats total`
+                      : ""}
+                  </span>
                 </span>
-                <span className="block text-[13px] text-muted">
-                  {line.variant.name} · quantity {line.qty} ·{" "}
-                  {line.variant.product.kind === "LICENCE"
-                    ? "emailed"
-                    : "shipped"}
+                <span className="shrink-0 font-semibold text-ink">
+                  {price
+                    ? formatMoney(price.priceMinor * line.qty, totals.currency)
+                    : "—"}
                 </span>
-              </span>
-              <span className="shrink-0 font-semibold text-ink">
-                {formatMoney(line.variant.priceMinor * line.qty)}
-              </span>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
 
         <dl className="mt-3 space-y-1 border-t border-line-soft pt-3 text-[14px]">
-          <div className="flex justify-between">
-            <dt className="text-muted">Items</dt>
-            <dd>{formatMoney(totals.itemsMinor)}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-muted">
-              Shipping
-              {totals.shipping.known && !("blocked" in totals.shipping)
-                ? ` to ${countryName(totals.shipping.country)}`
-                : ""}
-            </dt>
-            <dd>
-              {!totals.hasPhysical
-                ? "None"
-                : totals.shippingMinor === 0
-                  ? "Free"
-                  : formatMoney(totals.shippingMinor)}
-            </dd>
-          </div>
+          {market.domestic ? (
+            <>
+              <div className="flex justify-between">
+                <dt className="text-muted">Taxable value</dt>
+                <dd>{formatMoney(totals.netMinor, totals.currency)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted">
+                  GST at {totals.taxRatePercent}%
+                </dt>
+                <dd>{formatMoney(totals.taxMinor, totals.currency)}</dd>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-between">
+              <dt className="text-muted">Items</dt>
+              <dd>{formatMoney(totals.totalMinor, totals.currency)}</dd>
+            </div>
+          )}
           <div className="flex justify-between border-t border-line-soft pt-2 text-[17px] font-bold text-ink">
             <dt>Total</dt>
             <dd>
-              {formatMoney(totals.totalMinor)}{" "}
+              {formatMoney(totals.totalMinor, totals.currency)}{" "}
               <span className="text-[13px] font-normal text-faint">
-                {STORE_CURRENCY}
+                {totals.currency}
               </span>
             </dd>
           </div>
           <p className="text-[12px] text-faint">
-            This is the final amount we charge — nothing is added on the next
-            screen.
-            {totals.hasPhysical
-              ? " Import duty and destination taxes are charged separately by your country when the parcel arrives."
-              : ""}
+            {market.domestic
+              ? "This is the final amount, GST included. Nothing is added on the next screen."
+              : "This is the final amount. No Indian tax applies to an export; any tax your own country charges on imported software is not included here."}
           </p>
         </dl>
       </div>
 
       <CheckoutForm
-        needsAddress={totals.hasPhysical}
-        methods={methodsFor(totals.licencesOnly)}
-        total={formatMoney(totals.totalMinor)}
-        defaultCountry={country}
+        methods={methodsFor(totals.currency)}
+        total={formatMoney(totals.totalMinor, totals.currency)}
+        currency={totals.currency}
+        domestic={market.domestic}
       />
     </div>
   );

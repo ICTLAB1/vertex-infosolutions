@@ -1,80 +1,79 @@
 /**
  * Money.
  *
- * Every amount in this codebase is an integer in the minor unit of the store's
- * selling currency — cents, while that currency is USD. A price never exists
- * as a floating-point number, because 0.1 + 0.2 is not 0.3 and a storefront is
- * the wrong place to discover that.
+ * Every amount is an integer in the minor unit of its own currency — paise for
+ * INR, cents for USD. A price never exists as a floating-point number, because
+ * 0.1 + 0.2 is not 0.3 and a storefront is the wrong place to discover that.
  *
- * The currency is configuration rather than a constant. The store sells in USD
- * today; when it sells in more than one, the formatting below already takes the
- * currency as an argument and only the price *storage* has to change.
+ * Every function here takes the currency explicitly. There is no ambient
+ * "current currency", because the same process serves an Indian visitor and an
+ * American one in adjacent requests, and a module-level default is exactly how
+ * one of them ends up seeing the other's prices.
  */
-
-/** ISO 4217 code the store prices in. */
-export const STORE_CURRENCY = (process.env.STORE_CURRENCY ?? "USD").toUpperCase();
+import type { CurrencyCode } from "@/lib/market";
 
 /**
- * Minor units per major unit. Almost every currency is 100; the exceptions
- * that matter are the zero-decimal ones (JPY, KRW) and the three-decimal Gulf
- * currencies. Getting this wrong silently multiplies every price by a hundred,
- * so it is a table rather than an assumption.
+ * Indian digit grouping is not the Western one: ₹12,34,567, not ₹1,234,567.
+ * `en-IN` gets that right and `en-US` does not, so the locale follows the
+ * currency rather than the reader.
  */
-const MINOR_UNITS: Record<string, number> = {
-  JPY: 0,
-  KRW: 0,
-  VND: 0,
-  BHD: 3,
-  KWD: 3,
-  OMR: 3,
+const LOCALES: Record<CurrencyCode, string> = {
+  INR: "en-IN",
+  USD: "en-US",
 };
-
-export function minorUnitDigits(currency: string = STORE_CURRENCY): number {
-  return MINOR_UNITS[currency.toUpperCase()] ?? 2;
-}
-
-function factor(currency: string): number {
-  return 10 ** minorUnitDigits(currency);
-}
 
 const formatters = new Map<string, Intl.NumberFormat>();
 
-function formatter(currency: string, exact: boolean): Intl.NumberFormat {
+function formatter(currency: CurrencyCode, exact: boolean): Intl.NumberFormat {
   const key = `${currency}:${exact}`;
   const existing = formatters.get(key);
   if (existing) return existing;
 
-  const digits = minorUnitDigits(currency);
-  const made = new Intl.NumberFormat("en-US", {
+  const made = new Intl.NumberFormat(LOCALES[currency], {
     style: "currency",
     currency,
-    // Shelf prices drop the cents when there are none to show; an invoice
-    // always shows them, because a total that reads $1,299 next to lines that
-    // add up to $1,298.99 looks like an error even when it is rounding.
-    minimumFractionDigits: exact ? digits : 0,
-    maximumFractionDigits: digits,
+    // Shelf prices drop the minor unit when there is none to show; an invoice
+    // always shows it, because a total reading $1,299 next to lines summing to
+    // $1,298.99 looks like an error even when it is rounding.
+    minimumFractionDigits: exact ? 2 : 0,
+    maximumFractionDigits: 2,
   });
   formatters.set(key, made);
   return made;
 }
 
-/** $1,299 — for prices on screen. */
-export function formatMoney(
-  minor: number,
-  currency: string = STORE_CURRENCY,
-): string {
-  return formatter(currency, false).format(Math.round(minor) / factor(currency));
+/** ₹9,200 or $150 — for prices on screen. */
+export function formatMoney(minor: number, currency: CurrencyCode): string {
+  return formatter(currency, false).format(Math.round(minor) / 100);
 }
 
-/** $1,299.00 — for invoice and order lines, where the cents have to be shown. */
+/** ₹9,200.00 or $150.00 — for invoice lines, where the minor unit is shown. */
 export function formatMoneyExact(
   minor: number,
-  currency: string = STORE_CURRENCY,
+  currency: CurrencyCode,
 ): string {
-  return formatter(currency, true).format(minor / factor(currency));
+  return formatter(currency, true).format(minor / 100);
 }
 
 export function discountPercent(listMinor: number, priceMinor: number): number {
   if (listMinor <= 0 || priceMinor >= listMinor) return 0;
   return Math.round(((listMinor - priceMinor) / listMinor) * 100);
+}
+
+/**
+ * Split a GST-inclusive amount into net and tax.
+ *
+ * An Indian consumer price includes GST by law and by expectation, so the
+ * displayed figure is the whole of what is paid and the tax is extracted from
+ * it rather than added to it. Done in paise, and the net is derived by
+ * subtraction, so the two parts always add back to exactly the total — which a
+ * separately-rounded net and tax would not.
+ */
+export function splitInclusiveTax(
+  totalMinor: number,
+  ratePercent: number,
+): { netMinor: number; taxMinor: number } {
+  if (ratePercent <= 0) return { netMinor: totalMinor, taxMinor: 0 };
+  const netMinor = Math.round((totalMinor * 100) / (100 + ratePercent));
+  return { netMinor, taxMinor: totalMinor - netMinor };
 }

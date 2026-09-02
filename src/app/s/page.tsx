@@ -2,8 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ProductCard } from "@/components/product-card";
-import { getCart } from "@/lib/cart";
-import { browse, getBrands, getCategories } from "@/lib/catalogue";
+import { getMarket } from "@/lib/cart";
+import {
+  browse,
+  getBrands,
+  getCategories,
+  TERM_LABELS,
+} from "@/lib/catalogue";
 import { formatMoney } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Browse" };
@@ -16,11 +21,25 @@ function one(params: Params, key: string): string | undefined {
   return found?.trim() || undefined;
 }
 
-const PRICE_BANDS = [
-  { label: "Under $200", max: 200_00 },
-  { label: "Under $600", max: 600_00 },
-  { label: "Under $1,200", max: 1_200_00 },
-];
+/** Bands are per-market, because ₹5,000 and $5,000 are not the same shelf. */
+const PRICE_BANDS = {
+  USD: [
+    { label: "Under $250", max: 250_00 },
+    { label: "Under $1,000", max: 1_000_00 },
+    { label: "Under $3,000", max: 3_000_00 },
+  ],
+  INR: [
+    { label: "Under ₹20,000", max: 20_000_00 },
+    { label: "Under ₹75,000", max: 75_000_00 },
+    { label: "Under ₹2,00,000", max: 200_000_00 },
+  ],
+} as const;
+
+const TERMS = [
+  "ANNUAL_SUBSCRIPTION",
+  "MONTHLY_COMMITMENT",
+  "PERPETUAL",
+] as const;
 
 const SORTS = [
   { value: "relevance", label: "Featured" },
@@ -31,34 +50,38 @@ const SORTS = [
 
 export default async function BrowsePage(props: PageProps<"/s">) {
   const params = (await props.searchParams) as Params;
+  const market = await getMarket();
 
   const q = one(params, "q");
   const category = one(params, "category");
   const brand = one(params, "brand");
+  const term = one(params, "term");
   const maxPriceRaw = one(params, "maxPrice");
   const minRatingRaw = one(params, "minRating");
-  const inStockOnly = one(params, "inStock") === "1";
   const sort = (one(params, "sort") ?? "relevance") as
     (typeof SORTS)[number]["value"];
 
   const maxPrice = maxPriceRaw ? Number.parseInt(maxPriceRaw, 10) : undefined;
   const minRating = minRatingRaw ? Number.parseInt(minRatingRaw, 10) : undefined;
 
-  const [cart, products, categories, brands] = await Promise.all([
-    getCart(),
-    browse({
-      q,
-      category,
-      brand,
-      maxPrice: Number.isFinite(maxPrice) ? maxPrice : undefined,
-      minRating: Number.isFinite(minRating) ? minRating : undefined,
-      inStockOnly,
-      sort,
-    }),
+  const [products, categories, brands] = await Promise.all([
+    browse(
+      {
+        q,
+        category,
+        brand,
+        term,
+        maxPrice: Number.isFinite(maxPrice) ? maxPrice : undefined,
+        minRating: Number.isFinite(minRating) ? minRating : undefined,
+        sort,
+      },
+      market.currency,
+    ),
     getCategories(),
     getBrands(),
   ]);
-  const country = cart?.country ?? null;
+
+  const bands = PRICE_BANDS[market.currency];
 
   /** A link that keeps the current filters and changes one of them. */
   function withParam(key: string, value: string | undefined): string {
@@ -67,23 +90,45 @@ export default async function BrowsePage(props: PageProps<"/s">) {
       const single = Array.isArray(v) ? v[0] : v;
       if (single) next.set(k, single);
     }
+    // A price band from the other market is meaningless, so changing anything
+    // else keeps it but switching market drops it.
     if (value === undefined) next.delete(key);
     else next.set(key, value);
     const query = next.toString();
     return query ? `/s?${query}` : "/s";
   }
 
+  const activeBrand = brands.find((b) => b.slug === brand);
   const activeCategory = categories.find((c) => c.slug === category);
   const heading = q
     ? `Results for “${q}”`
-    : (activeCategory?.name ?? "All products");
+    : (activeBrand?.name ?? activeCategory?.name ?? "All licences");
+  const blurb = activeBrand?.blurb ?? activeCategory?.blurb ?? null;
 
   return (
     <div className="mx-auto max-w-[1500px] px-4 py-5">
       <div className="grid gap-5 lg:grid-cols-[230px_1fr]">
-        <aside className="space-y-6 text-sm">
+        <aside className="space-y-4 text-sm">
+          <FilterGroup title="Publisher">
+            <FilterLink href={withParam("brand", undefined)} active={!brand}>
+              All publishers
+            </FilterLink>
+            {brands.map((item) => (
+              <FilterLink
+                key={item.slug}
+                href={withParam("brand", item.slug)}
+                active={brand === item.slug}
+              >
+                {item.name}
+              </FilterLink>
+            ))}
+          </FilterGroup>
+
           <FilterGroup title="Category">
-            <FilterLink href={withParam("category", undefined)} active={!category}>
+            <FilterLink
+              href={withParam("category", undefined)}
+              active={!category}
+            >
               All categories
             </FilterLink>
             {categories.map((item) => (
@@ -97,26 +142,29 @@ export default async function BrowsePage(props: PageProps<"/s">) {
             ))}
           </FilterGroup>
 
-          <FilterGroup title="Brand">
-            <FilterLink href={withParam("brand", undefined)} active={!brand}>
-              All brands
+          <FilterGroup title="Licence term">
+            <FilterLink href={withParam("term", undefined)} active={!term}>
+              Any term
             </FilterLink>
-            {brands.map((item) => (
+            {TERMS.map((value) => (
               <FilterLink
-                key={item.slug}
-                href={withParam("brand", item.slug)}
-                active={brand === item.slug}
+                key={value}
+                href={withParam("term", value)}
+                active={term === value}
               >
-                {item.name}
+                {TERM_LABELS[value]}
               </FilterLink>
             ))}
           </FilterGroup>
 
           <FilterGroup title="Price">
-            <FilterLink href={withParam("maxPrice", undefined)} active={!maxPrice}>
+            <FilterLink
+              href={withParam("maxPrice", undefined)}
+              active={!maxPrice}
+            >
               Any price
             </FilterLink>
-            {PRICE_BANDS.map((band) => (
+            {bands.map((band) => (
               <FilterLink
                 key={band.max}
                 href={withParam("maxPrice", String(band.max))}
@@ -144,15 +192,6 @@ export default async function BrowsePage(props: PageProps<"/s">) {
               </FilterLink>
             ))}
           </FilterGroup>
-
-          <FilterGroup title="Availability">
-            <FilterLink
-              href={withParam("inStock", inStockOnly ? undefined : "1")}
-              active={inStockOnly}
-            >
-              In stock only
-            </FilterLink>
-          </FilterGroup>
         </aside>
 
         <div>
@@ -160,10 +199,14 @@ export default async function BrowsePage(props: PageProps<"/s">) {
             <div>
               <h1 className="text-lg font-bold text-ink">{heading}</h1>
               <p className="text-[13px] text-muted">
+                {blurb ? `${blurb} · ` : ""}
                 {products.length === 1
                   ? "1 product"
                   : `${products.length} products`}
-                {maxPrice ? ` under ${formatMoney(maxPrice)}` : ""}
+                {maxPrice
+                  ? ` under ${formatMoney(maxPrice, market.currency)}`
+                  : ""}
+                {market.domestic ? " · prices include GST" : ""}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-1.5 text-[13px]">
@@ -190,7 +233,7 @@ export default async function BrowsePage(props: PageProps<"/s">) {
                 Nothing matched those filters.
               </p>
               <p className="mt-1 text-muted">
-                Try removing a filter, or search for a brand or SKU.
+                Try removing a filter, or search for a publisher or SKU.
               </p>
               <Link
                 href="/s"
@@ -205,7 +248,8 @@ export default async function BrowsePage(props: PageProps<"/s">) {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  country={country}
+                  currency={market.currency}
+                  domestic={market.domestic}
                 />
               ))}
             </div>

@@ -1,14 +1,17 @@
 -- CreateEnum
-CREATE TYPE "ProductKind" AS ENUM ('PHYSICAL', 'LICENCE');
+CREATE TYPE "ProductKind" AS ENUM ('LICENCE', 'PHYSICAL');
 
 -- CreateEnum
-CREATE TYPE "FulfilmentKind" AS ENUM ('SHIPMENT', 'DIGITAL');
+CREATE TYPE "FulfilmentKind" AS ENUM ('DIGITAL', 'SHIPMENT');
 
 -- CreateEnum
-CREATE TYPE "FulfilmentStatus" AS ENUM ('PENDING', 'PACKED', 'SHIPPED', 'IN_CUSTOMS', 'DELIVERED', 'ISSUED');
+CREATE TYPE "FulfilmentStatus" AS ENUM ('PENDING', 'ISSUED', 'CANCELLED');
 
 -- CreateEnum
-CREATE TYPE "PaymentMethod" AS ENUM ('CARD', 'PAYPAL', 'BANK_TRANSFER');
+CREATE TYPE "LicenceTerm" AS ENUM ('ANNUAL_SUBSCRIPTION', 'MONTHLY_COMMITMENT', 'PERPETUAL');
+
+-- CreateEnum
+CREATE TYPE "PaymentMethod" AS ENUM ('CARD', 'PAYPAL', 'UPI', 'NETBANKING', 'BANK_TRANSFER');
 
 -- CreateEnum
 CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'PAID', 'FAILED', 'REFUNDED');
@@ -18,6 +21,7 @@ CREATE TABLE "Category" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "blurb" TEXT,
     "position" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
@@ -28,6 +32,7 @@ CREATE TABLE "Brand" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "blurb" TEXT,
 
     CONSTRAINT "Brand_pkey" PRIMARY KEY ("id")
 );
@@ -37,15 +42,16 @@ CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "kind" "ProductKind" NOT NULL,
+    "kind" "ProductKind" NOT NULL DEFAULT 'LICENCE',
     "brandId" TEXT NOT NULL,
     "categoryId" TEXT NOT NULL,
     "summary" TEXT NOT NULL,
     "bullets" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "specs" JSONB NOT NULL DEFAULT '{}',
-    "hsCode" TEXT,
-    "origin" TEXT,
-    "glyph" TEXT NOT NULL DEFAULT 'box',
+    "sacCode" TEXT DEFAULT '997331',
+    "gstRatePercent" INTEGER NOT NULL DEFAULT 18,
+    "term" "LicenceTerm" NOT NULL DEFAULT 'ANNUAL_SUBSCRIPTION',
+    "glyph" TEXT NOT NULL DEFAULT 'licence',
     "featured" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -59,13 +65,20 @@ CREATE TABLE "Variant" (
     "productId" TEXT NOT NULL,
     "sku" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "listPriceMinor" INTEGER NOT NULL,
-    "priceMinor" INTEGER NOT NULL,
-    "stockOnHand" INTEGER,
-    "leadDays" INTEGER,
-    "weightGrams" INTEGER,
+    "seats" INTEGER NOT NULL DEFAULT 1,
 
     CONSTRAINT "Variant_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Price" (
+    "id" TEXT NOT NULL,
+    "variantId" TEXT NOT NULL,
+    "currency" CHAR(3) NOT NULL,
+    "listMinor" INTEGER NOT NULL,
+    "priceMinor" INTEGER NOT NULL,
+
+    CONSTRAINT "Price_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -87,7 +100,8 @@ CREATE TABLE "Review" (
 CREATE TABLE "Cart" (
     "id" TEXT NOT NULL,
     "token" TEXT NOT NULL,
-    "country" TEXT,
+    "currency" CHAR(3) NOT NULL DEFAULT 'USD',
+    "country" CHAR(2),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -111,17 +125,18 @@ CREATE TABLE "Order" (
     "email" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "currency" CHAR(3) NOT NULL,
-    "shipName" TEXT,
-    "shipLine1" TEXT,
-    "shipLine2" TEXT,
-    "shipCity" TEXT,
-    "shipRegion" TEXT,
-    "shipPostcode" TEXT,
-    "shipCountry" CHAR(2),
-    "itemsMinor" INTEGER NOT NULL,
-    "shippingMinor" INTEGER NOT NULL,
+    "country" CHAR(2) NOT NULL,
+    "billName" TEXT NOT NULL,
+    "billCompany" TEXT,
+    "billCity" TEXT,
+    "billRegion" TEXT,
+    "billPostcode" TEXT,
+    "gstin" TEXT,
+    "netMinor" INTEGER NOT NULL,
     "taxMinor" INTEGER NOT NULL DEFAULT 0,
     "totalMinor" INTEGER NOT NULL,
+    "taxRatePercent" INTEGER NOT NULL DEFAULT 0,
+    "taxLabel" TEXT,
     "paymentStatus" "PaymentStatus" NOT NULL DEFAULT 'PENDING',
     "paymentMethod" "PaymentMethod" NOT NULL,
     "paymentRef" TEXT,
@@ -136,13 +151,8 @@ CREATE TABLE "Order" (
 CREATE TABLE "Fulfilment" (
     "id" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
-    "kind" "FulfilmentKind" NOT NULL,
+    "kind" "FulfilmentKind" NOT NULL DEFAULT 'DIGITAL',
     "status" "FulfilmentStatus" NOT NULL DEFAULT 'PENDING',
-    "carrier" TEXT,
-    "trackingRef" TEXT,
-    "trackingUrl" TEXT,
-    "promisedFrom" TIMESTAMP(3),
-    "promisedBy" TIMESTAMP(3),
     "completedAt" TIMESTAMP(3),
 
     CONSTRAINT "Fulfilment_pkey" PRIMARY KEY ("id")
@@ -157,12 +167,10 @@ CREATE TABLE "OrderItem" (
     "sku" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "variantName" TEXT NOT NULL,
-    "kind" "ProductKind" NOT NULL,
+    "seats" INTEGER NOT NULL DEFAULT 1,
     "qty" INTEGER NOT NULL,
     "unitPriceMinor" INTEGER NOT NULL,
-    "hsCode" TEXT,
-    "origin" TEXT,
-    "returnable" BOOLEAN NOT NULL DEFAULT false,
+    "sacCode" TEXT,
     "licenceKey" TEXT,
 
     CONSTRAINT "OrderItem_pkey" PRIMARY KEY ("id")
@@ -188,6 +196,12 @@ CREATE UNIQUE INDEX "Variant_sku_key" ON "Variant"("sku");
 
 -- CreateIndex
 CREATE INDEX "Variant_productId_idx" ON "Variant"("productId");
+
+-- CreateIndex
+CREATE INDEX "Price_currency_idx" ON "Price"("currency");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Price_variantId_currency_key" ON "Price"("variantId", "currency");
 
 -- CreateIndex
 CREATE INDEX "Review_productId_idx" ON "Review"("productId");
@@ -227,6 +241,9 @@ ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("cat
 
 -- AddForeignKey
 ALTER TABLE "Variant" ADD CONSTRAINT "Variant_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Price" ADD CONSTRAINT "Price_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "Variant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Review" ADD CONSTRAINT "Review_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;

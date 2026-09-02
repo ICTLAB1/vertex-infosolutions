@@ -1,29 +1,24 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { removeFromCart, setDestination, setQty } from "@/app/actions";
-import { CountrySelect } from "@/components/country-select";
+import { removeFromCart, setQty } from "@/app/actions";
 import { Glyph } from "@/components/glyph";
 import { QtySelect } from "@/components/qty-select";
 import {
   getCart,
-  maxQtyFor,
+  getMarket,
+  MAX_QTY,
   totalsFor,
   type CartLine,
-  type CartTotals,
 } from "@/lib/cart";
-import { formatMoney, STORE_CURRENCY } from "@/lib/money";
-import {
-  countryName,
-  estimateArrival,
-  formatArrival,
-  zoneFor,
-} from "@/lib/shipping";
+import { TERM_LABELS } from "@/lib/catalogue";
+import type { CurrencyCode } from "@/lib/market";
+import { formatMoney } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Your cart" };
 
 export default async function CartPage() {
-  const cart = await getCart();
+  const [cart, market] = await Promise.all([getCart(), getMarket()]);
   const lines = cart?.items ?? [];
 
   if (lines.length === 0) {
@@ -38,18 +33,14 @@ export default async function CartPage() {
             href="/s"
             className="btn-amber mt-5 inline-block rounded-full px-6 py-2.5 font-semibold"
           >
-            Browse products
+            Browse licences
           </Link>
         </div>
       </div>
     );
   }
 
-  const country = cart?.country ?? null;
-  const totals = totalsFor(lines, country);
-  const physical = lines.filter((l) => l.variant.product.kind === "PHYSICAL");
-  const digital = lines.filter((l) => l.variant.product.kind === "LICENCE");
-  const zone = country ? zoneFor(country) : null;
+  const totals = totalsFor(lines, market);
 
   return (
     <div className="mx-auto max-w-[1500px] px-4 py-5">
@@ -57,98 +48,77 @@ export default async function CartPage() {
         <div className="rounded-lg border border-line bg-surface p-4 sm:p-5">
           <h1 className="text-2xl font-bold text-ink">Shopping cart</h1>
           <p className="mt-1 border-b border-line-soft pb-3 text-[13px] text-muted">
-            All prices in {STORE_CURRENCY}. Shipping is charged on shipped items
-            only, and import duty is charged by your country on arrival.
+            {market.domestic
+              ? "Prices in INR, inclusive of GST. Everything here is delivered by email."
+              : "Prices in USD. Everything here is delivered by email — no shipment, no customs."}
           </p>
 
-          {/* The basket is shown in the two groups it will actually be
-              fulfilled in, so the split is never a surprise at the end. */}
-          {physical.length > 0 ? (
-            <Group
-              title="Shipped to you"
-              note={shippingNote(totals)}
-              lines={physical}
-              country={country}
-            />
-          ) : null}
+          {/* The market is fixed while there is something in the basket, so the
+              total cannot move under the customer between here and payment. */}
+          <p className="mt-3 rounded-md border border-line bg-ground/50 px-3 py-2 text-[13px] text-muted">
+            This cart is priced in{" "}
+            <span className="font-semibold text-ink">{totals.currency}</span>.
+            To change market, empty the cart first — we will not reprice
+            something you have already decided to buy.
+          </p>
 
-          {digital.length > 0 ? (
-            <Group
-              title="Delivered by email"
-              note="Keys are issued as soon as payment clears. No shipment, no customs, no duty."
-              lines={digital}
-              country={country}
-            />
-          ) : null}
+          <ul className="mt-2 divide-y divide-line-soft">
+            {lines.map((line) => (
+              <CartRow
+                key={line.id}
+                line={line}
+                currency={totals.currency}
+                domestic={market.domestic}
+              />
+            ))}
+          </ul>
 
           <p className="mt-4 border-t border-line-soft pt-3 text-right text-[15px]">
             Subtotal ({totals.count} {totals.count === 1 ? "item" : "items"}):{" "}
             <span className="text-xl font-bold text-ink">
-              {formatMoney(totals.itemsMinor)}
+              {formatMoney(totals.totalMinor, totals.currency)}
             </span>
           </p>
         </div>
 
         <aside className="lg:sticky lg:top-32 lg:self-start">
           <div className="rounded-lg border border-line bg-surface p-4">
-            {/* Carriage cannot be quoted without a destination, so the cart
-                asks for one here rather than showing a total that changes at
-                the payment step. */}
-            {totals.hasPhysical ? (
-              <form
-                action={setDestination}
-                className="mb-3 border-b border-line-soft pb-3"
-              >
-                <p className="mb-1.5 text-[13px] font-semibold text-ink">
-                  Shipping to
-                </p>
-                <CountrySelect
-                  id="cart-country"
-                  label="Destination country"
-                  value={country}
-                  className="w-full rounded-md border border-line bg-ground/50 px-2 py-1.5 text-[14px]"
-                />
-                {zone ? (
-                  <p className="mt-1.5 text-[12px] text-muted">
-                    {zone.label} · {zone.transitDays[0]}–{zone.transitDays[1]}{" "}
-                    business days after dispatch
-                  </p>
-                ) : null}
-              </form>
-            ) : null}
-
-            {totals.hasPhysical &&
-            totals.shipping.known &&
-            "free" in totals.shipping &&
-            !totals.shipping.free &&
-            zone ? (
-              <p className="mb-3 rounded-md border border-ok/30 bg-ok/5 p-2.5 text-[13px] text-ok">
-                Add{" "}
-                {formatMoney(zone.freeOverMinor - totals.physicalMinor)} of
-                shipped items for free shipping to{" "}
-                {countryName(totals.shipping.country)}.
-              </p>
-            ) : null}
-
             <dl className="space-y-1.5 text-[14px]">
-              <Row
-                label={`Items (${totals.count})`}
-                value={formatMoney(totals.itemsMinor)}
-              />
-              <Row label="Shipping" value={shippingValue(totals)} />
-              <Row label="Import duty & taxes" value="Payable on arrival" />
+              {market.domestic ? (
+                <>
+                  <Row
+                    label="Taxable value"
+                    value={formatMoney(totals.netMinor, totals.currency)}
+                  />
+                  <Row
+                    label={`GST at ${totals.taxRatePercent}%`}
+                    value={formatMoney(totals.taxMinor, totals.currency)}
+                  />
+                </>
+              ) : (
+                <>
+                  <Row
+                    label={`Items (${totals.count})`}
+                    value={formatMoney(totals.totalMinor, totals.currency)}
+                  />
+                  <Row label="Indian tax" value="None — export" />
+                </>
+              )}
+              <Row label="Delivery" value="By email, free" />
               <div className="flex justify-between border-t border-line-soft pt-2 text-[18px] font-bold text-ink">
                 <dt>Order total</dt>
-                <dd>{formatMoney(totals.totalMinor)}</dd>
+                <dd>{formatMoney(totals.totalMinor, totals.currency)}</dd>
               </div>
             </dl>
 
-            {blockedMessage(totals) ? (
+            {totals.unpriced > 0 ? (
               <p
                 role="alert"
                 className="mt-3 rounded-md border border-deal/40 bg-deal/5 p-2.5 text-[13px] text-deal"
               >
-                {blockedMessage(totals)}
+                {totals.unpriced === 1 ? "One item is" : `${totals.unpriced} items are`}{" "}
+                not sold in {totals.currency}. Remove{" "}
+                {totals.unpriced === 1 ? "it" : "them"} to continue.
               </p>
             ) : (
               <Link
@@ -170,35 +140,6 @@ export default async function CartPage() {
   );
 }
 
-function shippingNote(totals: CartTotals): string {
-  if (!totals.shipping.known) {
-    return "Choose a destination on the right for a shipping cost and a delivery date.";
-  }
-  if ("blocked" in totals.shipping) {
-    return totals.shipping.blocked === "restricted"
-      ? "We cannot ship to this destination."
-      : "We do not ship to this destination yet.";
-  }
-  return totals.shipping.free
-    ? `Free shipping to ${countryName(totals.shipping.country)}`
-    : `${formatMoney(totals.shippingMinor)} shipping to ${countryName(totals.shipping.country)}`;
-}
-
-function shippingValue(totals: CartTotals): string {
-  if (!totals.hasPhysical) return "None — nothing to ship";
-  if (!totals.shipping.known) return "Choose a country";
-  if ("blocked" in totals.shipping) return "Unavailable";
-  return totals.shipping.free ? "Free" : formatMoney(totals.shippingMinor);
-}
-
-function blockedMessage(totals: CartTotals): string | null {
-  if (!totals.shipping.known || !("blocked" in totals.shipping)) return null;
-  const where = countryName(totals.shipping.country);
-  return totals.shipping.blocked === "restricted"
-    ? `We cannot ship to ${where}. See our export compliance policy.`
-    : `We do not ship to ${where} yet. Email us and we will quote a freight forwarder.`;
-}
-
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
@@ -208,84 +149,53 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Group({
-  title,
-  note,
-  lines,
-  country,
-}: {
-  title: string;
-  note: string;
-  lines: CartLine[];
-  country: string | null;
-}) {
-  return (
-    <section className="mt-4">
-      <h2 className="text-[15px] font-bold text-ink">{title}</h2>
-      <p className="text-[13px] text-muted">{note}</p>
-      <ul className="mt-2 divide-y divide-line-soft">
-        {lines.map((line) => (
-          <CartRow key={line.id} line={line} country={country} />
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 function CartRow({
   line,
-  country,
+  currency,
+  domestic,
 }: {
   line: CartLine;
-  country: string | null;
+  currency: CurrencyCode;
+  domestic: boolean;
 }) {
   const { variant } = line;
   const product = variant.product;
-  const isLicence = product.kind === "LICENCE";
-  const ceiling = maxQtyFor(variant.stockOnHand);
-  const capped = variant.stockOnHand !== null && line.qty >= variant.stockOnHand;
+  const price = variant.prices.find((p) => p.currency === currency);
 
   return (
     <li className="flex gap-4 py-4">
       <Link
         href={`/product/${product.slug}`}
-        className="flex h-24 w-24 shrink-0 items-center justify-center rounded bg-ground/60 text-nav-2"
+        className="flex h-20 w-20 shrink-0 items-center justify-center rounded bg-ground/60 text-nav-2"
       >
-        <Glyph name={product.glyph} className="h-16 w-16" />
+        <Glyph name={product.glyph} className="h-12 w-12" />
       </Link>
 
       <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-faint">
+          {product.brand.name}
+        </p>
         <Link
           href={`/product/${product.slug}?sku=${variant.sku}`}
           className="text-[15px] font-semibold text-ink hover:text-link hover:underline"
         >
           {product.name}
         </Link>
-        <p className="text-[13px] text-muted">{variant.name}</p>
+        <p className="text-[13px] text-muted">
+          {variant.name} · {TERM_LABELS[product.term]}
+        </p>
         <p className="mt-0.5 font-mono text-[12px] text-faint">{variant.sku}</p>
 
-        {isLicence ? (
+        {price ? (
           <p className="mt-1 text-[13px] text-ok">
-            Key emailed on payment · not returnable once revealed
-          </p>
-        ) : country ? (
-          <p className="mt-1 text-[13px] text-muted">
-            Arrives{" "}
-            <span className="font-semibold text-ink">
-              {formatArrival(estimateArrival(country, variant.leadDays ?? 3))}
-            </span>
+            Key emailed on payment
+            {domestic ? " · GST invoice included" : ""}
           </p>
         ) : (
-          <p className="mt-1 text-[13px] text-muted">
-            Delivery date depends on the destination
+          <p className="mt-1 text-[13px] text-deal">
+            Not sold in {currency} — remove this to check out.
           </p>
         )}
-
-        {capped ? (
-          <p className="mt-1 text-[13px] text-warn">
-            Only {variant.stockOnHand} in stock — quantity capped.
-          </p>
-        ) : null}
 
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <form action={setQty} className="flex items-center gap-2">
@@ -294,7 +204,7 @@ function CartRow({
               id={`qty-${line.id}`}
               name="qty"
               defaultValue={line.qty}
-              max={Math.max(ceiling, line.qty)}
+              max={MAX_QTY}
               label={`Quantity for ${product.name}`}
             />
           </form>
@@ -311,14 +221,25 @@ function CartRow({
       </div>
 
       <div className="shrink-0 text-right">
-        <p className="text-[16px] font-bold text-ink">
-          {formatMoney(variant.priceMinor * line.qty)}
-        </p>
-        {line.qty > 1 ? (
-          <p className="text-[12px] text-faint">
-            {formatMoney(variant.priceMinor)} each
-          </p>
-        ) : null}
+        {price ? (
+          <>
+            <p className="text-[16px] font-bold text-ink">
+              {formatMoney(price.priceMinor * line.qty, currency)}
+            </p>
+            {line.qty > 1 ? (
+              <p className="text-[12px] text-faint">
+                {formatMoney(price.priceMinor, currency)} each
+              </p>
+            ) : null}
+            {variant.seats > 1 ? (
+              <p className="text-[12px] text-faint">
+                {variant.seats * line.qty} seats
+              </p>
+            ) : null}
+          </>
+        ) : (
+          <p className="text-[13px] text-faint">—</p>
+        )}
       </div>
     </li>
   );

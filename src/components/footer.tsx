@@ -1,16 +1,17 @@
 import Link from "next/link";
 
+import { getMarket } from "@/lib/cart";
 import { configWarnings, getSiteConfig } from "@/lib/site";
-import { STORE_CURRENCY } from "@/lib/money";
 
 const COLUMNS = [
   {
     heading: "Buy from us",
     links: [
       { href: "/s", label: "Full catalogue" },
-      { href: "/s?category=software", label: "Software licences" },
-      { href: "/s?category=laptops", label: "Business laptops" },
-      { href: "/shipping", label: "Shipping & delivery" },
+      { href: "/s?brand=microsoft", label: "Microsoft" },
+      { href: "/s?brand=adobe", label: "Adobe" },
+      { href: "/s?brand=autodesk", label: "Autodesk" },
+      { href: "/delivery", label: "How delivery works" },
     ],
   },
   {
@@ -18,7 +19,7 @@ const COLUMNS = [
     links: [
       { href: "/orders", label: "Track an order" },
       { href: "/returns", label: "Returns & refunds" },
-      { href: "/warranty", label: "Warranty" },
+      { href: "/licensing", label: "How licensing works" },
       { href: "/cart", label: "Your cart" },
     ],
   },
@@ -34,8 +35,11 @@ const COLUMNS = [
   },
 ];
 
-export function Footer() {
-  const config = getSiteConfig();
+export async function Footer() {
+  const [config, market] = await Promise.all([
+    Promise.resolve(getSiteConfig()),
+    getMarket(),
+  ]);
   const missing =
     process.env.NODE_ENV === "production" ? [] : configWarnings(config);
 
@@ -139,13 +143,12 @@ export function Footer() {
               </p>
             ) : null}
             <p className="mt-3 text-white/50">
-              All prices in {STORE_CURRENCY}. Goods ship from{" "}
-              {config.shipsFrom}. Import duties and destination taxes are not
-              included and are payable by the recipient — see{" "}
-              <Link href="/shipping" className="underline">
-                shipping &amp; delivery
-              </Link>
-              .
+              {market.domestic
+                ? "Prices shown in INR, inclusive of 18% GST. A tax invoice is issued with every order."
+                : "Prices shown in USD. Supplies outside India are zero-rated exports; no Indian GST is charged."}{" "}
+              Licences are supplied under the publisher&apos;s own end-user
+              terms — Vertex Infosolutions is an authorised reseller, not the
+              licensor.
             </p>
           </div>
         </div>

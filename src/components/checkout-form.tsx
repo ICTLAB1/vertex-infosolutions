@@ -4,14 +4,17 @@ import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { placeOrder, type CheckoutError } from "@/app/actions";
-import { COUNTRIES } from "@/lib/shipping";
-import {
-  PAYMENT_METHOD_LABELS,
-  PAYMENT_METHOD_NOTES,
-} from "@/lib/types";
+import { BILLING_COUNTRIES, type CurrencyCode } from "@/lib/market";
+import { PAYMENT_METHOD_LABELS, PAYMENT_METHOD_NOTES } from "@/lib/types";
 import type { PaymentMethod } from "@/generated/prisma/enums";
 
-function SubmitButton({ total, method }: { total: string; method: PaymentMethod }) {
+function SubmitButton({
+  total,
+  method,
+}: {
+  total: string;
+  method: PaymentMethod;
+}) {
   const { pending } = useFormStatus();
   const verb = method === "BANK_TRANSFER" ? "Place order for" : "Pay";
   return (
@@ -26,24 +29,32 @@ function SubmitButton({ total, method }: { total: string; method: PaymentMethod 
 }
 
 export function CheckoutForm({
-  needsAddress,
   methods,
   total,
-  defaultCountry,
+  currency,
+  domestic,
 }: {
-  needsAddress: boolean;
   methods: readonly PaymentMethod[];
   total: string;
-  defaultCountry: string | null;
+  currency: CurrencyCode;
+  domestic: boolean;
 }) {
   const [error, action] = useActionState<CheckoutError | null, FormData>(
     placeOrder,
     null,
   );
   const [method, setMethod] = useState<PaymentMethod>(methods[0]);
+  const [country, setCountry] = useState(domestic ? "IN" : "");
 
   const invalid = (field: string) =>
     error?.field === field ? "border-deal ring-1 ring-deal" : "border-line";
+
+  // The countries offered depend on the market, because the currency and the
+  // billing country have to agree — an INR order billed to Germany would be an
+  // export charged GST, which is simply wrong.
+  const countries = domestic
+    ? BILLING_COUNTRIES.filter((c) => c.code === "IN")
+    : BILLING_COUNTRIES.filter((c) => c.code !== "IN");
 
   return (
     <form action={action} className="grid gap-5 lg:grid-cols-[1fr_320px]">
@@ -59,16 +70,19 @@ export function CheckoutForm({
 
         <fieldset className="rounded-lg border border-line bg-surface p-4">
           <legend className="px-1 text-[15px] font-bold text-ink">
-            Where should the invoice go?
+            Where should the keys go?
           </legend>
-          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+          <p className="mt-1 text-[13px] text-muted">
+            There is no delivery address — nothing ships. The licence keys and
+            the invoice both go to this email.
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <Field
               label="Email address"
               name="email"
               type="email"
               autoComplete="email"
               className={invalid("email")}
-              hint="Invoice, shipping updates and any licence keys go here."
               required
             />
             <Field
@@ -76,107 +90,98 @@ export function CheckoutForm({
               name="phone"
               type="tel"
               autoComplete="tel"
-              placeholder="+1 555 010 0000"
+              placeholder={domestic ? "+91 98765 43210" : "+1 555 010 0000"}
               className={invalid("phone")}
-              hint="With country code. Used by the courier for delivery and customs."
+              hint="With country code, in case we need to reach you about the order."
               required
             />
           </div>
         </fieldset>
 
-        {needsAddress ? (
-          <fieldset className="rounded-lg border border-line bg-surface p-4">
-            <legend className="px-1 text-[15px] font-bold text-ink">
-              Delivery address
-            </legend>
-            <p className="mt-1 text-[13px] text-muted">
-              Needed for the items in this order that we ship. Any licences in
-              the same order are emailed and do not use it.
-            </p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className="block">
-                  <span className="block text-[13px] font-semibold text-ink">
-                    Country
-                  </span>
-                  <select
-                    name="shipCountry"
-                    required
-                    defaultValue={defaultCountry ?? ""}
-                    className={`mt-1 w-full rounded-md border bg-white px-3 py-2 text-[14px] ${invalid("shipCountry")}`}
-                  >
-                    <option value="" disabled>
-                      Choose a country
-                    </option>
-                    {COUNTRIES.map((country) => (
-                      <option key={country.code} value={country.code}>
-                        {country.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <Field
-                label="Full name"
-                name="shipName"
-                autoComplete="name"
-                className={invalid("shipName")}
+        <fieldset className="rounded-lg border border-line bg-surface p-4">
+          <legend className="px-1 text-[15px] font-bold text-ink">
+            Invoice details
+          </legend>
+          <p className="mt-1 text-[13px] text-muted">
+            {domestic
+              ? "Your GST invoice is made out to these details."
+              : "Your commercial invoice is made out to these details."}
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <Field
+              label="Name"
+              name="billName"
+              autoComplete="name"
+              className={invalid("billName")}
+              required
+            />
+            <Field
+              label="Company (optional)"
+              name="billCompany"
+              autoComplete="organization"
+              className={invalid("billCompany")}
+            />
+            <label className="block">
+              <span className="block text-[13px] font-semibold text-ink">
+                Billing country
+              </span>
+              <select
+                name="billCountry"
                 required
-              />
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className={`mt-1 w-full rounded-md border bg-white px-3 py-2 text-[14px] ${invalid("billCountry")}`}
+              >
+                <option value="" disabled>
+                  Choose a country
+                </option>
+                {countries.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block text-[12px] text-faint">
+                {domestic
+                  ? "INR pricing is for Indian billing. Switch to USD in the header to bill elsewhere."
+                  : "For an Indian billing address, switch to ₹ INR in the header."}
+              </span>
+            </label>
+            <Field
+              label="City (optional)"
+              name="billCity"
+              autoComplete="address-level2"
+              className={invalid("billCity")}
+            />
+            <Field
+              label={domestic ? "State (optional)" : "State or region (optional)"}
+              name="billRegion"
+              autoComplete="address-level1"
+              className={invalid("billRegion")}
+            />
+            <Field
+              label="Postal code (optional)"
+              name="billPostcode"
+              autoComplete="postal-code"
+              className={invalid("billPostcode")}
+            />
+          </div>
+
+          {/* A registered Indian business can reclaim the GST as input credit,
+              but only if its GSTIN is on the invoice — and it cannot be added
+              afterwards. So it is asked for here, plainly, rather than buried. */}
+          {domestic ? (
+            <div className="mt-3 rounded-md border border-line bg-ground/50 p-3">
               <Field
-                label="Postal or ZIP code"
-                name="shipPostcode"
-                autoComplete="postal-code"
-                className={invalid("shipPostcode")}
-                hint="Leave blank if your country does not use one."
-              />
-              <div className="sm:col-span-2">
-                <Field
-                  label="Address line 1"
-                  name="shipLine1"
-                  autoComplete="address-line1"
-                  className={invalid("shipLine1")}
-                  required
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Field
-                  label="Address line 2 (optional)"
-                  name="shipLine2"
-                  autoComplete="address-line2"
-                  className={invalid("shipLine2")}
-                />
-              </div>
-              <Field
-                label="City or town"
-                name="shipCity"
-                autoComplete="address-level2"
-                className={invalid("shipCity")}
-                required
-              />
-              <Field
-                label="State, province or region (optional)"
-                name="shipRegion"
-                autoComplete="address-level1"
-                className={invalid("shipRegion")}
+                label="GSTIN (optional)"
+                name="gstin"
+                placeholder="29ABCDE1234F1Z5"
+                className={invalid("gstin")}
+                hint="Buying as a registered business? Give your GSTIN and it goes on the invoice, so you can claim the input tax credit. It cannot be added later."
               />
             </div>
-
-            <p className="mt-3 rounded-md border border-line bg-ground/50 p-3 text-[13px] text-muted">
-              <span className="font-semibold text-ink">
-                Import duty and taxes are not included.
-              </span>{" "}
-              Your country charges these on arrival and the carrier collects
-              them before delivery. They are not ours to quote, and we would
-              rather say so here than let you find out at the door.
-            </p>
-          </fieldset>
-        ) : (
-          <p className="rounded-lg border border-line bg-surface p-4 text-[14px] text-muted">
-            Everything in this order is delivered by email, so there is no
-            address to fill in and nothing to clear through customs.
-          </p>
-        )}
+          ) : null}
+        </fieldset>
 
         <fieldset className="rounded-lg border border-line bg-surface p-4">
           <legend className="px-1 text-[15px] font-bold text-ink">
@@ -207,13 +212,11 @@ export function CheckoutForm({
               </label>
             ))}
           </div>
-          {!methods.includes("BANK_TRANSFER") ? (
-            <p className="mt-3 text-[13px] text-muted">
-              Bank transfer is not offered here because the whole point of this
-              order is that the keys arrive in seconds, and a transfer takes
-              days to clear.
-            </p>
-          ) : null}
+          <p className="mt-3 text-[13px] text-muted">
+            {domestic
+              ? "Paying in INR from an Indian account. UPI is usually instant."
+              : `Charged in ${currency}. Your bank may apply its own foreign-exchange rate.`}
+          </p>
         </fieldset>
       </div>
 
@@ -221,9 +224,9 @@ export function CheckoutForm({
         <div className="rounded-lg border border-line bg-surface p-4">
           <SubmitButton total={total} method={method} />
           <p className="mt-3 text-[12px] leading-relaxed text-faint">
-            By placing this order you agree to the terms of sale. A commercial
-            invoice is issued to the email address above and travels with the
-            shipment.
+            By placing this order you agree to the terms of sale. A licence key
+            once revealed cannot be returned — before then, the order can be
+            cancelled in full.
           </p>
         </div>
       </aside>

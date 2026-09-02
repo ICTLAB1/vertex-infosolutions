@@ -1,14 +1,16 @@
 /**
- * Sample catalogue.
+ * Sample catalogue — Microsoft, Adobe and Autodesk licences.
  *
- * Everything here is illustrative — plausible IT reseller stock at plausible
- * international street prices in USD, so the storefront can be judged with
- * something that looks like real inventory rather than "Product 1". Replace it
- * with the real catalogue before the store goes anywhere near a customer.
+ * Prices are illustrative but shaped like real ones: the INR figure is not the
+ * USD figure converted. Publishers price India separately and considerably
+ * lower, and pretending otherwise would produce a catalogue that looks
+ * plausible and prices nothing correctly.
  *
- * Physical goods carry an HS code and a country of origin because both are
- * printed on the commercial invoice that travels with the parcel. Licences
- * carry neither: nothing crosses a border.
+ * INR prices are GST-inclusive, because that is what an Indian buyer expects to
+ * see and what the law requires be displayed. USD prices carry no Indian tax at
+ * all — those sales are exports.
+ *
+ * Replace all of it with the real price book before launch.
  */
 import "dotenv/config";
 
@@ -16,33 +18,30 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../src/generated/prisma/client";
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL,
-});
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
+
+type Term = "ANNUAL_SUBSCRIPTION" | "MONTHLY_COMMITMENT" | "PERPETUAL";
 
 type SeedVariant = {
   sku: string;
   name: string;
-  list: number;
-  price: number;
-  stock?: number | null;
-  leadDays?: number | null;
-  grams?: number | null;
+  seats: number;
+  /** [list, price] in whole dollars. */
+  usd: [number, number];
+  /** [list, price] in whole rupees, GST-inclusive. */
+  inr: [number, number];
 };
 
 type SeedProduct = {
   slug: string;
   name: string;
-  kind: "PHYSICAL" | "LICENCE";
   brand: string;
   category: string;
+  term: Term;
   summary: string;
   bullets: string[];
   specs: Record<string, string>;
-  hsCode?: string;
-  origin?: string;
-  glyph: string;
   featured?: boolean;
   variants: SeedVariant[];
   reviews?: {
@@ -56,576 +55,524 @@ type SeedProduct = {
 };
 
 const CATEGORIES = [
-  { slug: "laptops", name: "Laptops", position: 1 },
-  { slug: "monitors", name: "Monitors", position: 2 },
-  { slug: "printers", name: "Printers & Scanners", position: 3 },
-  { slug: "networking", name: "Networking", position: 4 },
-  { slug: "storage", name: "Storage & Power", position: 5 },
-  { slug: "software", name: "Software", position: 6 },
+  {
+    slug: "productivity",
+    name: "Productivity & collaboration",
+    blurb: "Email, documents and meetings for a whole team.",
+    position: 1,
+  },
+  {
+    slug: "creative",
+    name: "Creative & design",
+    blurb: "Design, photography, video and 3D.",
+    position: 2,
+  },
+  {
+    slug: "cad",
+    name: "Engineering & CAD",
+    blurb: "Drafting, modelling and simulation.",
+    position: 3,
+  },
+  {
+    slug: "servers",
+    name: "Operating systems & servers",
+    blurb: "Desktop and server operating systems.",
+    position: 4,
+  },
+  {
+    slug: "analytics",
+    name: "Analytics & planning",
+    blurb: "Reporting, diagramming and project management.",
+    position: 5,
+  },
 ];
 
 const BRANDS = [
-  "Dell", "HP", "Lenovo", "Samsung", "LG", "Canon", "Epson", "TP-Link",
-  "Ubiquiti", "Seagate", "APC", "Microsoft", "Adobe", "Autodesk", "Veeam",
-  "Logitech",
+  {
+    name: "Microsoft",
+    slug: "microsoft",
+    blurb: "Microsoft 365, Windows, Windows Server and the Power Platform.",
+  },
+  {
+    name: "Adobe",
+    slug: "adobe",
+    blurb: "Creative Cloud, Acrobat and Substance 3D, licensed for teams.",
+  },
+  {
+    name: "Autodesk",
+    slug: "autodesk",
+    blurb: "AutoCAD, Revit, Fusion and the media and entertainment range.",
+  },
 ];
 
-/** Dollars in, cents out. */
-const D = (dollars: number) => Math.round(dollars * 100);
-
 const PRODUCTS: SeedProduct[] = [
-  {
-    slug: "dell-latitude-3550-business-laptop",
-    name: "Dell Latitude 3550 Business Laptop",
-    kind: "PHYSICAL",
-    brand: "Dell",
-    category: "laptops",
-    summary:
-      "15.6-inch business laptop with Intel Core Ultra 5, built for long deployments and easy servicing.",
-    bullets: [
-      "Intel Core Ultra 5 125U, 12 cores, up to 4.3 GHz",
-      "15.6-inch FHD (1920 x 1080) anti-glare, 250 nits",
-      "Serviceable RAM and M.2 slots — no soldered storage",
-      "Windows 11 Pro pre-installed, with a 3-year onsite warranty option",
-      "Spill-resistant keyboard and a 54 Wh battery",
-    ],
-    specs: {
-      Processor: "Intel Core Ultra 5 125U",
-      Memory: "16 GB DDR5 (2 slots, up to 64 GB)",
-      Storage: "512 GB PCIe NVMe SSD",
-      Display: "15.6-inch FHD anti-glare",
-      Ports: "2 x USB-C (Thunderbolt 4), 2 x USB-A, HDMI 2.1, RJ-45",
-      Weight: "1.79 kg",
-      Warranty: "1 year international, upgradeable to onsite",
-    },
-    hsCode: "8471.30",
-    origin: "China",
-    glyph: "laptop",
-    featured: true,
-    variants: [
-      { sku: "DEL-LAT3550-16-512", name: "16 GB RAM / 512 GB SSD", list: D(1149), price: D(899), stock: 12, leadDays: 1, grams: 2600 },
-      { sku: "DEL-LAT3550-16-1TB", name: "16 GB RAM / 1 TB SSD", list: D(1279), price: D(999), stock: 6, leadDays: 1, grams: 2600 },
-      { sku: "DEL-LAT3550-32-1TB", name: "32 GB RAM / 1 TB SSD", list: D(1479), price: D(1199), stock: 3, leadDays: 2, grams: 2600 },
-    ],
-    reviews: [
-      { author: "Rakesh M.", country: "United Arab Emirates", rating: 5, title: "Exactly what our field team needed", body: "Bought nine of these for our service engineers. Six months in, no failures, and the RAM upgrade took ten minutes per machine. The anti-glare screen genuinely helps on site.", verified: true },
-      { author: "Sneha P.", country: "Singapore", rating: 4, title: "Solid, but the screen is average", body: "No complaints about performance or build. The display is only 250 nits though, so it struggles near a window. Fine for office use.", verified: true },
-      { author: "Daniel W.", country: "United States", rating: 4, title: "Good value against the T-series", body: "Two thirds the price of the ThinkPads we were quoted and the difference in daily use is small. Customs paperwork was correct, which is more than I can say for the last supplier.", verified: true },
-    ],
-  },
-  {
-    slug: "lenovo-thinkpad-e14-gen-6",
-    name: "Lenovo ThinkPad E14 Gen 6",
-    kind: "PHYSICAL",
-    brand: "Lenovo",
-    category: "laptops",
-    summary:
-      "14-inch AMD Ryzen ThinkPad with the keyboard the range is known for, at an entry-business price.",
-    bullets: [
-      "AMD Ryzen 7 7735HS, 8 cores / 16 threads",
-      "14-inch WUXGA (1920 x 1200) IPS, 300 nits",
-      "The classic ThinkPad keyboard and TrackPoint",
-      "MIL-STD-810H tested chassis",
-      "Windows 11 Pro, TPM 2.0, fingerprint reader",
-    ],
-    specs: {
-      Processor: "AMD Ryzen 7 7735HS",
-      Memory: "16 GB DDR5-5600",
-      Storage: "512 GB PCIe Gen4 NVMe SSD",
-      Display: "14-inch WUXGA IPS, 300 nits",
-      Ports: "1 x USB-C 3.2, 1 x USB4, 2 x USB-A, HDMI 2.1, RJ-45",
-      Weight: "1.41 kg",
-      Warranty: "1 year international carry-in",
-    },
-    hsCode: "8471.30",
-    origin: "China",
-    glyph: "laptop",
-    featured: true,
-    variants: [
-      { sku: "LEN-E14G6-16-512", name: "16 GB RAM / 512 GB SSD", list: D(1049), price: D(869), stock: 8, leadDays: 1, grams: 2200 },
-      { sku: "LEN-E14G6-24-1TB", name: "24 GB RAM / 1 TB SSD", list: D(1259), price: D(1039), stock: 0, leadDays: 5, grams: 2200 },
-    ],
-    reviews: [
-      { author: "Devika R.", country: "United Kingdom", rating: 5, title: "The keyboard is why you buy this", body: "Typing all day on this is genuinely comfortable in a way the Dells in our office are not. Runs cool too.", verified: true },
-      { author: "Arun K.", country: "Australia", rating: 3, title: "Fan noise under load", body: "Performance is fine but the fan is audible whenever you push it. In a quiet office you notice. Otherwise a good machine.", verified: true },
-    ],
-  },
-  {
-    slug: "hp-probook-450-g11",
-    name: "HP ProBook 450 G11",
-    kind: "PHYSICAL",
-    brand: "HP",
-    category: "laptops",
-    summary: "15.6-inch corporate workhorse with HP's Wolf Security firmware protection.",
-    bullets: [
-      "Intel Core Ultra 7 155U",
-      "15.6-inch FHD IPS, 300 nits",
-      "HP Wolf Security for Business, firmware-level",
-      "Backlit keyboard with a numeric keypad",
-      "51 Wh battery with 45-minute fast charge",
-    ],
-    specs: {
-      Processor: "Intel Core Ultra 7 155U",
-      Memory: "16 GB DDR5",
-      Storage: "512 GB NVMe SSD",
-      Display: "15.6-inch FHD IPS, 300 nits",
-      Weight: "1.79 kg",
-      Warranty: "1 year international",
-    },
-    hsCode: "8471.30",
-    origin: "China",
-    glyph: "laptop",
-    variants: [
-      { sku: "HP-PB450G11-16-512", name: "16 GB RAM / 512 GB SSD", list: D(1149), price: D(949), stock: 5, leadDays: 2, grams: 2500 },
-    ],
-    reviews: [
-      { author: "Manish T.", country: "Qatar", rating: 4, title: "Does the job", body: "Standard corporate laptop, nothing surprising. Wolf Security was easy to roll out across the fleet.", verified: true },
-    ],
-  },
-  {
-    slug: "dell-ultrasharp-u2724d-27-monitor",
-    name: 'Dell UltraSharp U2724D 27" QHD Monitor',
-    kind: "PHYSICAL",
-    brand: "Dell",
-    category: "monitors",
-    summary:
-      "27-inch QHD IPS Black panel at 120 Hz, with USB-C power delivery and a genuinely good stand.",
-    bullets: [
-      "27-inch QHD (2560 x 1440) IPS Black, 120 Hz",
-      "Contrast ratio 2000:1 — noticeably deeper blacks than standard IPS",
-      "90 W USB-C power delivery — one cable for video, data and charging",
-      "Height, tilt, swivel and pivot adjustment",
-      "99% sRGB, factory calibrated to Delta-E < 2",
-    ],
-    specs: {
-      "Panel size": "27 inches",
-      Resolution: "2560 x 1440 (QHD)",
-      "Refresh rate": "120 Hz",
-      "Panel type": "IPS Black",
-      Ports: "1 x HDMI 2.1, 1 x DisplayPort 1.4, 1 x USB-C (90 W), 4 x USB-A",
-      Warranty: "3 years, with advance exchange",
-    },
-    hsCode: "8528.52",
-    origin: "China",
-    glyph: "monitor",
-    featured: true,
-    variants: [
-      { sku: "DEL-U2724D", name: "27-inch QHD", list: D(619), price: D(509), stock: 14, leadDays: 1, grams: 7400 },
-    ],
-    reviews: [
-      { author: "Priya N.", country: "Germany", rating: 5, title: "The single-cable setup is the selling point", body: "One USB-C to the laptop and everything works — display, keyboard, mouse, ethernet, charging. Cleared half the cables off my desk.", verified: true },
-      { author: "Viktor J.", country: "Netherlands", rating: 5, title: "IPS Black is a real improvement", body: "Side by side with our older U2722D the blacks are visibly better. Worth the difference if you look at documents all day.", verified: true },
-      { author: "Anonymous", country: "Canada", rating: 2, title: "Arrived with a stuck pixel", body: "Panel had one stuck pixel out of the box. Replacement was arranged without argument but it cost me two weeks including the return shipping.", verified: true },
-    ],
-  },
-  {
-    slug: "lg-27uq850v-27-4k-monitor",
-    name: 'LG 27UQ850V 27" 4K UHD Monitor',
-    kind: "PHYSICAL",
-    brand: "LG",
-    category: "monitors",
-    summary: "27-inch 4K IPS with 95% DCI-P3 coverage and a built-in USB-C dock.",
-    bullets: [
-      "27-inch 4K UHD (3840 x 2160) IPS",
-      "95% DCI-P3, VESA DisplayHDR 400",
-      "90 W USB-C power delivery with an ethernet passthrough",
-      "Ergonomic stand with pivot",
-    ],
-    specs: {
-      "Panel size": "27 inches",
-      Resolution: "3840 x 2160 (4K UHD)",
-      "Panel type": "IPS",
-      "Colour gamut": "95% DCI-P3",
-      Warranty: "3 years",
-    },
-    hsCode: "8528.52",
-    origin: "South Korea",
-    glyph: "monitor",
-    variants: [
-      { sku: "LG-27UQ850V", name: "27-inch 4K", list: D(799), price: D(649), stock: 4, leadDays: 2, grams: 7800 },
-    ],
-    reviews: [
-      { author: "Farah A.", country: "United Arab Emirates", rating: 4, title: "Great panel, mediocre menus", body: "Colour accuracy out of the box is excellent. The on-screen controls are fiddly but you only use them once.", verified: true },
-    ],
-  },
-  {
-    slug: "samsung-viewfinity-s6-34-ultrawide",
-    name: 'Samsung ViewFinity S6 34" Ultrawide',
-    kind: "PHYSICAL",
-    brand: "Samsung",
-    category: "monitors",
-    summary: "34-inch curved ultrawide for people who keep three windows open at once.",
-    bullets: [
-      "34-inch WQHD (3440 x 1440) curved VA, 100 Hz",
-      "Picture-by-picture from two inputs at once",
-      "65 W USB-C power delivery",
-      "1000R curvature",
-    ],
-    specs: {
-      "Panel size": "34 inches",
-      Resolution: "3440 x 1440",
-      "Refresh rate": "100 Hz",
-      Curvature: "1000R",
-      Warranty: "3 years",
-    },
-    hsCode: "8528.52",
-    origin: "Vietnam",
-    glyph: "monitor",
-    variants: [
-      { sku: "SAM-S6-34UW", name: "34-inch WQHD", list: D(699), price: D(569), stock: 7, leadDays: 2, grams: 9600 },
-    ],
-  },
-  {
-    slug: "canon-imageclass-mf445dw",
-    name: "Canon imageCLASS MF445dw Multifunction Printer",
-    kind: "PHYSICAL",
-    brand: "Canon",
-    category: "printers",
-    summary:
-      "Monochrome laser MFP at 38 ppm with duplex scanning — the workgroup printer that stops being a topic of conversation.",
-    bullets: [
-      "38 pages per minute, first page in under 6 seconds",
-      "Single-pass duplex ADF, 50 sheets",
-      "Print, scan, copy and fax over ethernet or Wi-Fi",
-      "Monthly duty cycle of 80,000 pages",
-      "Standard toner yields 3,100 pages; high-yield 10,000",
-    ],
-    specs: {
-      Technology: "Monochrome laser",
-      Speed: "38 ppm",
-      "Paper capacity": "250-sheet cassette + 100-sheet tray",
-      Connectivity: "Gigabit ethernet, Wi-Fi, USB",
-      "Duty cycle": "80,000 pages/month",
-      Warranty: "1 year",
-    },
-    hsCode: "8443.31",
-    origin: "Vietnam",
-    glyph: "printer",
-    variants: [
-      { sku: "CAN-MF445DW", name: "Single unit", list: D(529), price: D(419), stock: 9, leadDays: 2, grams: 16400 },
-    ],
-    reviews: [
-      { author: "Office Manager", country: "United Kingdom", rating: 5, title: "Fast and forgettable, in a good way", body: "Replaced an ageing unit that jammed weekly. This has done 14,000 pages without a single jam. Duplex scanning is quick.", verified: true },
-      { author: "Sunil B.", country: "Kenya", rating: 4, title: "Toner is the real cost", body: "Printer is cheap, toner is not. Buy the high-yield cartridges from the start and the maths works out.", verified: true },
-    ],
-  },
-  {
-    slug: "epson-ecotank-l6580",
-    name: "Epson EcoTank L6580 Colour MFP",
-    kind: "PHYSICAL",
-    brand: "Epson",
-    category: "printers",
-    summary: "Ink tank colour MFP with running costs low enough to change how a small office prints.",
-    bullets: [
-      "Refillable ink tanks — roughly 7,500 colour pages per set",
-      "25 ppm mono, 12 ppm colour, A4 duplex",
-      "PrecisionCore heat-free printhead",
-      "Ethernet, Wi-Fi Direct and a 4.3-inch touchscreen",
-    ],
-    specs: {
-      Technology: "Ink tank (EcoTank)",
-      Speed: "25 ppm mono / 12 ppm colour",
-      "Page yield": "7,500 colour / 6,000 mono per ink set",
-      Connectivity: "Ethernet, Wi-Fi, USB",
-      Warranty: "1 year or 30,000 pages",
-    },
-    hsCode: "8443.31",
-    origin: "Indonesia",
-    glyph: "printer",
-    variants: [
-      { sku: "EPS-L6580", name: "Single unit", list: D(649), price: D(529), stock: 6, leadDays: 3, grams: 13200 },
-    ],
-  },
-  {
-    slug: "ubiquiti-unifi-u7-pro-access-point",
-    name: "Ubiquiti UniFi U7 Pro Access Point",
-    kind: "PHYSICAL",
-    brand: "Ubiquiti",
-    category: "networking",
-    summary: "Wi-Fi 7 ceiling access point managed from the UniFi controller, with no per-AP licensing.",
-    bullets: [
-      "Wi-Fi 7 (802.11be), 2.4 / 5 / 6 GHz tri-band",
-      "Up to 300 connected clients",
-      "PoE+ powered — one cable to the ceiling",
-      "No subscription or per-device licence",
-      "Managed alongside every other UniFi device in one controller",
-    ],
-    specs: {
-      Standard: "Wi-Fi 7 (802.11be)",
-      Bands: "2.4 GHz / 5 GHz / 6 GHz",
-      Uplink: "2.5 GbE",
-      Power: "PoE+ (802.3at)",
-      Coverage: "Up to 140 m² indoors",
-      Warranty: "1 year",
-    },
-    hsCode: "8517.62",
-    origin: "Vietnam",
-    glyph: "router",
-    featured: true,
-    variants: [
-      { sku: "UBI-U7-PRO", name: "Single access point", list: D(229), price: D(199), stock: 22, leadDays: 1, grams: 900 },
-      { sku: "UBI-U7-PRO-5PK", name: "5-pack", list: D(1145), price: D(949), stock: 4, leadDays: 3, grams: 4200 },
-    ],
-    reviews: [
-      { author: "Nikhil D.", country: "Singapore", rating: 5, title: "Replaced six APs across two floors", body: "Roaming is seamless now and the controller makes troubleshooting actually possible. No licence fees is the reason we moved.", verified: true },
-      { author: "Tom R.", country: "United States", rating: 4, title: "You need the PoE budget", body: "Works exactly as advertised, but check your switch has the PoE+ headroom before ordering five of them. Ours did not.", verified: true },
-    ],
-  },
-  {
-    slug: "tp-link-omada-sg3428x-switch",
-    name: "TP-Link Omada SG3428X 24-Port Managed Switch",
-    kind: "PHYSICAL",
-    brand: "TP-Link",
-    category: "networking",
-    summary: "24-port gigabit L2+ managed switch with four 10G SFP+ uplinks.",
-    bullets: [
-      "24 x gigabit RJ-45 + 4 x 10G SFP+ uplinks",
-      "L2+ static routing, VLANs, LACP, QoS",
-      "Managed through the Omada controller or standalone",
-      "Rack-mount, fanless below 40% load",
-    ],
-    specs: {
-      Ports: "24 x 1G RJ-45, 4 x 10G SFP+",
-      Switching: "128 Gbps capacity",
-      Management: "Omada SDN, web UI, CLI",
-      Form: "1U rack-mount",
-      Warranty: "3 years",
-    },
-    hsCode: "8517.62",
-    origin: "China",
-    glyph: "router",
-    variants: [
-      { sku: "TPL-SG3428X", name: "24-port", list: D(399), price: D(319), stock: 5, leadDays: 2, grams: 3900 },
-    ],
-  },
-  {
-    slug: "samsung-990-evo-plus-nvme-ssd",
-    name: "Samsung 990 EVO Plus NVMe SSD",
-    kind: "PHYSICAL",
-    brand: "Samsung",
-    category: "storage",
-    summary: "PCIe Gen5 M.2 drive at up to 7,250 MB/s, with a five-year warranty.",
-    bullets: [
-      "Sequential read up to 7,250 MB/s",
-      "PCIe 4.0 x4 and 5.0 x2 compatible",
-      "Samsung V-NAND TLC with a dynamic write cache",
-      "5-year limited warranty or the rated TBW",
-    ],
-    specs: {
-      Interface: "M.2 2280 NVMe, PCIe Gen5 x2 / Gen4 x4",
-      "Read speed": "Up to 7,250 MB/s",
-      "Write speed": "Up to 6,300 MB/s",
-      Endurance: "600 TBW (1 TB)",
-      Warranty: "5 years",
-    },
-    hsCode: "8523.51",
-    origin: "South Korea",
-    glyph: "ssd",
-    variants: [
-      { sku: "SAM-990EP-1TB", name: "1 TB", list: D(139), price: D(99), stock: 40, leadDays: 1, grams: 120 },
-      { sku: "SAM-990EP-2TB", name: "2 TB", list: D(249), price: D(179), stock: 18, leadDays: 1, grams: 120 },
-    ],
-    reviews: [
-      { author: "Karthik S.", country: "Australia", rating: 5, title: "Cloned our fleet onto these", body: "Twenty drives, no failures, and the boot time difference on older machines is dramatic. Good value at this price.", verified: true },
-    ],
-  },
-  {
-    slug: "seagate-ironwolf-pro-nas-drive",
-    name: "Seagate IronWolf Pro NAS Drive",
-    kind: "PHYSICAL",
-    brand: "Seagate",
-    category: "storage",
-    summary: "7200 rpm NAS drive rated for 24x7 operation, with data recovery included.",
-    bullets: [
-      "Built for 24x7 multi-bay NAS operation",
-      "550 TB/year workload rating",
-      "1.2 million hours MTBF",
-      "3 years of Seagate Rescue data recovery included",
-    ],
-    specs: {
-      Capacity: "Available 4 TB to 20 TB",
-      Speed: "7200 rpm",
-      Interface: "SATA 6 Gb/s",
-      Workload: "550 TB/year",
-      Warranty: "5 years + 3 years Rescue",
-    },
-    hsCode: "8471.70",
-    origin: "Thailand",
-    glyph: "ssd",
-    variants: [
-      { sku: "SEA-IWP-8TB", name: "8 TB", list: D(309), price: D(249), stock: 11, leadDays: 2, grams: 900 },
-      { sku: "SEA-IWP-16TB", name: "16 TB", list: D(539), price: D(429), stock: 3, leadDays: 4, grams: 900 },
-    ],
-  },
-  {
-    slug: "apc-smart-ups-1500va",
-    name: "APC Smart-UPS 1500VA Line Interactive",
-    kind: "PHYSICAL",
-    brand: "APC",
-    category: "storage",
-    summary: "1500VA / 1000W line-interactive UPS with AVR and a network management slot.",
-    bullets: [
-      "1500 VA / 1000 W, pure sine wave output",
-      "Automatic voltage regulation without draining the battery",
-      "LCD status panel and hot-swappable batteries",
-      "SmartSlot for network management",
-    ],
-    specs: {
-      Capacity: "1500 VA / 1000 W",
-      Topology: "Line interactive with AVR",
-      Output: "Pure sine wave",
-      Runtime: "~7 minutes at full load",
-      Warranty: "3 years (2 years on battery)",
-    },
-    hsCode: "8504.40",
-    origin: "India",
-    glyph: "ups",
-    variants: [
-      { sku: "APC-SMT1500", name: "1500 VA tower", list: D(629), price: D(499), stock: 8, leadDays: 3, grams: 24500 },
-    ],
-    reviews: [
-      { author: "Ganesh R.", country: "Kenya", rating: 5, title: "Rock solid through a bad rainy season", body: "We lost mains eleven times in one week and the server never blinked. The management card is worth adding.", verified: true },
-    ],
-  },
-  {
-    slug: "logitech-mx-keys-combo-for-business",
-    name: "Logitech MX Keys Combo for Business",
-    kind: "PHYSICAL",
-    brand: "Logitech",
-    category: "storage",
-    summary: "Keyboard and mouse set that pairs to three machines and charges over USB-C.",
-    bullets: [
-      "Switches between three devices with one key",
-      "Backlit keys with proximity sensing",
-      "USB-C rechargeable — up to 10 days with backlight, 5 months without",
-      "Logi Bolt secure receiver, FIPS-compliant",
-    ],
-    specs: {
-      Connectivity: "Logi Bolt USB receiver or Bluetooth",
-      Battery: "USB-C rechargeable",
-      Devices: "Up to 3, switchable",
-      Warranty: "1 year",
-    },
-    hsCode: "8471.60",
-    origin: "China",
-    glyph: "keyboard",
-    variants: [
-      { sku: "LOG-MXKEYS-COMBO", name: "Keyboard + mouse", list: D(229), price: D(179), stock: 26, leadDays: 1, grams: 1600 },
-    ],
-  },
+  // ---------------------------------------------------------------- Microsoft
   {
     slug: "microsoft-365-business-standard",
     name: "Microsoft 365 Business Standard",
-    kind: "LICENCE",
     brand: "Microsoft",
-    category: "software",
+    category: "productivity",
+    term: "ANNUAL_SUBSCRIPTION",
     summary:
-      "Desktop Office apps, 1 TB of OneDrive and business email per user, on an annual commitment.",
+      "Desktop Office apps, business email on your own domain, and 1 TB of OneDrive per user.",
     bullets: [
       "Word, Excel, PowerPoint and Outlook installed on up to 5 devices per user",
       "Business email on your own domain with a 50 GB mailbox",
       "1 TB of OneDrive storage per user",
       "Teams, SharePoint and Microsoft Bookings",
-      "Licence keys are issued to your email the moment payment clears",
+      "Licence keys issued to your email the moment payment clears",
     ],
     specs: {
       "Licence type": "Annual subscription, per user",
       "Minimum term": "12 months",
-      Delivery: "Electronic — issued on payment, no shipment",
+      Delivery: "Electronic — issued on payment",
       Platform: "Windows, macOS, iOS, Android, web",
       Support: "Microsoft standard support",
     },
-    glyph: "licence",
     featured: true,
     variants: [
-      { sku: "MS-365-BS-1U", name: "1 user, 1 year", list: D(180), price: D(149), stock: null, leadDays: null, grams: null },
-      { sku: "MS-365-BS-5U", name: "5 users, 1 year", list: D(900), price: D(720), stock: null, leadDays: null, grams: null },
-      { sku: "MS-365-BS-10U", name: "10 users, 1 year", list: D(1800), price: D(1400), stock: null, leadDays: null, grams: null },
+      { sku: "MS-365-BS-1U", name: "1 user, 1 year", seats: 1, usd: [165, 150], inr: [10100, 9200] },
+      { sku: "MS-365-BS-5U", name: "5 users, 1 year", seats: 5, usd: [825, 720], inr: [50500, 44000] },
+      { sku: "MS-365-BS-10U", name: "10 users, 1 year", seats: 10, usd: [1650, 1400], inr: [101000, 86000] },
     ],
     reviews: [
       { author: "Deepa L.", country: "United States", rating: 5, title: "Keys arrived in under a minute", body: "Ordered ten seats at 9pm and the keys were in my inbox before I closed the laptop. Redemption was straightforward.", verified: true },
-      { author: "Ashok G.", country: "United Kingdom", rating: 4, title: "Cheaper than going direct", body: "Roughly 15% under the list price for the same thing. Renewal reminder came a month ahead, which was useful.", verified: true },
+      { author: "Ashok G.", country: "India", rating: 4, title: "Cheaper than going direct, GST invoice was clean", body: "About 12% under list, and the GST invoice had our GSTIN on it so accounts could claim the input credit. That mattered more than the discount.", verified: true },
     ],
   },
   {
-    slug: "adobe-creative-cloud-for-teams",
-    name: "Adobe Creative Cloud for Teams — All Apps",
-    kind: "LICENCE",
-    brand: "Adobe",
-    category: "software",
-    summary: "Every Creative Cloud application, licensed per seat with an admin console.",
+    slug: "microsoft-365-business-premium",
+    name: "Microsoft 365 Business Premium",
+    brand: "Microsoft",
+    category: "productivity",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Everything in Business Standard plus device management and advanced threat protection.",
     bullets: [
-      "All 20+ Creative Cloud desktop and mobile apps",
+      "All of Business Standard, per user",
+      "Intune device management for company and personal devices",
+      "Microsoft Defender for Office 365 and Entra ID Plan 1",
+      "Conditional access and data loss prevention",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per user",
+      "Minimum term": "12 months",
+      Delivery: "Electronic — issued on payment",
+      "Seat cap": "300 users",
+    },
+    featured: true,
+    variants: [
+      { sku: "MS-365-BP-1U", name: "1 user, 1 year", seats: 1, usd: [288, 264], inr: [17700, 16400] },
+      { sku: "MS-365-BP-5U", name: "5 users, 1 year", seats: 5, usd: [1440, 1290], inr: [88500, 79500] },
+    ],
+    reviews: [
+      { author: "Priya N.", country: "India", rating: 5, title: "Intune alone justifies the step up", body: "We moved from Standard after a lost laptop. Being able to wipe it remotely was worth the difference on its own.", verified: true },
+    ],
+  },
+  {
+    slug: "microsoft-365-business-basic",
+    name: "Microsoft 365 Business Basic",
+    brand: "Microsoft",
+    category: "productivity",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Business email, Teams and the web versions of the Office apps. No desktop installs.",
+    bullets: [
+      "Business email on your own domain, 50 GB mailbox",
+      "Web and mobile versions of Word, Excel, PowerPoint and Outlook",
+      "Teams, SharePoint and 1 TB of OneDrive per user",
+      "No desktop applications — see Business Standard for those",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per user",
+      Delivery: "Electronic — issued on payment",
+      Platform: "Web and mobile only",
+    },
+    variants: [
+      { sku: "MS-365-BB-1U", name: "1 user, 1 year", seats: 1, usd: [78, 72], inr: [4700, 4300] },
+      { sku: "MS-365-BB-10U", name: "10 users, 1 year", seats: 10, usd: [780, 660], inr: [47000, 40500] },
+    ],
+  },
+  {
+    slug: "windows-11-pro",
+    name: "Windows 11 Pro",
+    brand: "Microsoft",
+    category: "servers",
+    term: "PERPETUAL",
+    summary:
+      "The business edition of Windows, bought outright — BitLocker, domain join and Hyper-V.",
+    bullets: [
+      "BitLocker device encryption",
+      "Domain and Entra ID join, with Group Policy",
+      "Hyper-V and Windows Sandbox",
+      "Remote Desktop host",
+      "Perpetual — no renewal, tied to the device",
+    ],
+    specs: {
+      "Licence type": "Perpetual, single device",
+      Delivery: "Electronic — product key issued on payment",
+      Platform: "Windows",
+      Transferable: "No — tied to the device it activates",
+    },
+    variants: [
+      { sku: "MS-WIN11-PRO", name: "1 device, perpetual", seats: 1, usd: [219, 199], inr: [18000, 16500] },
+    ],
+    reviews: [
+      { author: "Karthik S.", country: "India", rating: 5, title: "Genuine key, activated first time", body: "Bought four for new builds. All activated online without a phone call, which is more than I can say for the marketplace sellers.", verified: true },
+    ],
+  },
+  {
+    slug: "windows-server-2022-standard",
+    name: "Windows Server 2022 Standard",
+    brand: "Microsoft",
+    category: "servers",
+    term: "PERPETUAL",
+    summary:
+      "16-core server licence with two virtual machine rights. CALs sold separately.",
+    bullets: [
+      "Covers 16 physical cores, expandable in 2-core packs",
+      "Two virtual machine licences included",
+      "Storage Replica, Storage Spaces Direct and shielded VMs",
+      "Client Access Licences are not included and are required",
+    ],
+    specs: {
+      "Licence type": "Perpetual, 16 cores",
+      Delivery: "Electronic — issued on payment",
+      "Also required": "One CAL per user or device accessing the server",
+    },
+    variants: [
+      { sku: "MS-WS2022-STD-16C", name: "16 cores, perpetual", seats: 1, usd: [1180, 1069], inr: [98000, 89000] },
+    ],
+  },
+  {
+    slug: "microsoft-power-bi-pro",
+    name: "Microsoft Power BI Pro",
+    brand: "Microsoft",
+    category: "analytics",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Publish, share and collaborate on reports and dashboards, per user, per year.",
+    bullets: [
+      "Publish reports to shared workspaces",
+      "Collaborate on dashboards and paginated reports",
+      "Refresh datasets up to eight times a day",
+      "Row-level security",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per user",
+      Delivery: "Electronic — issued on payment",
+      Platform: "Windows, web, mobile",
+    },
+    variants: [
+      { sku: "MS-PBI-PRO-1U", name: "1 user, 1 year", seats: 1, usd: [180, 168], inr: [11400, 10500] },
+      { sku: "MS-PBI-PRO-5U", name: "5 users, 1 year", seats: 5, usd: [900, 810], inr: [57000, 51000] },
+    ],
+  },
+  {
+    slug: "microsoft-project-plan-3",
+    name: "Microsoft Project Plan 3",
+    brand: "Microsoft",
+    category: "analytics",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Desktop and web project management with resource levelling and roadmaps.",
+    bullets: [
+      "Project desktop client plus the web app",
+      "Resource management and levelling",
+      "Roadmaps across multiple projects",
+      "Submit and track timesheets",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per user",
+      Delivery: "Electronic — issued on payment",
+      Platform: "Windows desktop and web",
+    },
+    variants: [
+      { sku: "MS-PROJ-P3-1U", name: "1 user, 1 year", seats: 1, usd: [396, 360], inr: [24500, 22500] },
+    ],
+  },
+  {
+    slug: "microsoft-visio-plan-2",
+    name: "Microsoft Visio Plan 2",
+    brand: "Microsoft",
+    category: "analytics",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Diagramming with the Visio desktop app, data-linked shapes and web publishing.",
+    bullets: [
+      "Visio desktop app installed on up to 5 devices",
+      "Data-linked diagrams from Excel and Power BI",
+      "Publish and share diagrams on the web",
+      "2 GB of Visio-specific storage",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per user",
+      Delivery: "Electronic — issued on payment",
+      Platform: "Windows desktop and web",
+    },
+    variants: [
+      { sku: "MS-VISIO-P2-1U", name: "1 user, 1 year", seats: 1, usd: [198, 180], inr: [12300, 11300] },
+    ],
+  },
+
+  // -------------------------------------------------------------------- Adobe
+  {
+    slug: "adobe-creative-cloud-all-apps-teams",
+    name: "Adobe Creative Cloud for Teams — All Apps",
+    brand: "Adobe",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Every Creative Cloud application, licensed per seat with an admin console.",
+    bullets: [
+      "All 20+ Creative Cloud desktop and mobile applications",
       "1 TB of cloud storage per seat",
       "Admin console for reassigning seats as staff change",
-      "Adobe Expert Services included",
+      "Adobe Expert Services and 24/7 technical support",
+      "Adobe Stock available as an add-on",
     ],
     specs: {
       "Licence type": "Annual subscription, per seat",
       "Minimum term": "12 months",
-      Delivery: "Electronic — issued on payment, no shipment",
+      Delivery: "Electronic — seat assigned on payment",
       Platform: "Windows, macOS",
+      Reassignable: "Yes, through the admin console",
     },
-    glyph: "licence",
+    featured: true,
     variants: [
-      { sku: "ADB-CCT-ALL-1S", name: "1 seat, 1 year", list: D(900), price: D(780), stock: null, leadDays: null, grams: null },
-      { sku: "ADB-CCT-ALL-5S", name: "5 seats, 1 year", list: D(4500), price: D(3780), stock: null, leadDays: null, grams: null },
+      { sku: "ADB-CCT-ALL-1S", name: "1 seat, 1 year", seats: 1, usd: [900, 840], inr: [66000, 63000] },
+      { sku: "ADB-CCT-ALL-5S", name: "5 seats, 1 year", seats: 5, usd: [4500, 4020], inr: [330000, 299000] },
+      { sku: "ADB-CCT-ALL-10S", name: "10 seats, 1 year", seats: 10, usd: [9000, 7900], inr: [660000, 585000] },
     ],
     reviews: [
       { author: "Studio Lead", country: "Germany", rating: 4, title: "Seat reassignment is the win", body: "Being able to move a seat when someone leaves has saved us buying spares. Invoicing was clean for our accounts team.", verified: true },
+      { author: "Ritu M.", country: "India", rating: 5, title: "Renewal reminder came a month early", body: "No auto-renew surprise, which is the opposite of our last supplier. Priced in rupees with GST, so nothing to reconcile.", verified: true },
     ],
   },
   {
-    slug: "veeam-data-platform-essentials",
-    name: "Veeam Data Platform Essentials",
-    kind: "LICENCE",
-    brand: "Veeam",
-    category: "software",
+    slug: "adobe-creative-cloud-single-app-teams",
+    name: "Adobe Creative Cloud for Teams — Single App",
+    brand: "Adobe",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
     summary:
-      "Backup, recovery and ransomware protection for small estates, licensed per socket bundle.",
+      "One Creative Cloud application of your choice, per seat, with the team admin console.",
     bullets: [
-      "Backup and instant recovery for VMware, Hyper-V, physical and cloud",
-      "Immutable backup copies against ransomware",
-      "5-instance bundle, expandable",
-      "Includes one year of production support",
+      "Choose any one app — Photoshop, Illustrator, Premiere Pro, InDesign, After Effects",
+      "100 GB of cloud storage per seat",
+      "Admin console for reassigning seats",
+      "Tell us which application after checkout",
     ],
     specs: {
-      "Licence type": "Annual subscription",
-      Delivery: "Electronic — licence file issued on payment",
-      Platform: "VMware vSphere, Microsoft Hyper-V, AHV, physical",
-      Support: "24/7 production support included",
+      "Licence type": "Annual subscription, per seat",
+      Delivery: "Electronic — seat assigned on payment",
+      Platform: "Windows, macOS",
+      Note: "The application is chosen at assignment, not at purchase",
     },
-    glyph: "licence",
-    featured: true,
     variants: [
-      { sku: "VEEAM-DPE-5I", name: "5 instances, 1 year", list: D(1450), price: D(1195), stock: null, leadDays: null, grams: null },
-    ],
-    reviews: [
-      { author: "Mahesh A.", country: "United Arab Emirates", rating: 5, title: "Standard purchase, no surprises", body: "Licence file came through immediately and applied first time. This is our third renewal from them.", verified: true },
-      { author: "Rupal S.", country: "South Africa", rating: 3, title: "Fine, but read what support covers", body: "The licence is exactly as described. Just be aware the first year of support is included and renewal is extra — that was not obvious to me.", verified: true },
+      { sku: "ADB-CCT-SINGLE-1S", name: "1 seat, 1 year", seats: 1, usd: [440, 408], inr: [30500, 28800] },
+      { sku: "ADB-CCT-SINGLE-5S", name: "5 seats, 1 year", seats: 5, usd: [2200, 1950], inr: [152500, 137000] },
     ],
   },
   {
-    slug: "autodesk-autocad-subscription",
-    name: "Autodesk AutoCAD — Single User Subscription",
-    kind: "LICENCE",
+    slug: "adobe-acrobat-pro-teams",
+    name: "Adobe Acrobat Pro for Teams",
+    brand: "Adobe",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Create, edit, sign and protect PDFs, with e-signature and the admin console.",
+    bullets: [
+      "Edit text and images directly in a PDF",
+      "Collect legally binding e-signatures",
+      "Redact and password-protect documents",
+      "Compare two versions of a document",
+      "Works on desktop, web and mobile",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per seat",
+      Delivery: "Electronic — seat assigned on payment",
+      Platform: "Windows, macOS, web, iOS, Android",
+    },
+    featured: true,
+    variants: [
+      { sku: "ADB-ACRO-PRO-1S", name: "1 seat, 1 year", seats: 1, usd: [239, 215], inr: [18500, 17000] },
+      { sku: "ADB-ACRO-PRO-5S", name: "5 seats, 1 year", seats: 5, usd: [1195, 1040], inr: [92500, 82000] },
+    ],
+    reviews: [
+      { author: "Farah A.", country: "United Arab Emirates", rating: 4, title: "E-signature replaced a courier", body: "We were posting contracts. Now they come back the same afternoon. The licence covers what we needed without going to All Apps.", verified: true },
+    ],
+  },
+  {
+    slug: "adobe-substance-3d-collection",
+    name: "Adobe Substance 3D Collection",
+    brand: "Adobe",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "The full Substance 3D toolset — Painter, Designer, Sampler, Stager and Modeler.",
+    bullets: [
+      "Substance 3D Painter, Designer, Sampler, Stager and Modeler",
+      "50 assets a month from the Substance 3D Assets library",
+      "100 GB of cloud storage",
+      "Commercial use included",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per seat",
+      Delivery: "Electronic — seat assigned on payment",
+      Platform: "Windows, macOS",
+    },
+    variants: [
+      { sku: "ADB-SUB3D-1S", name: "1 seat, 1 year", seats: 1, usd: [1548, 1428], inr: [112000, 104000] },
+    ],
+  },
+
+  // ----------------------------------------------------------------- Autodesk
+  {
+    slug: "autodesk-autocad",
+    name: "Autodesk AutoCAD",
     brand: "Autodesk",
-    category: "software",
-    summary: "Full AutoCAD with the industry toolsets, licensed to one named user per year.",
+    category: "cad",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Full AutoCAD with the seven industry toolsets, licensed to one named user.",
     bullets: [
       "AutoCAD on Windows and macOS, plus web and mobile",
-      "Seven industry-specific toolsets included",
-      "Named-user licensing, reassignable",
+      "Seven industry toolsets — Architecture, Mechanical, Electrical, MEP, Map 3D, Plant 3D, Raster Design",
+      "Named-user licensing, reassignable through the Autodesk account",
       "Autodesk technical support included",
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment, no shipment",
+      Delivery: "Electronic — assigned on payment",
+      Platform: "Windows, macOS, web, mobile",
+      Reassignable: "Yes, through the Autodesk account portal",
+    },
+    featured: true,
+    variants: [
+      { sku: "ADSK-ACAD-1Y", name: "1 user, 1 year", seats: 1, usd: [2230, 2030], inr: [166000, 152000] },
+      { sku: "ADSK-ACAD-3Y", name: "1 user, 3 years", seats: 1, usd: [6350, 5480], inr: [472000, 410000] },
+    ],
+    reviews: [
+      { author: "Sandeep R.", country: "India", rating: 5, title: "Assigned to our account within minutes", body: "Bought two seats. Both appeared in our Autodesk account portal the same evening and we assigned them ourselves.", verified: true },
+      { author: "Marcus H.", country: "Australia", rating: 4, title: "Three-year term saved real money", body: "The multi-year price is meaningfully better if you know you are keeping it. Worth asking about before you buy annual.", verified: true },
+    ],
+  },
+  {
+    slug: "autodesk-autocad-lt",
+    name: "Autodesk AutoCAD LT",
+    brand: "Autodesk",
+    category: "cad",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "2D drafting and documentation. No 3D modelling and no industry toolsets.",
+    bullets: [
+      "Full 2D drafting, drawing and annotation",
+      "Reads and writes the same DWG files as full AutoCAD",
+      "Web and mobile apps included",
+      "No 3D modelling, no toolsets, no API customisation",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, named user",
+      Delivery: "Electronic — assigned on payment",
       Platform: "Windows, macOS, web, mobile",
     },
-    glyph: "licence",
     variants: [
-      { sku: "ADSK-ACAD-1Y", name: "1 user, 1 year", list: D(2555), price: D(2190), stock: null, leadDays: null, grams: null },
+      { sku: "ADSK-ACADLT-1Y", name: "1 user, 1 year", seats: 1, usd: [550, 500], inr: [41000, 38000] },
+    ],
+  },
+  {
+    slug: "autodesk-revit",
+    name: "Autodesk Revit",
+    brand: "Autodesk",
+    category: "cad",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Building information modelling for architecture, structure and MEP.",
+    bullets: [
+      "Multidisciplinary BIM authoring in one model",
+      "Structural analysis and MEP systems design",
+      "Worksharing across a project team",
+      "Generates schedules and documentation from the model",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, named user",
+      Delivery: "Electronic — assigned on payment",
+      Platform: "Windows",
+    },
+    featured: true,
+    variants: [
+      { sku: "ADSK-REVIT-1Y", name: "1 user, 1 year", seats: 1, usd: [3470, 3150], inr: [258000, 236000] },
+    ],
+  },
+  {
+    slug: "autodesk-fusion",
+    name: "Autodesk Fusion",
+    brand: "Autodesk",
+    category: "cad",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Cloud CAD, CAM, CAE and PCB in one product, licensed per named user.",
+    bullets: [
+      "Parametric modelling, assemblies and rendering",
+      "2.5- to 5-axis CAM toolpaths",
+      "Simulation and generative design (token-based)",
+      "Integrated PCB design",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, named user",
+      Delivery: "Electronic — assigned on payment",
+      Platform: "Windows, macOS",
+    },
+    variants: [
+      { sku: "ADSK-FUSION-1Y", name: "1 user, 1 year", seats: 1, usd: [840, 760], inr: [62000, 57000] },
+      { sku: "ADSK-FUSION-3Y", name: "1 user, 3 years", seats: 1, usd: [2390, 2050], inr: [176000, 154000] },
+    ],
+  },
+  {
+    slug: "autodesk-maya",
+    name: "Autodesk Maya",
+    brand: "Autodesk",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "3D animation, modelling, simulation and rendering for film, television and games.",
+    bullets: [
+      "Character rigging and animation",
+      "Bifrost for procedural effects",
+      "Arnold renderer with 5 licences included",
+      "USD workflow support",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, named user",
+      Delivery: "Electronic — assigned on payment",
+      Platform: "Windows, macOS, Linux",
+    },
+    variants: [
+      { sku: "ADSK-MAYA-1Y", name: "1 user, 1 year", seats: 1, usd: [2400, 2190], inr: [179000, 164000] },
+    ],
+  },
+  {
+    slug: "autodesk-inventor",
+    name: "Autodesk Inventor",
+    brand: "Autodesk",
+    category: "cad",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Mechanical design and product simulation for manufactured parts and assemblies.",
+    bullets: [
+      "Parametric, direct and freeform modelling",
+      "Assembly design and large-assembly performance",
+      "Stress and frame analysis built in",
+      "Automated drawing generation",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, named user",
+      Delivery: "Electronic — assigned on payment",
+      Platform: "Windows",
+    },
+    variants: [
+      { sku: "ADSK-INV-1Y", name: "1 user, 1 year", seats: 1, usd: [3295, 2995], inr: [245000, 225000] },
     ],
   },
 ];
@@ -638,6 +585,7 @@ async function main() {
   await prisma.cartItem.deleteMany();
   await prisma.cart.deleteMany();
   await prisma.review.deleteMany();
+  await prisma.price.deleteMany();
   await prisma.variant.deleteMany();
   await prisma.product.deleteMany();
   await prisma.brand.deleteMany();
@@ -651,11 +599,9 @@ async function main() {
   }
 
   const brands = new Map<string, string>();
-  for (const name of BRANDS) {
-    const row = await prisma.brand.create({
-      data: { name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-") },
-    });
-    brands.set(name, row.id);
+  for (const brand of BRANDS) {
+    const row = await prisma.brand.create({ data: brand });
+    brands.set(row.name, row.id);
   }
 
   console.log(`Seeding ${PRODUCTS.length} products…`);
@@ -669,30 +615,36 @@ async function main() {
       data: {
         slug: product.slug,
         name: product.name,
-        kind: product.kind,
+        kind: "LICENCE",
         brandId,
         categoryId,
         summary: product.summary,
         bullets: product.bullets,
         specs: product.specs,
-        // A licence crosses no border, so it carries neither an HS code nor a
-        // country of origin — the columns stay null rather than being filled
-        // with a value that would be wrong on a customs form.
-        hsCode: product.kind === "LICENCE" ? null : (product.hsCode ?? null),
-        origin: product.kind === "LICENCE" ? null : (product.origin ?? null),
-        glyph: product.glyph,
+        sacCode: "997331",
+        gstRatePercent: 18,
+        term: product.term,
+        glyph: "licence",
         featured: product.featured ?? false,
         variants: {
           create: product.variants.map((variant) => ({
             sku: variant.sku,
             name: variant.name,
-            listPriceMinor: variant.list,
-            priceMinor: variant.price,
-            stockOnHand:
-              product.kind === "LICENCE" ? null : (variant.stock ?? 0),
-            leadDays: product.kind === "LICENCE" ? null : (variant.leadDays ?? 3),
-            weightGrams:
-              product.kind === "LICENCE" ? null : (variant.grams ?? null),
+            seats: variant.seats,
+            prices: {
+              create: [
+                {
+                  currency: "USD",
+                  listMinor: variant.usd[0] * 100,
+                  priceMinor: variant.usd[1] * 100,
+                },
+                {
+                  currency: "INR",
+                  listMinor: variant.inr[0] * 100,
+                  priceMinor: variant.inr[1] * 100,
+                },
+              ],
+            },
           })),
         },
         reviews: {
@@ -714,6 +666,7 @@ async function main() {
     brands: await prisma.brand.count(),
     products: await prisma.product.count(),
     variants: await prisma.variant.count(),
+    prices: await prisma.price.count(),
     reviews: await prisma.review.count(),
   });
 }

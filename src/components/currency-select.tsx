@@ -2,25 +2,28 @@
 
 import { useRef } from "react";
 
-import { COUNTRIES } from "@/lib/shipping";
+import { CURRENCIES, type CurrencyCode } from "@/lib/market";
 
 /**
- * Destination picker. Applies itself on change, with a submit button behind a
+ * The market switch.
+ *
+ * Applies itself on change, with a submit button behind a
  * `@media (scripting: enabled)` rule for anyone without JavaScript — the same
  * condition under which `onChange` fires, expressed in CSS rather than in
  * `<noscript>`, which React cannot hydrate.
+ *
+ * This is deliberately prominent rather than buried in a footer. The store
+ * guesses the market from the request, and a guess about somebody's country is
+ * wrong often enough — a VPN, a travelling buyer, an Indian company paying from
+ * a Singapore entity — that the correction has to be one obvious click.
  */
-export function CountrySelect({
-  name = "country",
+export function CurrencySelect({
   value,
   id,
-  label,
   className = "",
 }: {
-  name?: string;
-  value: string | null;
+  value: CurrencyCode;
   id: string;
-  label: string;
   className?: string;
 }) {
   const ref = useRef<HTMLSelectElement>(null);
@@ -28,20 +31,19 @@ export function CountrySelect({
   return (
     <span className="flex items-center gap-1.5">
       <label className="sr-only" htmlFor={id}>
-        {label}
+        Currency and market
       </label>
       <select
         id={id}
         ref={ref}
-        name={name}
-        defaultValue={value ?? ""}
+        name="currency"
+        defaultValue={value}
         onChange={() => ref.current?.form?.requestSubmit()}
         className={className}
       >
-        <option value="">Select a country…</option>
-        {COUNTRIES.map((country) => (
-          <option key={country.code} value={country.code}>
-            {country.name}
+        {Object.values(CURRENCIES).map((currency) => (
+          <option key={currency.code} value={currency.code}>
+            {currency.symbol} {currency.label}
           </option>
         ))}
       </select>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { H2, PolicyPage, Ul } from "@/components/policy";
-import { RESTRICTED_COUNTRIES } from "@/lib/shipping";
+import { RESTRICTED_COUNTRIES } from "@/lib/market";
 import { getSiteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -17,10 +17,10 @@ export default function ExportCompliancePage() {
   return (
     <PolicyPage title="Export compliance" updated="2 September 2026">
       <p>
-        IT hardware and licensed software are controlled goods. Selling them
-        across a border is subject to export controls and trade sanctions, and
-        breaking those is a criminal matter rather than a commercial one — for
-        us as the exporter and, in some cases, for you as the importer.
+        Licensed software is a controlled good. Supplying it across a border is
+        subject to export controls and trade sanctions, and breaking those is a
+        criminal matter rather than a commercial one — for us as the exporter
+        and, in some cases, for you as the recipient.
       </p>
       <p>
         This page exists so nothing here is a surprise. It is a summary of how we
@@ -34,9 +34,9 @@ export default function ExportCompliancePage() {
         rather than accepted and quietly cancelled later.
       </p>
       <p>
-        This applies to software licences as much as to hardware. A licence key
-        is an export even though it travels by email, and it is not exempt
-        because nothing physical crosses a border.
+        A licence key is an export even though it travels by email. It is not
+        exempt because nothing physical crosses a border, and it is not exempt
+        because it was delivered in seconds.
       </p>
 
       <H2>What you confirm when you order</H2>
@@ -72,33 +72,30 @@ export default function ExportCompliancePage() {
         do not keep a deposit.
       </p>
 
-      <H2>Declarations</H2>
+      <H2>Invoicing</H2>
       <p>
-        Every parcel travels with a commercial invoice declaring the true
-        description, HS code, country of origin and the price you actually paid.
-      </p>
-      <p>
-        We will not under-declare a shipment, describe goods as samples, or mark
-        an order as a gift. Customers ask; the answer is always no. It is customs
-        fraud, it voids the shipment&apos;s insurance, and it is the importer —
-        you — who is exposed to the penalty and the seizure. A supplier willing
-        to do it for you is telling you what they will do to you later.
+        Every invoice states the true product, the real price paid and the
+        actual buyer. Customers occasionally ask us to describe a licence as
+        something else, split an invoice to stay under a threshold, or bill a
+        different entity from the one receiving the keys. The answer is always
+        no — that is invoice fraud, and it exposes the buyer far more than it
+        exposes us.
       </p>
 
-      <H2>Where goods ship from</H2>
+      <H2>Where the supply comes from</H2>
       <p>
-        Physical goods are dispatched from {config.shipsFrom}. That determines
-        which export regime applies to the sale, and the country of origin shown
-        on each product page determines what your own customs authority assesses
-        duty against — the two are frequently different and both are declared.
+        Licences are supplied from {config.shipsFrom}, which determines the
+        export regime that applies to the sale. An electronic delivery is still
+        an export: nothing crosses a border physically, and the controls apply
+        exactly the same.
       </p>
 
       <H2>Questions</H2>
       <p>
-        If you are unsure whether an item can be lawfully imported into your
-        country, or whether your organisation needs an import licence for it, ask
-        us before ordering. We would far rather answer a question than deal with
-        a seizure.
+        If you are unsure whether your organisation can lawfully receive a
+        particular product, or whether an end use falls inside a control, ask us
+        before ordering. We would far rather answer a question than unwind an
+        order.
       </p>
     </PolicyPage>
   );

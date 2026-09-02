@@ -5,21 +5,24 @@ import { notFound } from "next/navigation";
 import { addToCart, buyNow } from "@/app/actions";
 import { Glyph } from "@/components/glyph";
 import { Stars } from "@/components/stars";
-import { getProduct, ratingOf, specRows } from "@/lib/catalogue";
-import { getCart, maxQtyFor } from "@/lib/cart";
-import { discountPercent, formatMoney, STORE_CURRENCY } from "@/lib/money";
+import { getMarket, MAX_QTY } from "@/lib/cart";
 import {
-  countryName,
-  estimateArrival,
-  formatArrival,
-  zoneFor,
-} from "@/lib/shipping";
+  getProduct,
+  priceOf,
+  ratingOf,
+  sellableVariants,
+  specRows,
+  TERM_LABELS,
+  TERM_NOTES,
+} from "@/lib/catalogue";
+import { discountPercent, formatMoney, splitInclusiveTax } from "@/lib/money";
 
 export async function generateMetadata(
   props: PageProps<"/product/[slug]">,
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const product = await getProduct(slug);
+  const market = await getMarket();
+  const product = await getProduct(slug, market.currency);
   if (!product) return { title: "Product not found" };
   return { title: product.name, description: product.summary };
 }
@@ -31,24 +34,40 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
     string | string[] | undefined
   >;
 
-  const [product, cart] = await Promise.all([getProduct(slug), getCart()]);
+  const market = await getMarket();
+  const currency = market.currency;
+  const product = await getProduct(slug, currency);
   if (!product) notFound();
 
-  const country = cart?.country ?? null;
-  const zone = country ? zoneFor(country) : null;
+  const sellable = sellableVariants(product.variants);
+  // A product with no price in this market genuinely is not sold here. Saying
+  // so beats rendering a page with a blank where the price should be.
+  if (sellable.length === 0) {
+    return (
+      <div className="mx-auto max-w-[700px] px-4 py-12">
+        <div className="rounded-lg border border-line bg-surface p-8 text-center">
+          <h1 className="text-xl font-bold text-ink">{product.name}</h1>
+          <p className="mt-2 text-muted">
+            This licence is not sold in {currency} yet. Switch the market in the
+            header, or email us and we will quote it.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const requestedSku = Array.isArray(search.sku) ? search.sku[0] : search.sku;
   const variant =
-    product.variants.find((v) => v.sku === requestedSku) ?? product.variants[0];
+    sellable.find((v) => v.sku === requestedSku) ?? sellable[0];
+  const price = priceOf(variant)!;
 
-  const isLicence = product.kind === "LICENCE";
   const { average, count } = ratingOf(product.reviews);
-  const off = discountPercent(variant.listPriceMinor, variant.priceMinor);
-  const ceiling = maxQtyFor(variant.stockOnHand);
-  const available = isLicence || (variant.stockOnHand ?? 0) > 0;
+  const off = discountPercent(price.listMinor, price.priceMinor);
+  const perSeat = Math.round(price.priceMinor / variant.seats);
   const specs = specRows(product.specs);
-  const freeShipping =
-    zone !== null && variant.priceMinor >= zone.freeOverMinor;
+  const gst = market.domestic
+    ? splitInclusiveTax(price.priceMinor, product.gstRatePercent)
+    : null;
 
   return (
     <div className="mx-auto max-w-[1500px] px-4 py-4">
@@ -58,38 +77,37 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
         </Link>
         <span className="px-1.5">›</span>
         <Link
-          href={`/s?category=${product.category.slug}`}
+          href={`/s?brand=${product.brand.slug}`}
           className="hover:text-link hover:underline"
         >
-          {product.category.name}
+          {product.brand.name}
         </Link>
         <span className="px-1.5">›</span>
         <span className="text-ink">{product.name}</span>
       </nav>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)_minmax(0,300px)]">
-        {/* Image. Sits at its natural height rather than stretching to match
-            the description column beside it. */}
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,310px)]">
         <div className="self-start rounded-lg border border-line bg-surface p-6">
           <div className="flex aspect-square items-center justify-center rounded bg-ground/60 text-nav-2">
-            <Glyph name={product.glyph} className="h-48 w-48" />
+            <Glyph name={product.glyph} className="h-40 w-40" />
           </div>
           <p className="mt-3 text-center text-[12px] text-faint">
-            Product photography to follow — the drawing is a placeholder.
+            Supplied under {product.brand.name}&apos;s own end-user terms.
+            Vertex is the reseller.
           </p>
         </div>
 
-        {/* Detail */}
         <div className="min-w-0">
           <Link
             href={`/s?brand=${product.brand.slug}`}
             className="text-[13px] text-link hover:underline"
           >
-            Visit the {product.brand.name} store
+            All {product.brand.name} licences
           </Link>
           <h1 className="mt-1 text-2xl font-bold leading-tight text-ink">
             {product.name}
           </h1>
+          <p className="mt-1 text-[14px] text-muted">{product.summary}</p>
 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px]">
             <Stars value={average} size={16} />
@@ -106,43 +124,58 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               <span className="text-2xl font-semibold text-deal">-{off}%</span>
             ) : null}
             <span className="text-3xl font-bold text-ink">
-              {formatMoney(variant.priceMinor)}
+              {formatMoney(price.priceMinor, currency)}
             </span>
-            <span className="text-[13px] text-faint">{STORE_CURRENCY}</span>
+            <span className="text-[13px] text-faint">{currency}</span>
           </div>
           {off > 0 ? (
             <p className="mt-0.5 text-[13px] text-muted">
               List price{" "}
               <span className="line-through">
-                {formatMoney(variant.listPriceMinor)}
+                {formatMoney(price.listMinor, currency)}
               </span>
             </p>
           ) : null}
-          <p className="mt-1 text-[13px] text-muted">
-            {isLicence ? (
-              <>
-                Electronic delivery. No shipping, no customs, no duty.
-              </>
-            ) : (
-              <>
-                Excludes shipping and any import duty or tax the destination
-                charges on arrival.{" "}
-                <Link href="/shipping" className="text-link underline">
-                  How this works
-                </Link>
-              </>
-            )}
+
+          {/* The tax line is the whole difference between the two markets, so
+              it is stated on the page rather than discovered at checkout. */}
+          {gst ? (
+            <p className="mt-1 text-[13px] text-muted">
+              Inclusive of {product.gstRatePercent}% GST (
+              {formatMoney(gst.taxMinor, currency)})
+              {product.sacCode ? (
+                <>
+                  {" · "}
+                  <span className="font-mono text-[12px]">
+                    SAC {product.sacCode}
+                  </span>
+                </>
+              ) : null}
+            </p>
+          ) : (
+            <p className="mt-1 text-[13px] text-muted">
+              No Indian tax is added — this is a zero-rated export. Any tax your
+              own country charges on imported software is not included.
+            </p>
+          )}
+
+          <p className="mt-3 inline-flex rounded-md border border-line bg-ground/60 px-3 py-1.5 text-[13px]">
+            <span className="font-semibold text-ink">
+              {TERM_LABELS[product.term]}
+            </span>
+            <span className="px-1.5 text-faint">·</span>
+            <span className="text-muted">{TERM_NOTES[product.term]}</span>
           </p>
 
-          {product.variants.length > 1 ? (
+          {sellable.length > 1 ? (
             <div className="mt-4">
               <h2 className="mb-2 text-[13px] font-bold text-ink">
-                Choose an option
+                Choose your seats
               </h2>
               <div className="flex flex-wrap gap-2">
-                {product.variants.map((option) => {
+                {sellable.map((option) => {
                   const chosen = option.sku === variant.sku;
-                  const soldOut = !isLicence && (option.stockOnHand ?? 0) <= 0;
+                  const optionPrice = priceOf(option)!;
                   return (
                     <Link
                       key={option.sku}
@@ -153,14 +186,16 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
                         chosen
                           ? "border-brand bg-brand/5 ring-1 ring-brand"
                           : "border-line hover:border-faint"
-                      } ${soldOut ? "opacity-55" : ""}`}
+                      }`}
                     >
                       <span className="block font-semibold text-ink">
                         {option.name}
                       </span>
                       <span className="block text-muted">
-                        {formatMoney(option.priceMinor)}
-                        {soldOut ? " · out of stock" : ""}
+                        {formatMoney(optionPrice.priceMinor, currency)}
+                        {option.seats > 1
+                          ? ` · ${formatMoney(Math.round(optionPrice.priceMinor / option.seats), currency)}/seat`
+                          : ""}
                       </span>
                     </Link>
                   );
@@ -172,7 +207,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
           {product.bullets.length > 0 ? (
             <section className="mt-5">
               <h2 className="mb-2 text-[15px] font-bold text-ink">
-                About this item
+                What you get
               </h2>
               <ul className="list-disc space-y-1.5 pl-5 text-[14px] text-muted marker:text-faint">
                 {product.bullets.map((bullet) => (
@@ -184,7 +219,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
 
           <section className="mt-5">
             <h2 className="mb-2 text-[15px] font-bold text-ink">
-              Technical details
+              Licence details
             </h2>
             <div className="overflow-x-auto">
               <table className="w-full text-[13px]">
@@ -200,46 +235,31 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
                       <td className="px-3 py-2 text-muted">{value}</td>
                     </tr>
                   ))}
-                  {/* Customs data. Printed on the commercial invoice that
-                      travels with the parcel, and shown here because a buyer
-                      importing goods often has to declare it themselves. */}
-                  {product.origin ? (
-                    <tr className="border-b border-line-soft">
-                      <th
-                        scope="row"
-                        className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
-                      >
-                        Country of origin
-                      </th>
-                      <td className="px-3 py-2 text-muted">{product.origin}</td>
-                    </tr>
-                  ) : null}
-                  {product.hsCode ? (
-                    <tr className="border-b border-line-soft">
-                      <th
-                        scope="row"
-                        className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
-                      >
-                        HS code
-                      </th>
-                      <td className="px-3 py-2 font-mono text-[12px] text-muted">
-                        {product.hsCode}
-                      </td>
-                    </tr>
-                  ) : null}
-                  {variant.weightGrams ? (
-                    <tr className="border-b border-line-soft">
-                      <th
-                        scope="row"
-                        className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
-                      >
-                        Shipping weight
-                      </th>
-                      <td className="px-3 py-2 text-muted">
-                        {(variant.weightGrams / 1000).toFixed(2)} kg
-                      </td>
-                    </tr>
-                  ) : null}
+                  <tr className="border-b border-line-soft">
+                    <th
+                      scope="row"
+                      className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
+                    >
+                      Seats in this SKU
+                    </th>
+                    <td className="px-3 py-2 text-muted">
+                      {variant.seats}
+                      {variant.seats > 1
+                        ? ` · ${formatMoney(perSeat, currency)} per seat`
+                        : ""}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-line-soft">
+                    <th
+                      scope="row"
+                      className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
+                    >
+                      Publisher
+                    </th>
+                    <td className="px-3 py-2 text-muted">
+                      {product.brand.name} — Vertex is an authorised reseller
+                    </td>
+                  </tr>
                   <tr>
                     <th
                       scope="row"
@@ -261,99 +281,68 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
         <aside className="lg:sticky lg:top-32 lg:self-start">
           <div className="rounded-lg border border-line bg-surface p-4">
             <p className="text-2xl font-bold text-ink">
-              {formatMoney(variant.priceMinor)}
+              {formatMoney(price.priceMinor, currency)}
+            </p>
+            <p className="text-[13px] text-muted">
+              {variant.name}
+              {market.domestic ? " · incl. GST" : ""}
             </p>
 
-            {isLicence ? (
-              <p className="mt-2 text-[13px] text-muted">
-                <span className="font-semibold text-ok">Delivered by email</span>{" "}
-                — the key is issued to your inbox as soon as payment clears,
-                anywhere in the world.
-              </p>
-            ) : zone ? (
-              <p className="mt-2 text-[13px] text-muted">
-                {freeShipping ? (
-                  <span className="font-semibold text-ok">FREE shipping</span>
-                ) : (
-                  <>${zone.shippingMinor / 100} shipping</>
-                )}{" "}
-                to {countryName(country!)} · arrives{" "}
-                <span className="font-semibold text-ink">
-                  {formatArrival(
-                    estimateArrival(country, variant.leadDays ?? 3),
-                  )}
-                </span>
-              </p>
-            ) : (
-              <p className="mt-2 text-[13px] text-muted">
-                Ships worldwide. Choose your country in the header for a
-                delivery date and shipping cost.
-              </p>
-            )}
-
-            <p className="mt-3 text-[17px] font-semibold">
-              {available ? (
-                <span className="text-ok">In stock</span>
-              ) : (
-                <span className="text-deal">Currently unavailable</span>
-              )}
+            <p className="mt-2 text-[13px] text-muted">
+              <span className="font-semibold text-ok">Delivered by email</span>{" "}
+              — the key is issued to your inbox as soon as payment clears,
+              usually within a minute.
             </p>
-            {!isLicence &&
-            variant.stockOnHand !== null &&
-            variant.stockOnHand > 0 &&
-            variant.stockOnHand <= 5 ? (
-              <p className="text-[13px] text-deal">
-                Only {variant.stockOnHand} left — order soon.
-              </p>
-            ) : null}
 
-            {available ? (
-              <div className="mt-4 space-y-2">
-                <form action={addToCart} className="space-y-2">
-                  <input type="hidden" name="variantId" value={variant.id} />
-                  <label
-                    htmlFor="qty"
-                    className="block text-[13px] font-semibold text-ink"
-                  >
-                    Quantity
-                  </label>
-                  <select
-                    id="qty"
-                    name="qty"
-                    defaultValue="1"
-                    className="w-full rounded-md border border-line bg-ground/50 px-3 py-2 text-[14px]"
-                  >
-                    {Array.from({ length: ceiling }, (_, i) => i + 1).map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="submit"
-                    className="btn-amber w-full rounded-full py-2.5 text-[15px] font-semibold"
-                  >
-                    Add to cart
-                  </button>
-                </form>
+            <div className="mt-4 space-y-2">
+              <form action={addToCart} className="space-y-2">
+                <input type="hidden" name="variantId" value={variant.id} />
+                <label
+                  htmlFor="qty"
+                  className="block text-[13px] font-semibold text-ink"
+                >
+                  Quantity
+                </label>
+                <select
+                  id="qty"
+                  name="qty"
+                  defaultValue="1"
+                  className="w-full rounded-md border border-line bg-ground/50 px-3 py-2 text-[14px]"
+                >
+                  {Array.from({ length: MAX_QTY }, (_, i) => i + 1).map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                      {variant.seats > 1 ? ` × ${variant.seats} seats` : ""}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="submit"
+                  className="btn-amber w-full rounded-full py-2.5 text-[15px] font-semibold"
+                >
+                  Add to cart
+                </button>
+              </form>
 
-                <form action={buyNow}>
-                  <input type="hidden" name="variantId" value={variant.id} />
-                  <input type="hidden" name="qty" value="1" />
-                  <button
-                    type="submit"
-                    className="btn-orange w-full rounded-full py-2.5 text-[15px] font-semibold"
-                  >
-                    Buy now
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <p className="mt-4 rounded-md border border-line bg-ground/50 p-3 text-[13px] text-muted">
-                We can source this to order. Email us and we will confirm a date
-                and a freight cost before you pay.
-              </p>
-            )}
+              <form action={buyNow}>
+                <input type="hidden" name="variantId" value={variant.id} />
+                <input type="hidden" name="qty" value="1" />
+                <button
+                  type="submit"
+                  className="btn-orange w-full rounded-full py-2.5 text-[15px] font-semibold"
+                >
+                  Buy now
+                </button>
+              </form>
+            </div>
+
+            <p className="mt-3 rounded-md border border-line bg-ground/50 p-2.5 text-[12px] text-muted">
+              Need more than {MAX_QTY} of this?{" "}
+              <Link href="/contact" className="text-link underline">
+                Ask for a volume quote
+              </Link>{" "}
+              — the price is better and the licensing is cleaner.
+            </p>
 
             <dl className="mt-4 space-y-1.5 border-t border-line-soft pt-3 text-[13px]">
               <div className="flex gap-2">
@@ -363,25 +352,25 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               <div className="flex gap-2">
                 <dt className="w-24 shrink-0 text-faint">Payment</dt>
                 <dd className="text-ink">
-                  Card or PayPal, on the provider&apos;s own page
+                  {market.domestic
+                    ? "UPI, card or net banking, on the provider's own page"
+                    : "Card or PayPal, on the provider's own page"}
                 </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="w-24 shrink-0 text-faint">Returns</dt>
+                <dt className="w-24 shrink-0 text-faint">Invoice</dt>
                 <dd className="text-ink">
-                  {isLicence
-                    ? "Not returnable once the key is revealed"
-                    : "14 days, unopened and undamaged"}
+                  {market.domestic
+                    ? "GST invoice, with your GSTIN if you give one"
+                    : "Commercial invoice, zero-rated export"}
                 </dd>
               </div>
-              {!isLicence ? (
-                <div className="flex gap-2">
-                  <dt className="w-24 shrink-0 text-faint">Duties</dt>
-                  <dd className="text-ink">
-                    Payable by the recipient on arrival
-                  </dd>
-                </div>
-              ) : null}
+              <div className="flex gap-2">
+                <dt className="w-24 shrink-0 text-faint">Refunds</dt>
+                <dd className="text-ink">
+                  Full refund before the key is revealed
+                </dd>
+              </div>
             </dl>
           </div>
         </aside>
@@ -411,8 +400,7 @@ function Reviews({
   count: number;
 }) {
   // The distribution matters more than the average. A 4.2 made of fives and
-  // ones is a different product from a 4.2 made entirely of fours, and hiding
-  // that is the sort of thing shoppers notice.
+  // ones is a different product from a 4.2 made entirely of fours.
   const histogram = [5, 4, 3, 2, 1].map((stars) => ({
     stars,
     n: reviews.filter((review) => review.rating === stars).length,
@@ -428,7 +416,7 @@ function Reviews({
       {count === 0 ? (
         <p className="mt-2 text-muted">
           No reviews yet. Reviews can only be left by someone whose order for
-          this item was delivered.
+          this licence was fulfilled.
         </p>
       ) : (
         <div className="mt-4 grid gap-6 lg:grid-cols-[260px_1fr]">
