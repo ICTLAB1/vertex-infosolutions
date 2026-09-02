@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vertex Infosolutions — storefront
 
-## Getting Started
-
-First, run the development server:
+A direct-to-customer store for IT hardware and software licences. Browse, add to
+a basket, pay, and track what happens next.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env      # then fill in the company details
+npm run db:migrate        # creates dev.db and applies migrations
+npm run db:seed           # sample catalogue: 18 products, 27 SKUs, 21 reviews
+npm run dev               # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## The thing worth understanding first
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+A basket here can hold a monitor **and** a licence key. Those are one payment
+with two different afterlives:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| | Monitor | Licence |
+|---|---|---|
+| Needs an address | yes | no |
+| Comes off stock | yes | no |
+| Delivery charge | yes | no |
+| Arrives | in a few days, by courier | in seconds, by email |
+| Returnable | 7 days | not once the key is revealed |
 
-## Learn More
+So `Order` is the **money** object — one total, one GST computation, one
+payment — and `Fulfilment` sits beneath it carrying **status**. One order gets
+at most two: a `SHIPMENT` and a `DIGITAL`. An order can be delivered by email
+and still in transit by road, and neither fact contradicts the other.
 
-To learn more about Next.js, take a look at the following resources:
+Everything else follows from that. Delivery is charged on the shipped subset
+only. Cash on delivery is refused on any basket containing a licence, because
+there is nothing for a courier to hand over. Returnability is a property of the
+line, not the order.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If you change one thing in this codebase, do not collapse status back onto
+`Order`. It is the first thing that looks like a simplification and the first
+thing that breaks.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Layout
 
-## Deploy on Vercel
+```
+prisma/schema.prisma     the data model, commented
+prisma/seed.ts           sample catalogue — replace before launch
+src/lib/cart.ts          basket, and the one function that computes what is owed
+src/lib/delivery.ts      serviceable pincodes, delivery dates, shipping charges
+src/lib/money.ts         integer paise; a rupee is never a float
+src/lib/site.ts          who the seller legally is; warns when unconfigured
+src/app/actions.ts       add to cart, change quantity, place an order
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Rules the code keeps
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Money is integer paise.** A rupee value exists only as a string on its way
+  to a screen.
+- **Prices come from the database, every time.** A form says what the customer
+  wants, never what it costs.
+- **Stock is committed when the order is placed**, not when it ships — the gap
+  between the two is where overselling happens.
+- **Card details never reach this application.** Payment is taken on the
+  gateway's own page. There is no card field anywhere in this repository, and
+  that is deliberate.
+- **No dark patterns.** No fake countdowns, no pre-ticked boxes, no charge
+  introduced after the total is shown.
+
+## Before this takes a real order
+
+- [ ] Fill in every field in `.env` — the footer and `/grievance` render only
+      what is configured, and development shows a banner listing what is missing.
+- [ ] Replace `prisma/seed.ts` with the real catalogue.
+- [ ] Have the policy pages (`/terms`, `/privacy`, `/returns`, `/delivery`)
+      reviewed by a lawyer. They describe what the code does and are drafts.
+- [ ] Wire a real payment gateway. `placeOrder` currently marks non-COD orders
+      paid immediately; a real integration leaves them `PENDING` and lets the
+      gateway's webhook move them, with capture idempotent because the browser
+      and the webhook both report success in no guaranteed order.
+- [ ] Move off SQLite. Change the `datasource` provider and the adapter in
+      `src/lib/db.ts` together.
+- [ ] Gate `/order/[number]` behind a signed link or an account. Today the order
+      number alone reaches it, which is fine for a demo and not for production.
+- [ ] Send the confirmation email and the tax invoice. Neither is implemented.
+- [ ] Replace the placeholder product drawings with photography.
+
+## Scripts
+
+| | |
+|---|---|
+| `npm run dev` | development server |
+| `npm run build` | production build |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run db:migrate` | create and apply a migration |
+| `npm run db:seed` | reset and reseed the catalogue |
+| `npm run db:reset` | drop, re-migrate, reseed |
+
+## Stack
+
+Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS v4, Prisma 7 with a
+better-sqlite3 driver adapter. Server components and server actions throughout;
+the only client components are the quantity dropdown and the checkout form.
