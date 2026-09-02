@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { setMarket } from "@/app/actions";
 import { CurrencySelect } from "@/components/currency-select";
+import { getUser } from "@/lib/auth";
 import { getCart, getMarket, totalsFor } from "@/lib/cart";
 import { getBrands, getCategories } from "@/lib/catalogue";
 
@@ -38,7 +39,8 @@ function Wordmark() {
 }
 
 export async function Header() {
-  const [cart, market, categories, brands] = await Promise.all([
+  const [user, cart, market, categories, brands] = await Promise.all([
+    getUser(),
     getCart(),
     getMarket(),
     getCategories(),
@@ -151,11 +153,15 @@ export async function Header() {
           </form>
 
           <Link
-            href="/orders"
+            href={user ? "/account" : "/signin"}
             className="hidden shrink-0 rounded px-2 py-1 leading-tight hover:bg-white/10 sm:block"
           >
-            <span className="block text-[11px] text-white/60">Your keys</span>
-            <span className="block text-[13px] font-semibold">&amp; Orders</span>
+            <span className="block text-[11px] text-white/60">
+              {user ? `Hello, ${user.name.split(" ")[0]}` : "Sign in"}
+            </span>
+            <span className="block text-[13px] font-semibold">
+              {user ? "Keys & orders" : "Your account"}
+            </span>
           </Link>
 
           <Link

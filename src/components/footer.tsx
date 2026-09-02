@@ -17,7 +17,8 @@ const COLUMNS = [
   {
     heading: "Your order",
     links: [
-      { href: "/orders", label: "Track an order" },
+      { href: "/account/orders", label: "Your orders" },
+      { href: "/account/licences", label: "Your licences" },
       { href: "/returns", label: "Returns & refunds" },
       { href: "/licensing", label: "How licensing works" },
       { href: "/cart", label: "Your cart" },

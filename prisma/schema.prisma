@@ -204,6 +204,9 @@ model Review {
 model Cart {
   id        String   @id @default(cuid())
   token     String   @unique
+  /// Set when the basket belongs to a signed-in customer. A guest basket has
+  /// none until they sign in, at which point it is merged into theirs.
+  userId    String?
   /// The market this basket is priced in, fixed the moment the first item is
   /// added. Letting it float would let a total change under the customer
   /// between the cart and the payment page.
@@ -212,7 +215,11 @@ model Cart {
   country   String?  @db.Char(2)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  items     CartItem[]
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@index([userId])
 }
 
 model CartItem {
@@ -232,6 +239,13 @@ model Order {
   id     String @id @default(cuid())
   number String @unique
 
+  /// Every order belongs to an account. Licence keys are delivered into it,
+  /// so there is no guest checkout — there would be nowhere to deliver to.
+  userId String
+
+  /// Copied from the account at the time of sale. An order is a record of what
+  /// was agreed, and a customer who later changes their email has not changed
+  /// where this order was sent.
   email String
   phone String
 
@@ -271,16 +285,26 @@ model Order {
 
   paymentStatus PaymentStatus @default(PENDING)
   paymentMethod PaymentMethod
-  paymentRef    String?
   paidAt        DateTime?
+
+  /// Stripe's own identifiers, kept for reconciliation and refunds.
+  ///
+  /// `stripeSessionId` is unique because it is the idempotency key for
+  /// fulfilment: the browser returning from Checkout and the webhook both
+  /// report the same session, in no guaranteed order and possibly more than
+  /// once, and exactly one of those reports may issue the keys.
+  stripeSessionId       String?  @unique
+  stripePaymentIntentId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  user        User         @relation(fields: [userId], references: [id])
   items       OrderItem[]
   fulfilments Fulfilment[]
 
   @@index([email])
+  @@index([userId])
 }
 
 model Fulfilment {
@@ -324,4 +348,146 @@ model OrderItem {
 
   @@index([orderId])
   @@index([fulfilmentId])
+}
+
+
+// ---------------------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------------------
+
+/// A customer.
+///
+/// An account is not optional here. Licence keys are delivered into it and
+/// stay there for as long as the licence lives, which is the whole point: an
+/// email can be lost, a key in an account cannot.
+model User {
+  id    String @id @default(cuid())
+  /// Stored lowercased. Uniqueness is on that, so Ravi@x.com and ravi@x.com
+  /// cannot become two accounts holding half the licences each.
+  email String @unique
+  name  String
+
+  /// E.164, for WhatsApp and for the invoice. Optional, because a customer who
+  /// does not want WhatsApp should not be forced to hand over a number.
+  phone          String?
+  /// Explicit opt-in. A business-initiated WhatsApp message to somebody who
+  /// did not ask for one is spam, and gets the sender's number blocked.
+  whatsappOptIn  Boolean @default(false)
+
+  /// scrypt. Salt is per user and stored beside the hash; see src/lib/auth.ts.
+  passwordHash String
+  passwordSalt String
+
+  /// Null until an OTP has been confirmed. Nothing can be bought before it is
+  /// set — an unverified address is an address the keys would be lost to.
+  emailVerifiedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions      Session[]
+  otps          EmailOtp[]
+  orders        Order[]
+  carts         Cart[]
+  notifications Notification[]
+}
+
+/// A signed-in browser. The cookie holds the token and nothing else, so a
+/// session can be revoked server-side by deleting the row.
+model Session {
+  id        String   @id @default(cuid())
+  /// The lookup value is a hash of the cookie's token, not the token itself:
+  /// a leaked database backup should not be a set of live sessions.
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  /// Shown on the account's security page so a customer can recognise a
+  /// session they do not remember starting.
+  userAgent String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum OtpPurpose {
+  VERIFY_EMAIL
+  SIGN_IN
+}
+
+/// A one-time code sent by email.
+///
+/// The code is stored hashed, expires in ten minutes, and is consumed on first
+/// successful use. `attempts` is what stops a six-digit code being brute
+/// forced: a million guesses is minutes of scripting, five guesses is not.
+model EmailOtp {
+  id        String     @id @default(cuid())
+  userId    String
+  purpose   OtpPurpose
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int        @default(0)
+  consumedAt DateTime?
+  createdAt DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+enum NotificationChannel {
+  EMAIL
+  WHATSAPP
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  FAILED
+  /// The customer has not opted in, or has no number. Recorded rather than
+  /// silently dropped, so "why did they not get the WhatsApp" is answerable.
+  SKIPPED
+}
+
+/// Every message the store sends, written down before it is sent.
+///
+/// An outbox rather than a fire-and-forget call: a provider that is briefly
+/// down should delay a message, not lose it, and a customer asking "did you
+/// send it?" deserves an answer better than a shrug. It also means the whole
+/// notification path is testable without a provider configured.
+model Notification {
+  id      String              @id @default(cuid())
+  userId  String?
+  orderId String?
+  channel NotificationChannel
+  status  NotificationStatus  @default(QUEUED)
+
+  /// Email address or E.164 number, as sent.
+  destination String
+  /// Which message this is — "order.paid", "otp.verify". Also the WhatsApp
+  /// template name, which Meta requires be pre-approved.
+  template    String
+  subject     String?
+  body        String
+
+  /// The provider's message id, for tracing a complaint back to a delivery.
+  providerRef String?
+  error       String?
+
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }

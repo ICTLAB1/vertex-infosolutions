@@ -1,17 +1,31 @@
 # Vertex Infosolutions — storefront
 
 A direct-to-customer store selling Microsoft, Adobe and Autodesk software
-licences. Prices in INR for visitors in India and USD for everyone else. Runs
-on Azure.
+licences. Customer accounts, Stripe checkout, licence keys delivered into the
+account, prices in INR for visitors in India and USD for everyone else. Runs on
+Azure.
 
 ```bash
 npm install
 cp .env.example .env          # then fill in the company details
 docker compose up -d db       # Postgres 16 on :5432
 npm run db:migrate            # applies migrations
-npm run db:seed               # sample catalogue: 18 products, 29 SKUs, both currencies
+npm run db:seed               # sample catalogue: 34 products, 52 SKUs, both currencies
 npm run dev                   # http://localhost:3000
 ```
+
+## How a purchase works
+
+1. **Create an account.** There is no guest checkout — licence keys are
+   delivered into an account, so there has to be one.
+2. **Confirm the email by one-time code.** Six digits, ten minutes, five
+   attempts, stored hashed. Nothing can be bought until it is confirmed,
+   because an unverified address is one the keys would be lost to.
+3. **Pay on Stripe's own page.** No card field exists in this repository.
+4. **Keys are issued once**, by whichever of the browser return and the
+   webhook arrives first, and appear in the account immediately.
+5. **Email always, WhatsApp if opted in.** Email carries the keys and the
+   invoice. WhatsApp carries the order confirmation and never a key.
 
 ## The two things worth understanding first
 
@@ -58,11 +72,27 @@ parts always reconcile.
 Every order now has exactly one, of kind `DIGITAL`. It is kept because it costs
 one join and it is the seam where physical goods would go back in.
 
+### 3. Fulfilment happens exactly once, and is called more than once
+
+Stripe reports a completed payment twice — the browser returning from Checkout,
+and the webhook — in no guaranteed order, either of which can be lost or
+replayed. Two runs would mean two sets of keys against one payment.
+
+So `fulfilOrder` claims the order with a single conditional update
+(`PENDING → PAID`) and lets the row count decide. The database serialises the
+callers; whichever loses gets zero rows and returns. No lock, no queue, no
+window. This is verified in the test suite by replaying the same signed webhook
+event and asserting the keys are unchanged.
+
 ## Layout
 
 ```
 prisma/schema.prisma     the data model, commented
 prisma/seed.ts           sample catalogue — replace before launch
+src/lib/auth.ts          passwords (scrypt), sessions, one-time codes
+src/lib/notify.ts        the outbox: email and WhatsApp, composed and recorded
+src/lib/orders.ts        fulfilOrder — the once-only claim
+src/lib/stripe.ts        client, and the simulated-payment guard
 src/lib/market.ts        market resolution, restricted countries, GSTIN shape
 src/lib/money.ts         integer minor units, per currency; inclusive-tax split
 src/lib/cart.ts          basket, and the one function that computes what is owed
@@ -87,7 +117,14 @@ infra/main.bicep         the whole Azure estate
 - **A variant with no price in the visitor's currency is not sold to them** —
   not shown, not addable, not checkout-able. Silence beats a blank price.
 - **No dark patterns.** No fake countdowns, no pre-ticked boxes, no charge
-  introduced after the total is shown.
+  introduced after the total is shown. WhatsApp is opt-in, unticked.
+- **Secrets are hashed at rest.** Passwords with scrypt, session tokens and
+  one-time codes with SHA-256. A leaked backup is not a set of live logins.
+- **An order page is scoped to its owner.** The query filters on `userId` as
+  well as the order number, so guessing a number gets a 404 rather than
+  somebody else's keys.
+- **Licence keys never go over WhatsApp.** A key forwarded in a chat is
+  somebody else's licence.
 
 ## Deploying to Azure
 
@@ -154,10 +191,25 @@ before writing to it, drop one a release later.
       reports `en-US` will be shown dollars.
 - [ ] Have a lawyer review the policy pages. They describe what the code does
       and are drafts.
-- [ ] Wire a real payment gateway. `placeOrder` currently marks card and PayPal
-      orders paid immediately; a real integration leaves them `PENDING` and lets
-      the gateway's webhook move them, with capture idempotent because the
-      browser and the webhook both report success in no guaranteed order.
+- [ ] **Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.** Without the
+      first, checkout refuses in production and simulates in development;
+      without the second the webhook returns 503 and no order ever completes.
+      Register the endpoint at `POST /api/webhooks/stripe` for
+      `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+      `checkout.session.async_payment_failed`, `checkout.session.expired` and
+      `charge.refunded`.
+- [ ] **Set `RESEND_API_KEY` and `EMAIL_FROM`.** Without them the one-time code
+      is never delivered and nobody can verify an account, which means nobody
+      can buy anything. Authenticate the sending domain (SPF, DKIM, DMARC) or
+      the codes land in spam.
+- [ ] **Get the two WhatsApp templates approved by Meta** before enabling
+      WhatsApp — business-initiated messages must use a pre-approved template,
+      and sending an unapproved one just fails.
+- [ ] Add a retry sweep over `Notification` rows left `FAILED`. They are
+      recorded, but nothing currently retries them.
+- [ ] Add password reset. There is no "forgot password" flow yet — the OTP
+      machinery is there for it (`OtpPurpose.SIGN_IN`) but unwired.
+- [ ] Rate-limit sign-in by IP as well as by account.
 - [ ] **Confirm the GST treatment with your accountant.** The store charges
       18% GST on Indian sales and treats everything else as a zero-rated export
       of services — which requires an LUT, or paying IGST and claiming a refund.
@@ -174,13 +226,12 @@ before writing to it, drop one a release later.
       sanctions, and against the store's obligations as an Indian exporter. The
       list in the code is a floor, not a compliance programme.
 - [ ] Replace the GSTIN shape check with a real GST portal lookup.
-- [ ] Gate `/order/[number]` behind a signed link or an account. Today the
-      order number alone reaches it, which is fine for a demo and not for
-      production.
-- [ ] Send the confirmation email and the invoice PDF — the GST invoice for
-      India, the commercial invoice elsewhere. Neither is implemented.
+- [ ] Attach the invoice PDF to the confirmation email — the GST invoice for
+      India, the commercial invoice elsewhere. The email refers to it; nothing
+      generates it yet.
 - [ ] Automate seat assignment with the publishers' partner APIs. Keys are
-      currently generated locally as placeholders.
+      currently generated locally as placeholders, not redeemed from
+      Microsoft, Adobe or Autodesk.
 - [ ] Move `DATABASE_URL` into Key Vault; put Postgres behind a private endpoint.
 - [ ] Replace the placeholder drawings with publisher product imagery, and
       check the brand-usage rules that come with reseller authorisation.
@@ -202,4 +253,5 @@ before writing to it, drop one a release later.
 Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS v4, Prisma 7 on
 PostgreSQL 16 via the `@prisma/adapter-pg` driver adapter. Server components
 and server actions throughout; the only client components are the quantity
-dropdown, the currency switch and the checkout form.
+dropdown, the currency switch, the auth forms and the checkout form. Payments
+by Stripe Checkout; email by Resend; WhatsApp by the Meta Cloud API.

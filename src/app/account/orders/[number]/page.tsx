@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { Glyph } from "@/components/glyph";
+import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { countryName, type CurrencyCode } from "@/lib/market";
 import { formatMoneyExact } from "@/lib/money";
@@ -16,16 +17,22 @@ export const metadata: Metadata = {
 /**
  * The confirmation, and afterwards the order's own page.
  *
- * The order number alone reaches this page, which is fine for a demo and not
- * fine in production — a real deployment gates it behind a signed link or an
- * account, because an order number is short enough to guess at, and licence
- * keys are on it.
+ * Behind the account, and scoped to its owner: the query filters on `userId`
+ * as well as the order number, so guessing a number gets a 404 rather than
+ * somebody else's licence keys. An order number is six digits — short enough
+ * that this is the whole of what protects them.
  */
-export default async function OrderPage(props: PageProps<"/order/[number]">) {
+export default async function OrderPage(
+  props: PageProps<"/account/orders/[number]">,
+) {
   const { number } = await props.params;
 
-  const order = await prisma.order.findUnique({
-    where: { number },
+  const user = await getUser();
+  if (!user) redirect(`/signin?next=/account/orders/${number}`);
+  if (!user.emailVerifiedAt) redirect("/verify");
+
+  const order = await prisma.order.findFirst({
+    where: { number, userId: user.id },
     include: {
       fulfilments: {
         include: {
@@ -40,22 +47,29 @@ export default async function OrderPage(props: PageProps<"/order/[number]">) {
   const currency = order.currency as CurrencyCode;
   const paid = order.paymentStatus === "PAID";
   const domestic = order.country === "IN";
-  const maskedEmail = order.email.replace(
-    /^(.)(.*)(@.*)$/,
-    (_, first: string, middle: string, domain: string) =>
-      `${first}${"•".repeat(Math.min(middle.length, 6))}${domain}`,
-  );
 
   return (
     <div className="mx-auto max-w-[900px] px-4 py-6">
+      <nav className="mb-3 text-[13px] text-muted">
+        <Link href="/account" className="hover:text-link hover:underline">
+          Your account
+        </Link>
+        <span className="px-1.5">›</span>
+        <Link href="/account/orders" className="hover:text-link hover:underline">
+          Orders
+        </Link>
+        <span className="px-1.5">›</span>
+        <span className="font-mono text-ink">{order.number}</span>
+      </nav>
+
       <div className="rounded-lg border border-ok/30 bg-ok/5 p-5">
         <h1 className="text-2xl font-bold text-ok">
           {paid ? "Order confirmed" : "Order placed"}
         </h1>
         <p className="mt-1 text-[15px] text-ink">
           {paid
-            ? `Payment received. Your keys are below and a ${domestic ? "GST" : "commercial"} invoice is on its way to ${maskedEmail}.`
-            : `We have emailed our bank details to ${maskedEmail}. Keys are issued once the funds clear.`}
+            ? `Payment received. Your keys are below and a ${domestic ? "GST" : "commercial"} invoice is on its way to ${order.email}.`
+            : `We have emailed our bank details to ${order.email}. Keys are issued once the funds clear.`}
         </p>
         <p className="mt-2 font-mono text-[14px] text-muted">
           Order {order.number}
@@ -219,10 +233,10 @@ export default async function OrderPage(props: PageProps<"/order/[number]">) {
           Continue shopping
         </Link>
         <Link
-          href="/orders"
+          href="/account/licences"
           className="rounded-full border border-line bg-surface px-5 py-2.5 text-[14px] font-semibold text-ink hover:bg-ground"
         >
-          Find another order
+          All your licences
         </Link>
       </div>
     </div>

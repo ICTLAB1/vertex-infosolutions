@@ -575,7 +575,381 @@ const PRODUCTS: SeedProduct[] = [
       { sku: "ADSK-INV-1Y", name: "1 user, 1 year", seats: 1, usd: [3295, 2995], inr: [245000, 225000] },
     ],
   },
+
+  // ------------------------------------------------- Microsoft (continued)
+  {
+    slug: "microsoft-365-apps-for-business",
+    name: "Microsoft 365 Apps for Business",
+    brand: "Microsoft",
+    category: "productivity",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "The desktop Office applications, without the hosted email. For teams that already have mail elsewhere.",
+    bullets: [
+      "Word, Excel, PowerPoint, Outlook and OneNote on up to 5 devices per user",
+      "1 TB of OneDrive storage per user",
+      "No hosted email — use your existing provider",
+      "No Teams; see Business Basic or Standard for that",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per user",
+      Delivery: "Electronic — issued on payment",
+      Platform: "Windows, macOS, iOS, Android",
+    },
+    variants: [
+      { sku: "MS-365-APPS-1U", name: "1 user, 1 year", seats: 1, usd: [110, 99], inr: [6800, 6100] },
+      { sku: "MS-365-APPS-5U", name: "5 users, 1 year", seats: 5, usd: [550, 470], inr: [34000, 29000] },
+    ],
+  },
+  {
+    slug: "microsoft-365-e3",
+    name: "Microsoft 365 E3",
+    brand: "Microsoft",
+    category: "productivity",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Enterprise licensing with no 300-seat cap, plus compliance, eDiscovery and Windows Enterprise rights.",
+    bullets: [
+      "No seat cap, unlike the Business plans",
+      "Windows 11 Enterprise E3 upgrade rights",
+      "Information protection, retention and eDiscovery (Standard)",
+      "100 GB mailbox and unlimited archive",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per user",
+      Delivery: "Electronic — issued on payment",
+      "Seat cap": "None",
+    },
+    variants: [
+      { sku: "MS-365-E3-1U", name: "1 user, 1 year", seats: 1, usd: [473, 432], inr: [29500, 27000] },
+      { sku: "MS-365-E3-10U", name: "10 users, 1 year", seats: 10, usd: [4730, 4180], inr: [295000, 261000] },
+    ],
+  },
+  {
+    slug: "microsoft-exchange-online-plan-1",
+    name: "Microsoft Exchange Online Plan 1",
+    brand: "Microsoft",
+    category: "productivity",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary: "Business email on your own domain, with a 50 GB mailbox, and nothing else.",
+    bullets: [
+      "50 GB mailbox on your own domain",
+      "Outlook on the web, plus any IMAP or ActiveSync client",
+      "Anti-spam and anti-malware filtering",
+      "No Office applications",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per mailbox",
+      Delivery: "Electronic — issued on payment",
+    },
+    variants: [
+      { sku: "MS-EXO-P1-1U", name: "1 mailbox, 1 year", seats: 1, usd: [48, 44], inr: [3000, 2750] },
+      { sku: "MS-EXO-P1-10U", name: "10 mailboxes, 1 year", seats: 10, usd: [480, 415], inr: [30000, 26000] },
+    ],
+  },
+  {
+    slug: "microsoft-windows-server-cal",
+    name: "Windows Server 2022 User CAL",
+    brand: "Microsoft",
+    category: "servers",
+    term: "PERPETUAL",
+    summary:
+      "The Client Access Licence every user needs to legally reach a Windows Server. Not included with the server.",
+    bullets: [
+      "One CAL per named user accessing the server",
+      "Required in addition to the server licence itself",
+      "Perpetual, tied to the server version",
+      "A device CAL is the alternative where many people share few machines",
+    ],
+    specs: {
+      "Licence type": "Perpetual, per user",
+      Delivery: "Electronic — issued on payment",
+      "Also required": "A Windows Server licence",
+    },
+    variants: [
+      { sku: "MS-WS2022-UCAL-1", name: "1 user CAL", seats: 1, usd: [45, 39], inr: [3700, 3250] },
+      { sku: "MS-WS2022-UCAL-5", name: "5 user CALs", seats: 5, usd: [225, 189], inr: [18500, 15800] },
+    ],
+  },
+  {
+    slug: "microsoft-sql-server-2022-standard",
+    name: "Microsoft SQL Server 2022 Standard",
+    brand: "Microsoft",
+    category: "servers",
+    term: "PERPETUAL",
+    summary: "Two-core pack for SQL Server Standard. Licensed per core, minimum four cores per instance.",
+    bullets: [
+      "Two-core pack — a minimum of four cores per instance applies",
+      "Always On basic availability groups",
+      "128 GB memory ceiling per instance",
+      "Perpetual; Software Assurance sold separately",
+    ],
+    specs: {
+      "Licence type": "Perpetual, 2-core pack",
+      Delivery: "Electronic — issued on payment",
+      Minimum: "4 cores per instance",
+    },
+    variants: [
+      { sku: "MS-SQL2022-STD-2C", name: "2-core pack, perpetual", seats: 1, usd: [4150, 3790], inr: [345000, 316000] },
+    ],
+  },
+  {
+    slug: "microsoft-power-automate-premium",
+    name: "Microsoft Power Automate Premium",
+    brand: "Microsoft",
+    category: "analytics",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary: "Automate workflows across systems, with desktop RPA and premium connectors.",
+    bullets: [
+      "Cloud flows plus attended and unattended desktop RPA",
+      "Premium and on-premises connectors",
+      "Process mining",
+      "AI Builder credits included",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per user",
+      Delivery: "Electronic — issued on payment",
+    },
+    variants: [
+      { sku: "MS-PAUTO-PREM-1U", name: "1 user, 1 year", seats: 1, usd: [180, 165], inr: [11200, 10300] },
+    ],
+  },
+
+  // ------------------------------------------------------ Adobe (continued)
+  {
+    slug: "adobe-photoshop-teams",
+    name: "Adobe Photoshop for Teams",
+    brand: "Adobe",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary: "Photoshop on desktop, web and iPad, licensed per seat with the admin console.",
+    bullets: [
+      "Photoshop on desktop, web and iPad",
+      "Generative Fill and the Firefly generative credits",
+      "100 GB of cloud storage per seat",
+      "Admin console for reassigning seats",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per seat",
+      Delivery: "Electronic — seat assigned on payment",
+      Platform: "Windows, macOS, iPadOS, web",
+    },
+    variants: [
+      { sku: "ADB-PS-1S", name: "1 seat, 1 year", seats: 1, usd: [440, 408], inr: [30500, 28800] },
+      { sku: "ADB-PS-5S", name: "5 seats, 1 year", seats: 5, usd: [2200, 1950], inr: [152500, 137000] },
+    ],
+  },
+  {
+    slug: "adobe-illustrator-teams",
+    name: "Adobe Illustrator for Teams",
+    brand: "Adobe",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary: "Vector drawing and illustration on desktop, web and iPad, per seat.",
+    bullets: [
+      "Illustrator on desktop, web and iPad",
+      "Generative vector tools",
+      "100 GB of cloud storage per seat",
+      "Admin console for reassigning seats",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per seat",
+      Delivery: "Electronic — seat assigned on payment",
+      Platform: "Windows, macOS, iPadOS, web",
+    },
+    variants: [
+      { sku: "ADB-AI-1S", name: "1 seat, 1 year", seats: 1, usd: [440, 408], inr: [30500, 28800] },
+    ],
+  },
+  {
+    slug: "adobe-premiere-pro-teams",
+    name: "Adobe Premiere Pro for Teams",
+    brand: "Adobe",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary: "Video editing with Frame.io review built in, licensed per seat.",
+    bullets: [
+      "Premiere Pro with the Frame.io V4 review workflow",
+      "Text-based editing and automatic transcription",
+      "100 GB of cloud storage per seat",
+      "Includes Adobe Media Encoder",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per seat",
+      Delivery: "Electronic — seat assigned on payment",
+      Platform: "Windows, macOS",
+    },
+    variants: [
+      { sku: "ADB-PPRO-1S", name: "1 seat, 1 year", seats: 1, usd: [440, 408], inr: [30500, 28800] },
+    ],
+  },
+  {
+    slug: "adobe-indesign-teams",
+    name: "Adobe InDesign for Teams",
+    brand: "Adobe",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary: "Page layout for print and digital publishing, licensed per seat.",
+    bullets: [
+      "Long-document layout, styles and master pages",
+      "Print-ready PDF export with preflight",
+      "Interactive and fixed-layout digital publishing",
+      "100 GB of cloud storage per seat",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per seat",
+      Delivery: "Electronic — seat assigned on payment",
+      Platform: "Windows, macOS",
+    },
+    variants: [
+      { sku: "ADB-INDD-1S", name: "1 seat, 1 year", seats: 1, usd: [440, 408], inr: [30500, 28800] },
+    ],
+  },
+  {
+    slug: "adobe-express-teams",
+    name: "Adobe Express for Teams",
+    brand: "Adobe",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Quick on-brand design for people who are not designers — templates, brand kits and scheduling.",
+    bullets: [
+      "Templates, brand kits and locked brand controls",
+      "Generative Fill and Text to Image, commercially safe",
+      "Schedule to social channels",
+      "Far cheaper than a Creative Cloud seat for occasional users",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, per seat",
+      Delivery: "Electronic — seat assigned on payment",
+      Platform: "Web, iOS, Android",
+    },
+    variants: [
+      { sku: "ADB-EXPR-1S", name: "1 seat, 1 year", seats: 1, usd: [120, 108], inr: [8400, 7700] },
+      { sku: "ADB-EXPR-10S", name: "10 seats, 1 year", seats: 10, usd: [1200, 1020], inr: [84000, 72500] },
+    ],
+  },
+
+  // --------------------------------------------------- Autodesk (continued)
+  {
+    slug: "autodesk-civil-3d",
+    name: "Autodesk Civil 3D",
+    brand: "Autodesk",
+    category: "cad",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary: "Civil engineering design and documentation for roads, drainage and land development.",
+    bullets: [
+      "Corridor, grading and pipe network design",
+      "Surface modelling and earthwork quantities",
+      "Includes AutoCAD and the industry toolsets",
+      "Dynamic documentation from the design model",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, named user",
+      Delivery: "Electronic — assigned on payment",
+      Platform: "Windows",
+    },
+    variants: [
+      { sku: "ADSK-C3D-1Y", name: "1 user, 1 year", seats: 1, usd: [3190, 2900], inr: [237000, 217000] },
+    ],
+  },
+  {
+    slug: "autodesk-3ds-max",
+    name: "Autodesk 3ds Max",
+    brand: "Autodesk",
+    category: "creative",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary: "3D modelling, rendering and animation for design visualisation and games.",
+    bullets: [
+      "Polygon and spline modelling with modifier stack",
+      "Arnold renderer with 5 licences included",
+      "Chaos and V-Ray compatible",
+      "Strong architectural visualisation toolset",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, named user",
+      Delivery: "Electronic — assigned on payment",
+      Platform: "Windows",
+    },
+    variants: [
+      { sku: "ADSK-3DSMAX-1Y", name: "1 user, 1 year", seats: 1, usd: [2400, 2190], inr: [179000, 164000] },
+    ],
+  },
+  {
+    slug: "autodesk-navisworks-manage",
+    name: "Autodesk Navisworks Manage",
+    brand: "Autodesk",
+    category: "cad",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary: "Model coordination and clash detection across every discipline on a project.",
+    bullets: [
+      "Clash detection between combined discipline models",
+      "4D and 5D simulation from the programme",
+      "Aggregates models from Revit, AutoCAD, Civil 3D and IFC",
+      "Quantification for take-off",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, named user",
+      Delivery: "Electronic — assigned on payment",
+      Platform: "Windows",
+    },
+    variants: [
+      { sku: "ADSK-NWM-1Y", name: "1 user, 1 year", seats: 1, usd: [3060, 2790], inr: [227000, 208000] },
+    ],
+  },
+  {
+    slug: "autodesk-architecture-engineering-construction-collection",
+    name: "Autodesk AEC Collection",
+    brand: "Autodesk",
+    category: "cad",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Revit, Civil 3D, AutoCAD, Navisworks and more in one licence — the way most firms actually buy Autodesk.",
+    bullets: [
+      "Revit, Civil 3D, AutoCAD with toolsets, Navisworks Manage, InfraWorks, 3ds Max",
+      "One named-user licence covering all of them",
+      "Substantially cheaper than two of the products bought separately",
+      "Includes Autodesk Docs for common data environment",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, named user",
+      Delivery: "Electronic — assigned on payment",
+      Platform: "Windows",
+    },
+    featured: true,
+    variants: [
+      { sku: "ADSK-AEC-1Y", name: "1 user, 1 year", seats: 1, usd: [3550, 3240], inr: [264000, 242000] },
+      { sku: "ADSK-AEC-3Y", name: "1 user, 3 years", seats: 1, usd: [10100, 8750], inr: [750000, 652000] },
+    ],
+    reviews: [
+      { author: "Practice Director", country: "India", rating: 5, title: "Cheaper than Revit and Civil 3D separately", body: "We were buying two products per seat. The collection costs less than that and adds Navisworks, which we now use on every job.", verified: true },
+    ],
+  },
+  {
+    slug: "autodesk-product-design-manufacturing-collection",
+    name: "Autodesk Product Design & Manufacturing Collection",
+    brand: "Autodesk",
+    category: "cad",
+    term: "ANNUAL_SUBSCRIPTION",
+    summary:
+      "Inventor, AutoCAD, Fusion, Nastran and Vault in one licence for manufacturing teams.",
+    bullets: [
+      "Inventor Professional, AutoCAD, Fusion, Navisworks Manage",
+      "Inventor Nastran and CFD for simulation",
+      "Vault Basic for data management",
+      "One named-user licence covering all of them",
+    ],
+    specs: {
+      "Licence type": "Annual subscription, named user",
+      Delivery: "Electronic — assigned on payment",
+      Platform: "Windows",
+    },
+    variants: [
+      { sku: "ADSK-PDMC-1Y", name: "1 user, 1 year", seats: 1, usd: [3550, 3240], inr: [264000, 242000] },
+    ],
+  },
 ];
+
 
 async function main() {
   console.log("Clearing existing catalogue…");

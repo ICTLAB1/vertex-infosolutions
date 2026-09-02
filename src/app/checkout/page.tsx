@@ -3,8 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { CheckoutForm } from "@/components/checkout-form";
+import { getUser } from "@/lib/auth";
 import { getCart, getMarket, totalsFor } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
+import { simulatedPayments } from "@/lib/stripe";
 import { methodsFor } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -13,6 +15,12 @@ export const metadata: Metadata = {
 };
 
 export default async function CheckoutPage() {
+  // Keys are delivered into an account, so there has to be one — and a
+  // confirmed address, or the keys go somewhere nobody can read.
+  const user = await getUser();
+  if (!user) redirect("/signin?next=/checkout");
+  if (!user.emailVerifiedAt) redirect("/verify");
+
   const [cart, market] = await Promise.all([getCart(), getMarket()]);
   if (!cart || cart.items.length === 0) redirect("/cart");
 
@@ -102,10 +110,12 @@ export default async function CheckoutPage() {
       </div>
 
       <CheckoutForm
-        methods={methodsFor(totals.currency)}
+        methods={methodsFor()}
         total={formatMoney(totals.totalMinor, totals.currency)}
         currency={totals.currency}
         domestic={market.domestic}
+        account={{ name: user.name, email: user.email, phone: user.phone }}
+        simulated={simulatedPayments()}
       />
     </div>
   );

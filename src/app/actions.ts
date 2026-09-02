@@ -1,9 +1,10 @@
 "use server";
 
-import { randomBytes, randomInt } from "node:crypto";
+import { randomInt } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { getUser } from "@/lib/auth";
 import {
   clearCartCookie,
   ensureCart,
@@ -21,6 +22,14 @@ import {
   isRestricted,
   looksLikeGstin,
 } from "@/lib/market";
+import { fulfilOrder, notifyPending } from "@/lib/orders";
+import {
+  appUrl,
+  getStripe,
+  simulatedPayments,
+  stripeConfigured,
+  toStripeAmount,
+} from "@/lib/stripe";
 import { methodsFor } from "@/lib/types";
 import type { PaymentMethod } from "@/generated/prisma/enums";
 
@@ -129,37 +138,39 @@ export async function removeFromCart(form: FormData) {
   revalidatePath("/checkout");
 }
 
-/** VX-4F2A-9C31-8BE0 — grouped so it can be read aloud on a support call. */
-function licenceKey(): string {
-  const block = () => randomBytes(2).toString("hex").toUpperCase();
-  return `VX-${block()}-${block()}-${block()}`;
-}
+export type CheckoutError = { message: string; field?: string };
 
 function orderNumber(): string {
   return `VX-${new Date().getFullYear()}-${randomInt(100000, 999999)}`;
 }
 
-export type CheckoutError = { message: string; field?: string };
-
 /**
  * Placing the order.
  *
- * Nothing is shipped, so there is no address and no fulfilment split to
- * resolve: one order, one digital fulfilment, keys issued the moment payment
- * clears. What this function does have to get right is the tax treatment, which
+ * The order row is written first, PENDING, and the money is taken second. That
+ * ordering matters: a payment with no order behind it is money taken for
+ * nothing, whereas an order with no payment is just an abandoned checkout that
+ * expires quietly. So the record always exists before the charge is attempted.
+ *
+ * What this function has to get right beyond that is the tax treatment, which
  * turns entirely on where the buyer is:
  *
  *   India      → domestic supply of services, GST charged, SAC on the invoice
  *   elsewhere  → export, zero-rated, destination's own taxes not ours to take
  *
- * The billing country decides that, and it is checked against the currency the
- * basket was priced in — an INR basket billed to Germany means somebody has
- * changed one of the two, and the order is refused rather than taxed wrongly.
+ * Fulfilment — issuing the keys — deliberately does not happen here. It happens
+ * in `fulfilOrder`, once, when the payment is confirmed. See lib/orders.ts.
  */
 export async function placeOrder(
   _previous: CheckoutError | null,
   form: FormData,
 ): Promise<CheckoutError | null> {
+  // Licence keys are delivered into an account, so there has to be one, and it
+  // has to be a verified address or the keys go somewhere nobody can read.
+  const user = await getUser();
+  if (!user) redirect("/signin?next=/checkout");
+  if (!user.emailVerifiedAt) redirect("/verify");
+
   const cart = await getCart();
   if (!cart || cart.items.length === 0) {
     return { message: "Your cart is empty." };
@@ -175,29 +186,22 @@ export async function placeOrder(
     };
   }
 
-  const email = str(form, "email");
   const phone = str(form, "phone");
   const name = str(form, "billName");
   const country = str(form, "billCountry").toUpperCase();
   const method = str(form, "paymentMethod") as PaymentMethod;
   const gstin = str(form, "gstin").toUpperCase();
 
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-    return {
-      message: "Enter an email address. The licence keys are sent there.",
-      field: "email",
-    };
-  }
   // Deliberately loose: international numbers vary enormously and we need
   // something to call, not something matching one country's format.
   if (!/^\+?[0-9][0-9\s-]{6,19}$/.test(phone)) {
-    return {
-      message: "Enter a phone number with country code.",
-      field: "phone",
-    };
+    return { message: "Enter a phone number with country code.", field: "phone" };
   }
   if (!name) {
-    return { message: "Enter the name the invoice should be made out to.", field: "billName" };
+    return {
+      message: "Enter the name the invoice should be made out to.",
+      field: "billName",
+    };
   }
   if (!country) {
     return { message: "Choose your billing country.", field: "billCountry" };
@@ -239,32 +243,27 @@ export async function placeOrder(
   }
 
   if (gstin && !domestic) {
+    return { message: "A GSTIN only applies to an Indian order.", field: "gstin" };
+  }
+  if (gstin && !looksLikeGstin(gstin)) {
     return {
-      message: "A GSTIN only applies to an Indian order.",
+      message: "That does not look like a valid 15-character GSTIN.",
       field: "gstin",
     };
   }
-  if (gstin && !looksLikeGstin(gstin)) {
-    return { message: "That does not look like a valid 15-character GSTIN.", field: "gstin" };
-  }
 
-  if (!methodsFor(market.currency).includes(method)) {
+  if (!methodsFor().includes(method)) {
     return { message: "Choose a payment method.", field: "paymentMethod" };
   }
 
   const number = orderNumber();
-  const now = new Date();
-  // A bank transfer is unpaid until the funds land; everything else is settled
-  // here. A real gateway would leave this PENDING and let the webhook move it,
-  // with capture idempotent because the browser and the webhook both report
-  // success in no guaranteed order.
-  const settled = method !== "BANK_TRANSFER";
 
-  await prisma.$transaction(async (tx) => {
-    const order = await tx.order.create({
+  const order = await prisma.$transaction(async (tx) => {
+    const created = await tx.order.create({
       data: {
         number,
-        email,
+        userId: user.id,
+        email: user.email,
         phone,
         currency: totals.currency,
         country,
@@ -280,19 +279,12 @@ export async function placeOrder(
         taxRatePercent: totals.taxRatePercent,
         taxLabel: totals.taxLabel,
         paymentMethod: method,
-        paymentStatus: settled ? "PAID" : "PENDING",
-        paidAt: settled ? now : null,
+        paymentStatus: "PENDING",
       },
     });
 
     const fulfilment = await tx.fulfilment.create({
-      data: {
-        orderId: order.id,
-        kind: "DIGITAL",
-        // A key is issued against cleared payment and nothing else.
-        status: settled ? "ISSUED" : "PENDING",
-        completedAt: settled ? now : null,
-      },
+      data: { orderId: created.id, kind: "DIGITAL", status: "PENDING" },
     });
 
     for (const line of cart.items) {
@@ -300,10 +292,9 @@ export async function placeOrder(
         (p) => p.currency === totals.currency,
       );
       if (!price) continue;
-
       await tx.orderItem.create({
         data: {
-          orderId: order.id,
+          orderId: created.id,
           fulfilmentId: fulfilment.id,
           variantId: line.variantId,
           sku: line.variant.sku,
@@ -315,16 +306,133 @@ export async function placeOrder(
           // Only meaningful on a domestic invoice, but stored on every line so
           // an order is readable without knowing which rules applied.
           sacCode: line.variant.product.sacCode,
-          licenceKey: settled ? licenceKey() : null,
         },
       });
     }
 
-    await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
-    await tx.cart.delete({ where: { id: cart.id } });
+    return created;
   });
 
+  // A bank transfer is not a payment, it is a promise of one. The order stands,
+  // the keys wait, and the customer is told which state they are in.
+  if (method === "BANK_TRANSFER") {
+    await emptyCart(cart.id);
+    await notifyPending(order.id);
+    redirect(`/account/orders/${order.number}`);
+  }
+
+  if (stripeConfigured()) {
+    const stripe = getStripe();
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      // Stripe hosts the card form. Nothing sensitive touches this app.
+      success_url: `${appUrl()}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl()}/cart?cancelled=1`,
+      customer_email: user.email,
+      client_reference_id: order.id,
+      // Read back in the webhook, which may arrive before the browser does.
+      metadata: { orderId: order.id, orderNumber: order.number },
+      payment_intent_data: {
+        metadata: { orderId: order.id, orderNumber: order.number },
+      },
+      line_items: cart.items.flatMap((line) => {
+        const price = line.variant.prices.find(
+          (p) => p.currency === totals.currency,
+        );
+        if (!price) return [];
+        return [
+          {
+            quantity: line.qty,
+            price_data: {
+              currency: totals.currency.toLowerCase(),
+              unit_amount: toStripeAmount(price.priceMinor),
+              product_data: {
+                name: line.variant.product.name,
+                description: line.variant.name,
+              },
+            },
+          },
+        ];
+      }),
+    });
+
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { stripeSessionId: session.id },
+    });
+    await emptyCart(cart.id);
+
+    if (!session.url) {
+      return {
+        message:
+          "The payment page could not be opened. Your order is saved — try again from your account.",
+      };
+    }
+    redirect(session.url);
+  }
+
+  if (!simulatedPayments()) {
+    return {
+      message:
+        "Card payments are not available right now. Choose bank transfer, or contact us.",
+      field: "paymentMethod",
+    };
+  }
+
+  // Development only — `simulatedPayments` refuses to return true in
+  // production, because a live store that marks orders paid without taking
+  // money is worse than one that cannot check out at all.
+  await emptyCart(cart.id);
+  await fulfilOrder(order.id);
+  redirect(`/account/orders/${order.number}`);
+}
+
+async function emptyCart(cartId: string): Promise<void> {
+  await prisma.cartItem.deleteMany({ where: { cartId } });
+  await prisma.cart.delete({ where: { id: cartId } });
   await clearCartCookie();
   revalidatePath("/cart");
-  redirect(`/order/${number}`);
+}
+
+/**
+ * Confirm a Stripe Checkout Session when the browser comes back.
+ *
+ * The webhook is the authority — it arrives whether or not the customer's
+ * browser survives the redirect — but waiting for it would leave somebody
+ * staring at a page saying "pending" seconds after they paid. So both paths
+ * confirm, and `fulfilOrder` makes the second one a no-op.
+ *
+ * The session is re-fetched from Stripe rather than trusted from the URL: a
+ * `session_id` in a query string is attacker-supplied, and the only thing that
+ * makes it meaningful is asking Stripe what it actually says.
+ */
+export async function confirmCheckoutSession(
+  sessionId: string,
+): Promise<{ orderNumber: string } | { error: string }> {
+  if (!stripeConfigured()) return { error: "Payments are not configured." };
+
+  const stripe = getStripe();
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+  const orderId =
+    session.metadata?.orderId ?? (session.client_reference_id || undefined);
+  if (!orderId) return { error: "That payment does not match an order." };
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { id: true, number: true },
+  });
+  if (!order) return { error: "That payment does not match an order." };
+
+  if (session.payment_status !== "paid") {
+    return { error: "That payment has not completed." };
+  }
+
+  const intentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : (session.payment_intent?.id ?? null);
+
+  await fulfilOrder(order.id, { intentId });
+  return { orderNumber: order.number };
 }

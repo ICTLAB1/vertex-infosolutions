@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 
 import { placeOrder, type CheckoutError } from "@/app/actions";
 import { BILLING_COUNTRIES, type CurrencyCode } from "@/lib/market";
-import { PAYMENT_METHOD_LABELS, PAYMENT_METHOD_NOTES } from "@/lib/types";
+import { PAYMENT_METHOD_LABELS, paymentMethodNote } from "@/lib/types";
 import type { PaymentMethod } from "@/generated/prisma/enums";
 
 function SubmitButton({
@@ -16,14 +16,18 @@ function SubmitButton({
   method: PaymentMethod;
 }) {
   const { pending } = useFormStatus();
-  const verb = method === "BANK_TRANSFER" ? "Place order for" : "Pay";
+  const verb = method === "BANK_TRANSFER" ? "Place order for" : "Continue to pay";
   return (
     <button
       type="submit"
       disabled={pending}
       className="btn-amber w-full rounded-full py-3 text-[15px] font-semibold"
     >
-      {pending ? "Placing your order…" : `${verb} ${total}`}
+      {pending
+        ? method === "BANK_TRANSFER"
+          ? "Placing your order…"
+          : "Taking you to Stripe…"
+        : `${verb} ${total}`}
     </button>
   );
 }
@@ -33,11 +37,16 @@ export function CheckoutForm({
   total,
   currency,
   domestic,
+  account,
+  simulated,
 }: {
   methods: readonly PaymentMethod[];
   total: string;
   currency: CurrencyCode;
   domestic: boolean;
+  account: { name: string; email: string; phone: string | null };
+  /** True when no Stripe key is configured and payments are faked locally. */
+  simulated: boolean;
 }) {
   const [error, action] = useActionState<CheckoutError | null, FormData>(
     placeOrder,
@@ -70,25 +79,26 @@ export function CheckoutForm({
 
         <fieldset className="rounded-lg border border-line bg-surface p-4">
           <legend className="px-1 text-[15px] font-bold text-ink">
-            Where should the keys go?
+            Where the keys go
           </legend>
           <p className="mt-1 text-[13px] text-muted">
-            There is no delivery address — nothing ships. The licence keys and
-            the invoice both go to this email.
+            Nothing ships. Your licence keys are delivered into your account and
+            emailed to the confirmed address on it.
           </p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <Field
-              label="Email address"
-              name="email"
-              type="email"
-              autoComplete="email"
-              className={invalid("email")}
-              required
-            />
+          <p className="mt-2 rounded-md border border-line bg-ground/50 px-3 py-2 text-[14px]">
+            <span className="font-semibold text-ink">{account.name}</span>
+            <span className="px-2 text-faint">·</span>
+            <span className="text-ink">{account.email}</span>
+            <span className="ml-2 text-[12px] font-semibold text-ok">
+              verified
+            </span>
+          </p>
+          <div className="mt-3">
             <Field
               label="Phone number"
               name="phone"
               type="tel"
+              defaultValue={account.phone ?? ""}
               autoComplete="tel"
               placeholder={domestic ? "+91 98765 43210" : "+1 555 010 0000"}
               className={invalid("phone")}
@@ -206,7 +216,7 @@ export function CheckoutForm({
                     {PAYMENT_METHOD_LABELS[option]}
                   </span>
                   <span className="block text-[13px] text-muted">
-                    {PAYMENT_METHOD_NOTES[option]}
+                    {paymentMethodNote(option, currency)}
                   </span>
                 </span>
               </label>
@@ -214,9 +224,17 @@ export function CheckoutForm({
           </div>
           <p className="mt-3 text-[13px] text-muted">
             {domestic
-              ? "Paying in INR from an Indian account. UPI is usually instant."
+              ? "Charged in INR. UPI is usually instant."
               : `Charged in ${currency}. Your bank may apply its own foreign-exchange rate.`}
           </p>
+          {simulated ? (
+            <p className="mt-3 rounded-md border border-warn/40 bg-warn/5 px-3 py-2 text-[13px] text-warn">
+              <span className="font-semibold">Development only.</span> No Stripe
+              key is configured, so paying online is simulated — no money moves
+              and keys are issued immediately. This fallback refuses to run in
+              production.
+            </p>
+          ) : null}
         </fieldset>
       </div>
 
@@ -227,6 +245,27 @@ export function CheckoutForm({
             By placing this order you agree to the terms of sale. A licence key
             once revealed cannot be returned — before then, the order can be
             cancelled in full.
+          </p>
+          <p className="mt-2 flex items-center gap-1.5 text-[12px] text-faint">
+            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
+              <path
+                d="M4 7V5a4 4 0 0 1 8 0v2"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <rect
+                x="3"
+                y="7"
+                width="10"
+                height="7"
+                rx="1.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+            </svg>
+            Payments are processed by Stripe. No card details reach this site.
           </p>
         </div>
       </aside>

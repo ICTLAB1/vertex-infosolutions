@@ -15,33 +15,42 @@ export const STATUS_LABELS: Record<string, string> = {
 };
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  CARD: "Credit or debit card",
+  CARD: "Pay online",
   PAYPAL: "PayPal",
   UPI: "UPI",
   NETBANKING: "Net banking",
   BANK_TRANSFER: "Bank transfer",
 };
 
-export const PAYMENT_METHOD_NOTES: Record<PaymentMethod, string> = {
-  CARD:
-    "You are taken to the payment provider's own page. Vertex never sees your card number.",
-  PAYPAL: "Pay with a PayPal balance, a linked bank account or a card.",
-  UPI: "Pay from any UPI app. Keys are issued as soon as the payment confirms.",
-  NETBANKING: "Pay directly from an Indian bank account.",
-  BANK_TRANSFER:
-    "We email an invoice with our bank details. Keys are issued once the funds clear, usually two to four business days.",
-};
+export function paymentMethodNote(
+  method: PaymentMethod,
+  currency: CurrencyCode,
+): string {
+  switch (method) {
+    case "CARD":
+      // Which rails actually appear is decided by Stripe from the account's
+      // settings and the buyer's country — cards everywhere, UPI and net
+      // banking for an Indian account taking INR. Listing them here as
+      // separate choices would promise something this app does not control.
+      return currency === "INR"
+        ? "Card, UPI, net banking or wallet, on Stripe's own secure page. Vertex never sees your card or UPI details."
+        : "Card or wallet, on Stripe's own secure page. Vertex never sees your card details.";
+    case "BANK_TRANSFER":
+      return "We email an invoice with our bank details. Licence keys are issued once the funds clear, usually two to four business days.";
+    default:
+      return "";
+  }
+}
 
 /**
- * Which methods are offered, which depends entirely on the market.
+ * Which methods are offered.
  *
- * UPI and net banking are domestic Indian rails and cannot settle a foreign
- * card; PayPal is how most of the rest of the world expects to pay a supplier
- * it has not met. Offering a method that cannot complete is worse than not
- * offering it — the customer only finds out at the last step.
+ * Two, deliberately. Everything card-shaped goes through Stripe Checkout, which
+ * presents the right local methods itself; enumerating UPI and net banking as
+ * separate buttons here would be this app guessing at a configuration that
+ * lives in the Stripe dashboard, and guessing wrong means a customer picks a
+ * method that then is not offered.
  */
-export function methodsFor(currency: CurrencyCode): readonly PaymentMethod[] {
-  return currency === "INR"
-    ? (["UPI", "CARD", "NETBANKING", "BANK_TRANSFER"] as const)
-    : (["CARD", "PAYPAL", "BANK_TRANSFER"] as const);
+export function methodsFor(): readonly PaymentMethod[] {
+  return ["CARD", "BANK_TRANSFER"] as const;
 }
