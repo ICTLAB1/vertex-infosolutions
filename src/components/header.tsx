@@ -78,7 +78,10 @@ export async function Header() {
               remaining row and drops to its own line on a narrow screen. */}
           <form
             action="/s"
-            className="search-shell order-last flex h-10 w-full min-w-0 flex-1 overflow-hidden rounded-md border border-transparent bg-white sm:order-none sm:w-auto"
+            // `basis-full` rather than `w-full`: a flex item's basis wins over
+            // its width, so width alone would leave the field squeezed onto
+            // the logo's row on a phone instead of wrapping below it.
+            className="search-shell order-last flex h-10 min-w-0 basis-full overflow-hidden rounded-md border border-transparent bg-white sm:order-none sm:flex-1 sm:basis-auto"
           >
             <label htmlFor="site-search" className="sr-only">
               Search the Vertex catalogue
