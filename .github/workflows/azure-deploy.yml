@@ -19,10 +19,15 @@
 # from CI rather than from the container at boot — a container that migrates on
 # startup races itself the moment App Service runs two instances.
 
-name: Deploy to Azure
+name: Verify and deploy
 
 on:
   push:
+    branches: [main]
+  # Without this a pull request gets no checks at all, and the suite only runs
+  # after a merge — which is exactly too late to be useful. `verify` runs on
+  # every PR; `deploy` is guarded below so it never fires from one.
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -85,6 +90,10 @@ jobs:
 
   deploy:
     needs: verify
+    # Never from a pull request: a fork PR must not be able to push an image or
+    # touch the production database, and even a trusted branch should deploy
+    # only once its changes are actually on main.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: production
     steps:
