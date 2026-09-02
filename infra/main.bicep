@@ -31,9 +31,6 @@ param dbAdminUser string = 'vertexadmin'
 @minLength(12)
 param dbAdminPassword string
 
-@description('Currency the store prices in, ISO 4217.')
-param storeCurrency string = 'USD'
-
 @description('App Service Plan SKU. B1 is enough to launch; P1v3 once traffic justifies it.')
 @allowed(['B1', 'B2', 'P0v3', 'P1v3'])
 param appServiceSku string = 'B1'
@@ -185,10 +182,6 @@ resource web 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'DATABASE_POOL_MAX'
           value: '10'
-        }
-        {
-          name: 'STORE_CURRENCY'
-          value: storeCurrency
         }
         {
           name: 'NODE_ENV'

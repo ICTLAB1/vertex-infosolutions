@@ -25,7 +25,8 @@ export type NotifyTemplate =
   | "account.welcome"
   | "order.paid"
   | "order.keys"
-  | "order.pending";
+  | "order.pending"
+  | "licence.expiring";
 
 type Recipient = {
   userId?: string | null;
@@ -174,6 +175,9 @@ export const WHATSAPP_TEMPLATES = {
   ORDER_PAID: process.env.WHATSAPP_TEMPLATE_ORDER_PAID ?? "vertex_order_paid",
   ORDER_PENDING:
     process.env.WHATSAPP_TEMPLATE_ORDER_PENDING ?? "vertex_order_pending",
+  LICENCE_EXPIRING:
+    process.env.WHATSAPP_TEMPLATE_LICENCE_EXPIRING ??
+    "vertex_licence_expiring",
 } as const;
 
 export function compose(
@@ -273,6 +277,33 @@ export function compose(
         ].join("\n"),
         // Deliberately email-only. A key forwarded in a chat is somebody
         // else's licence.
+      };
+
+    case "licence.expiring":
+      return {
+        subject: `${data.summary} expires on ${data.expiresOn}`,
+        body: [
+          `Hello ${data.name},`,
+          "",
+          `${data.summary}, bought on order ${data.number}, expires on ${data.expiresOn} — in ${data.days} days.`,
+          "",
+          data.licences,
+          "",
+          "Nothing renews automatically here. If you do nothing, the licence lapses on that date and the software stops. This is a reminder, not a charge, and there is no card on file to charge.",
+          "",
+          `Renew: ${data.renewUrl}`,
+          `Your licences: ${data.accountUrl}`,
+          "",
+          "Renew before the expiry date where you can. Letting a subscription lapse and restarting it later is sometimes treated as a new purchase at list price rather than a renewal, and with Autodesk in particular that difference is substantial.",
+          "",
+          `If you have already renewed elsewhere, ignore this — and tell ${support} so we stop reminding you about it.`,
+          "",
+          `— ${brand}`,
+        ].join("\n"),
+        whatsapp: {
+          template: WHATSAPP_TEMPLATES.LICENCE_EXPIRING,
+          variables: [data.name, data.summary, data.expiresOn, data.days],
+        },
       };
 
     case "order.pending":

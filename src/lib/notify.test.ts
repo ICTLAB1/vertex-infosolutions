@@ -40,6 +40,32 @@ describe("what may travel over WhatsApp", () => {
     expect(keys.body).toContain("VX-9EF7-8F88-65F5");
   });
 
+  it("sends a renewal reminder, carrying no key and no price", () => {
+    const reminder = compose("licence.expiring", {
+      name: "Anita",
+      number: "VX-2026-123456",
+      summary: "Autodesk AutoCAD",
+      licences: "  • Autodesk AutoCAD — 1 user, 1 year",
+      expiresOn: "1 Jan 2027",
+      days: "30",
+      renewUrl: "https://example.com/product/autodesk-autocad",
+      accountUrl: "https://example.com/account/licences",
+    });
+
+    expect(reminder.whatsapp).toBeDefined();
+    const variables = reminder.whatsapp!.variables.join(" ");
+    expect(variables).not.toMatch(/VX-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}/);
+    // What it may say: who, what, when. The nudge is to open the account, and
+    // everything sensitive stays there.
+    expect(variables).toContain("Anita");
+    expect(variables).toContain("Autodesk AutoCAD");
+    expect(variables).toContain("1 Jan 2027");
+
+    // And the email is unambiguous that this is not a charge, because a
+    // renewal notice that reads like an invoice gets paid twice.
+    expect(reminder.body).toContain("This is a reminder, not a charge");
+  });
+
   it("sends an order confirmation, carrying no secret", () => {
     const paid = compose("order.paid", {
       name: "Anita",
@@ -77,6 +103,19 @@ describe("template contents", () => {
       ],
       ["order.keys", { name: "A", number: "VX-1", keys: "k", orderUrl: "https://x" }],
       ["order.pending", { name: "A", number: "VX-1", total: "$1", orderUrl: "https://x" }],
+      [
+        "licence.expiring",
+        {
+          name: "A",
+          number: "VX-1",
+          summary: "A licence",
+          licences: "  • A licence — 1 user",
+          expiresOn: "1 Jan 2027",
+          days: "30",
+          renewUrl: "https://x/product/a",
+          accountUrl: "https://x/account/licences",
+        },
+      ],
     ] as const;
 
     for (const [template, data] of templates) {

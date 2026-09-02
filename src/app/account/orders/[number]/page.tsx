@@ -7,6 +7,7 @@ import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { countryName, type CurrencyCode } from "@/lib/market";
 import { formatMoneyExact } from "@/lib/money";
+import { expiryLabel } from "@/lib/renewals";
 import { PAYMENT_METHOD_LABELS, STATUS_LABELS } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -132,6 +133,17 @@ export default async function OrderPage(
                   {item.licenceKey ? (
                     <p className="mt-2 inline-block rounded border border-line bg-ground/60 px-3 py-1.5 font-mono text-[14px] font-medium text-ink">
                       {item.licenceKey}
+                    </p>
+                  ) : null}
+
+                  {item.licenceKey &&
+                  (item.expiresAt ||
+                    item.variant?.product.term === "PERPETUAL") ? (
+                    <p className="mt-1.5 text-[12px] text-muted">
+                      {expiryLabel(item.expiresAt)}
+                      {item.expiresAt
+                        ? ". Nothing renews on its own — we email you a month before."
+                        : "."}
                     </p>
                   ) : null}
 

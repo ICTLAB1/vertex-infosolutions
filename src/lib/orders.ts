@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import type { CurrencyCode } from "@/lib/market";
 import { formatMoney } from "@/lib/money";
 import { notify } from "@/lib/notify";
+import { expiryFor } from "@/lib/renewals";
 import { appUrl } from "@/lib/stripe";
 
 /** VX-4F2A-9C31-8BE0 — grouped so it can be read aloud on a support call. */
@@ -51,7 +52,10 @@ export async function fulfilOrder(
     where: { id: orderId },
     include: {
       user: true,
-      items: true,
+      // The product's term decides when the licence expires, so it is read
+      // here and written onto the line — a historic purchase then keeps the
+      // dates it was actually sold under, even if the term is renegotiated.
+      items: { include: { variant: { select: { product: { select: { term: true } } } } } },
       fulfilments: true,
     },
   });
@@ -63,9 +67,14 @@ export async function fulfilOrder(
   await prisma.$transaction(async (tx) => {
     for (const item of order.items) {
       if (item.licenceKey) continue;
+      const term = item.variant?.product.term ?? "ANNUAL_SUBSCRIPTION";
       await tx.orderItem.update({
         where: { id: item.id },
-        data: { licenceKey: licenceKey() },
+        data: {
+          licenceKey: licenceKey(),
+          // Null for a perpetual licence, which never expires.
+          expiresAt: expiryFor(term, now),
+        },
       });
     }
     await tx.fulfilment.updateMany({

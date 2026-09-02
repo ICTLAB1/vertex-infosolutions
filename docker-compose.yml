@@ -36,7 +36,8 @@ services:
     environment:
       # `db` resolves on the compose network; no TLS locally, so no sslmode.
       DATABASE_URL: postgresql://vertex:vertex@db:5432/vertex?schema=public
-      STORE_CURRENCY: USD
+      # Enough to call the renewal sweep locally; not a secret worth having.
+      CRON_SECRET: dev-cron-secret
       COMPANY_TRADING_NAME: Vertex Infosolutions
     ports:
       - "8080:8080"

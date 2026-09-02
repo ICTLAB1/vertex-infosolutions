@@ -342,12 +342,27 @@ model OrderItem {
   /// offering a button that would fail.
   licenceKey String?
 
+  /// When this licence stops working, set at fulfilment from the product's
+  /// term. Null for a perpetual licence, which never expires.
+  ///
+  /// Stored on the line rather than derived on read, because the term can be
+  /// renegotiated and a historic purchase keeps the dates it was actually
+  /// sold under.
+  expiresAt DateTime?
+  /// Set when the renewal reminder goes out, so it goes out once. Nothing here
+  /// auto-renews; the reminder exists so an expiry is a decision rather than a
+  /// surprise.
+  renewalRemindedAt DateTime?
+
   order      Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
   fulfilment Fulfilment @relation(fields: [fulfilmentId], references: [id], onDelete: Cascade)
   variant    Variant?   @relation(fields: [variantId], references: [id])
 
   @@index([orderId])
   @@index([fulfilmentId])
+  /// Drives the reminder sweep: everything expiring in a window that has not
+  /// been reminded yet.
+  @@index([expiresAt, renewalRemindedAt])
 }
 
 

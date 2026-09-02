@@ -92,6 +92,7 @@ prisma/seed.ts           sample catalogue — replace before launch
 src/lib/auth.ts          passwords (scrypt), sessions, one-time codes
 src/lib/notify.ts        the outbox: email and WhatsApp, composed and recorded
 src/lib/orders.ts        fulfilOrder — the once-only claim
+src/lib/renewals.ts      licence expiry dates, and the reminder sweep
 src/lib/stripe.ts        client, and the simulated-payment guard
 src/lib/market.ts        market resolution, restricted countries, GSTIN shape
 src/lib/money.ts         integer minor units, per currency; inclusive-tax split
@@ -125,6 +126,11 @@ infra/main.bicep         the whole Azure estate
   somebody else's keys.
 - **Licence keys never go over WhatsApp.** A key forwarded in a chat is
   somebody else's licence.
+- **Nothing renews itself, and nothing expires unannounced.** There is no card
+  on file to charge. The expiry date is written onto the order line at
+  fulfilment — not derived on read — so a licence sold under an older term keeps
+  the dates it was actually sold under, and the reminder a month ahead is
+  claimed with a conditional update so it goes exactly once.
 
 ## Deploying to Azure
 
@@ -202,9 +208,15 @@ before writing to it, drop one a release later.
       is never delivered and nobody can verify an account, which means nobody
       can buy anything. Authenticate the sending domain (SPF, DKIM, DMARC) or
       the codes land in spam.
-- [ ] **Get the two WhatsApp templates approved by Meta** before enabling
+- [ ] **Get the three WhatsApp templates approved by Meta** before enabling
       WhatsApp — business-initiated messages must use a pre-approved template,
       and sending an unapproved one just fails.
+- [ ] **Set `CRON_SECRET` and schedule the renewal sweep.** Five pages promise
+      a reminder a month before a subscription expires; `POST /api/cron/renewals`
+      is what sends it, and nothing calls it on its own. A Logic App recurrence,
+      a Container Apps job or any daily `curl` with the secret in the
+      `x-vertex-cron-key` header will do. Without the schedule the promise is
+      copy, not behaviour.
 - [ ] Add a retry sweep over `Notification` rows left `FAILED`. They are
       recorded, but nothing currently retries them.
 - [ ] Add password reset. There is no "forgot password" flow yet — the OTP
@@ -226,6 +238,10 @@ before writing to it, drop one a release later.
       sanctions, and against the store's obligations as an Indian exporter. The
       list in the code is a floor, not a compliance programme.
 - [ ] Replace the GSTIN shape check with a real GST portal lookup.
+- [ ] Send a lapse notice on the day itself. The sweep deliberately says
+      nothing about a licence that has already expired — "expires in -3 days"
+      is worse than silence — so a licence that slipped past while the schedule
+      was down is visible in the account and nowhere else.
 - [ ] Attach the invoice PDF to the confirmation email — the GST invoice for
       India, the commercial invoice elsewhere. The email refers to it; nothing
       generates it yet.

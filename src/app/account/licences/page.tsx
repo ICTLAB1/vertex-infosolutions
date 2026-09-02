@@ -6,6 +6,7 @@ import { Glyph } from "@/components/glyph";
 import { getUser } from "@/lib/auth";
 import { TERM_LABELS } from "@/lib/catalogue";
 import { prisma } from "@/lib/db";
+import { expiryLabel, expiryState } from "@/lib/renewals";
 
 export const metadata: Metadata = {
   title: "Your licences",
@@ -34,6 +35,7 @@ export default async function LicencesPage() {
       seats: true,
       qty: true,
       licenceKey: true,
+      expiresAt: true,
       order: {
         select: { number: true, createdAt: true, paymentStatus: true },
       },
@@ -54,6 +56,20 @@ export default async function LicencesPage() {
 
   const issued = items.filter((item) => item.licenceKey);
   const waiting = items.filter((item) => !item.licenceKey);
+
+  // Sorted by what needs attention rather than by purchase date: an expired
+  // licence, then one expiring inside the reminder window, then the rest.
+  const URGENCY = { expired: 0, expiring: 1, active: 2, perpetual: 3 };
+  const now = new Date();
+  issued.sort(
+    (a, b) =>
+      URGENCY[expiryState(a.expiresAt, now)] -
+      URGENCY[expiryState(b.expiresAt, now)],
+  );
+  const soon = issued.filter((item) => {
+    const state = expiryState(item.expiresAt, now);
+    return state === "expiring" || state === "expired";
+  });
 
   return (
     <div className="mx-auto max-w-[900px] px-4 py-6">
@@ -86,6 +102,21 @@ export default async function LicencesPage() {
         </div>
       ) : (
         <>
+          {soon.length > 0 ? (
+            <section className="mt-5 rounded-lg border border-warn/40 bg-warn/5 p-4">
+              <h2 className="text-[15px] font-bold text-warn">
+                {soon.length === 1
+                  ? "One licence needs renewing"
+                  : `${soon.length} licences need renewing`}
+              </h2>
+              <p className="mt-1 text-[13px] text-warn/90">
+                Nothing here renews on its own and there is no card on file, so
+                a licence you do not renew simply stops on its expiry date. We
+                email you a month beforehand; this is the same list.
+              </p>
+            </section>
+          ) : null}
+
           {waiting.length > 0 ? (
             <section className="mt-5 rounded-lg border border-warn/40 bg-warn/5 p-4">
               <h2 className="text-[15px] font-bold text-warn">
@@ -151,6 +182,10 @@ export default async function LicencesPage() {
                         : ""}
                     </p>
 
+                    <p className="mt-1.5">
+                      <ExpiryTag expiresAt={item.expiresAt} now={now} />
+                    </p>
+
                     <p className="mt-2 inline-block rounded border border-line bg-ground/60 px-3 py-1.5 font-mono text-[15px] font-medium text-ink">
                       {item.licenceKey}
                     </p>
@@ -181,5 +216,39 @@ export default async function LicencesPage() {
         is yours.
       </p>
     </div>
+  );
+}
+
+/**
+ * When a licence stops working, said plainly.
+ *
+ * The date is stored on the line at fulfilment rather than derived here, so a
+ * licence sold under an older term keeps the dates it was actually sold under.
+ * A line bought before expiry dates were recorded has none, and says so instead
+ * of guessing one.
+ */
+function ExpiryTag({ expiresAt, now }: { expiresAt: Date | null; now: Date }) {
+  if (!expiresAt) {
+    return (
+      <span className="rounded border border-line bg-ground/60 px-2 py-0.5 text-[12px] font-medium text-muted">
+        Perpetual — no renewal
+      </span>
+    );
+  }
+
+  const state = expiryState(expiresAt, now);
+  const tone =
+    state === "expired"
+      ? "border-deal/40 bg-deal/5 text-deal"
+      : state === "expiring"
+        ? "border-warn/40 bg-warn/10 text-warn"
+        : "border-line bg-ground/60 text-muted";
+
+  return (
+    <span
+      className={`rounded border px-2 py-0.5 text-[12px] font-medium ${tone}`}
+    >
+      {expiryLabel(expiresAt, now)}
+    </span>
   );
 }

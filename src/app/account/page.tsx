@@ -7,6 +7,7 @@ import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import type { CurrencyCode } from "@/lib/market";
 import { formatMoney } from "@/lib/money";
+import { REMIND_DAYS_AHEAD } from "@/lib/renewals";
 
 export const metadata: Metadata = { title: "Your account", robots: { index: false } };
 
@@ -18,7 +19,12 @@ export default async function AccountPage(props: PageProps<"/account">) {
   const params = (await props.searchParams) as Record<string, string | string[] | undefined>;
   const welcome = params.welcome === "1";
 
-  const [orders, keyCount] = await Promise.all([
+  // Anything already expired or inside the reminder window. The tile says so
+  // rather than making somebody open the page to find out.
+  const renewBy = new Date();
+  renewBy.setUTCDate(renewBy.getUTCDate() + REMIND_DAYS_AHEAD);
+
+  const [orders, keyCount, renewCount] = await Promise.all([
     prisma.order.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
@@ -34,6 +40,13 @@ export default async function AccountPage(props: PageProps<"/account">) {
     }),
     prisma.orderItem.count({
       where: { order: { userId: user.id }, licenceKey: { not: null } },
+    }),
+    prisma.orderItem.count({
+      where: {
+        order: { userId: user.id },
+        licenceKey: { not: null },
+        expiresAt: { not: null, lte: renewBy },
+      },
     }),
   ]);
 
@@ -66,6 +79,11 @@ export default async function AccountPage(props: PageProps<"/account">) {
             keyCount === 0
               ? "Keys appear here the moment an order is paid."
               : `${keyCount} ${keyCount === 1 ? "key" : "keys"}, kept permanently.`
+          }
+          flag={
+            renewCount > 0
+              ? `${renewCount} ${renewCount === 1 ? "needs" : "need"} renewing`
+              : null
           }
         />
         <Tile
@@ -134,7 +152,18 @@ export default async function AccountPage(props: PageProps<"/account">) {
   );
 }
 
-function Tile({ href, title, body }: { href: string; title: string; body: string }) {
+function Tile({
+  href,
+  title,
+  body,
+  flag = null,
+}: {
+  href: string;
+  title: string;
+  body: string;
+  /** Something that wants attention now, said in the tile rather than behind it. */
+  flag?: string | null;
+}) {
   return (
     <Link
       href={href}
@@ -142,6 +171,11 @@ function Tile({ href, title, body }: { href: string; title: string; body: string
     >
       <p className="text-[15px] font-bold text-ink">{title}</p>
       <p className="mt-0.5 text-[13px] text-muted">{body}</p>
+      {flag ? (
+        <p className="mt-1.5 inline-block rounded border border-warn/40 bg-warn/10 px-2 py-0.5 text-[12px] font-semibold text-warn">
+          {flag}
+        </p>
+      ) : null}
     </Link>
   );
 }
