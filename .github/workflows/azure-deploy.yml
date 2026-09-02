@@ -75,6 +75,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # First, and it has to stay first: `typecheck` runs `next typegen`, which
+      # writes the generated route types (`PageProps`, `LayoutProps`) that the
+      # app's pages refer to. A fresh checkout has no `.next`, so without this
+      # every typed page fails to compile.
       - run: npm run typecheck
       - run: npm run lint
       - name: Apply migrations to the test database

@@ -258,7 +258,7 @@ before writing to it, drop one a release later.
 |---|---|
 | `npm run dev` | development server |
 | `npm run build` | production build (standalone output) |
-| `npm run typecheck` | `tsc --noEmit` |
+| `npm run typecheck` | `next typegen`, then `tsc --noEmit` — the route types (`PageProps`, `LayoutProps`) are generated, and a fresh checkout has none |
 | `npm run lint` | eslint |
 | `npm run db:migrate` | create and apply a migration |
 | `npm run db:seed` | reset and reseed the catalogue |
