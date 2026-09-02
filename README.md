@@ -100,7 +100,10 @@ src/lib/market.ts        market resolution, restricted countries, GSTIN shape
 src/lib/money.ts         integer minor units, per currency; inclusive-tax split
 src/lib/cart.ts          basket, and the one function that computes what is owed
 src/lib/site.ts          who the seller legally is; warns when unconfigured
+src/lib/admin.ts         who may run the store, and the record of what they did
 src/app/actions.ts       add to cart, switch market, place an order
+src/app/(store)/         everything a customer sees, inside the shop's frame
+src/app/admin/           the back office, deliberately outside it
 infra/main.bicep         the whole Azure estate
 ```
 
@@ -137,6 +140,20 @@ infra/main.bicep         the whole Azure estate
   signed in.
 - **Licence keys never go over WhatsApp.** A key forwarded in a chat is
   somebody else's licence.
+- **Administrators are configuration, not a database row.** `ADMIN_EMAILS` on
+  the App Service decides who can run the store, so promoting somebody is a
+  change made by whoever holds the Azure subscription and cannot be done by
+  anything that reaches the database. An empty value means nobody, never
+  everybody.
+- **Every admin page and every admin action guards itself.** A layout does not
+  run before a server action, so a guard that lived only in the layout would
+  protect what an administrator can see and none of what they can do. A test
+  walks the directory and fails on any page or exported action that does not
+  call `requireAdmin` — the mistake it catches is a route no test knows to
+  visit.
+- **Anything a person changes by hand is written down.** Who marked an order
+  paid, against which bank reference, and what a price was before it changed.
+  That question gets asked once, in an argument.
 - **An invoice is a record, not a query.** Every figure on it is read from the
   order, so a later price change, tax-rate change or renamed product cannot
   rewrite a document already in somebody's files — and it is dated by the
@@ -234,8 +251,11 @@ before writing to it, drop one a release later.
       a Container Apps job or any daily `curl` with the secret in the
       `x-vertex-cron-key` header will do. Without the schedule the promise is
       copy, not behaviour.
+- [ ] **Set `ADMIN_EMAILS`.** Nobody can reach `/admin` until you do, which
+      means nobody can record a bank transfer or re-send a customer's keys.
 - [ ] Add a retry sweep over `Notification` rows left `FAILED`. They are
-      recorded, but nothing currently retries them.
+      recorded and listed at `/admin/activity`, but nothing retries them — the
+      fix today is to open the order and send the keys again.
 - [ ] Rate-limit sign-in by IP as well as by account.
 - [ ] **Confirm the GST treatment with your accountant.** The store charges
       18% GST on Indian sales and treats everything else as a zero-rated export

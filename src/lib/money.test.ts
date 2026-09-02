@@ -4,6 +4,7 @@ import {
   discountPercent,
   formatMoney,
   formatMoneyExact,
+  parseMoneyMinor,
   splitInclusiveTax,
 } from "@/lib/money";
 
@@ -65,5 +66,39 @@ describe("splitInclusiveTax", () => {
     const { netMinor, taxMinor } = splitInclusiveTax(150_00, 0);
     expect(taxMinor).toBe(0);
     expect(netMinor).toBe(150_00);
+  });
+});
+
+/**
+ * Reading a price back out of the price-book form.
+ *
+ * The bug this exists to prevent is a float: `9200.29 * 100` is 920028.99999,
+ * and rounding that across a catalogue puts a paisa wrong on prices nobody
+ * checks until a customer does.
+ */
+describe("parseMoneyMinor", () => {
+  it("reads whole and fractional amounts exactly", () => {
+    expect(parseMoneyMinor("9200")).toBe(920000);
+    expect(parseMoneyMinor("9200.50")).toBe(920050);
+    expect(parseMoneyMinor("0.01")).toBe(1);
+    expect(parseMoneyMinor("9200.5")).toBe(920050);
+  });
+
+  it("gets the paise right where a float would not", () => {
+    expect(parseMoneyMinor("9200.29")).toBe(920029);
+    expect(parseMoneyMinor("1.10")).toBe(110);
+    expect(parseMoneyMinor("0.07")).toBe(7);
+  });
+
+  it("accepts what somebody would actually type", () => {
+    expect(parseMoneyMinor("₹9,200.50")).toBe(920050);
+    expect(parseMoneyMinor("$1,299")).toBe(129900);
+    expect(parseMoneyMinor(" 9200 ")).toBe(920000);
+  });
+
+  it("refuses what is not an amount, rather than storing a zero", () => {
+    for (const input of ["", "  ", "abc", "-500", "9200.505", "9.9.9", "1e5"]) {
+      expect(parseMoneyMinor(input), input).toBeNull();
+    }
   });
 });

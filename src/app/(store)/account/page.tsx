@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { signOut } from "@/app/auth-actions";
+import { isAdmin } from "@/lib/admin";
 import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import type { CurrencyCode } from "@/lib/market";
@@ -97,6 +98,16 @@ export default async function AccountPage(props: PageProps<"/account">) {
           body="Name, phone number and WhatsApp updates."
         />
       </div>
+
+      {isAdmin(user.email) ? (
+        <p className="mt-3 text-[13px] text-muted">
+          You can run the store:{" "}
+          <Link href="/admin" className="text-link underline">
+            the back office
+          </Link>
+          .
+        </p>
+      ) : null}
 
       <section className="mt-6 rounded-lg border border-line bg-surface p-4">
         <div className="mb-3 flex items-baseline justify-between gap-4">

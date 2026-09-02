@@ -83,19 +83,8 @@ export async function fulfilOrder(
     });
   });
 
-  const fresh = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: { items: true },
-  });
-
   const currency = order.currency as CurrencyCode;
   const orderUrl = `${appUrl()}/account/orders/${order.number}`;
-  const keyList = (fresh?.items ?? [])
-    .map(
-      (item) =>
-        `${item.name} — ${item.variantName}\n  ${item.licenceKey ?? "pending"}`,
-    )
-    .join("\n\n");
 
   // Notifications come after the money and the keys are settled, and never
   // inside the transaction: a mail provider being down must not roll back a
@@ -119,6 +108,28 @@ export async function fulfilOrder(
     },
   );
 
+  await sendKeys(orderId);
+
+  return { fulfilled: true, alreadyDone: false };
+}
+
+/**
+ * Send the licence keys for an order.
+ *
+ * Separate from `fulfilOrder` because it is also the thing an administrator
+ * reaches for when a customer says the email never arrived — a bounced address
+ * now fixed, a spam filter, a forwarding rule. It re-reads the keys rather than
+ * taking them from a caller, so a resend cannot invent one, and it issues
+ * nothing: an order with no keys yet gets no email.
+ */
+export async function sendKeys(orderId: string): Promise<boolean> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { user: true, items: true },
+  });
+  if (!order) return false;
+  if (!order.items.some((item) => item.licenceKey)) return false;
+
   await notify(
     "order.keys",
     {
@@ -131,12 +142,16 @@ export async function fulfilOrder(
     {
       name: order.user.name,
       number: order.number,
-      keys: keyList,
-      orderUrl,
+      keys: order.items
+        .map(
+          (item) =>
+            `${item.name} — ${item.variantName}\n  ${item.licenceKey ?? "pending"}`,
+        )
+        .join("\n\n"),
+      orderUrl: `${appUrl()}/account/orders/${order.number}`,
     },
   );
-
-  return { fulfilled: true, alreadyDone: false };
+  return true;
 }
 
 /** Tell the customer we are waiting on their bank transfer. */

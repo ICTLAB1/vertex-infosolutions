@@ -77,3 +77,29 @@ export function splitInclusiveTax(
   const netMinor = Math.round((totalMinor * 100) / (100 + ratePercent));
   return { netMinor, taxMinor: totalMinor - netMinor };
 }
+
+
+/**
+ * Read a typed price into minor units.
+ *
+ * "9200", "9,200", "9200.50", "₹9,200.50" all mean the same thing to somebody
+ * entering a price book, and none of them should become a float on the way in:
+ * `9200.29 * 100` is 920028.99999 and rounds to the wrong paisa often enough
+ * to matter across a catalogue. The two halves are parsed as separate integers
+ * instead.
+ *
+ * Returns null for anything that is not a plain positive amount, so the caller
+ * can refuse it rather than store a zero.
+ */
+export function parseMoneyMinor(input: string): number | null {
+  // Only the separators people actually type are removed. Stripping everything
+  // that is not a digit would turn "-500" into 500 and "1e5" into 15 — a price
+  // field that quietly accepts a number nobody typed is worse than one that
+  // refuses.
+  const cleaned = input.trim().replace(/[\s,]/g, "").replace(/^[₹$€£]/, "");
+  if (!/^\d+(\.\d{0,2})?$/.test(cleaned)) return null;
+
+  const [whole, fraction = ""] = cleaned.split(".");
+  const minor = Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
+  return Number.isSafeInteger(minor) ? minor : null;
+}

@@ -478,6 +478,34 @@ enum NotificationStatus {
 /// down should delay a message, not lose it, and a customer asking "did you
 /// send it?" deserves an answer better than a shrug. It also means the whole
 /// notification path is testable without a provider configured.
+/// Every change an administrator made by hand.
+///
+/// The store is mostly automatic: Stripe reports a payment, keys are issued,
+/// emails go out. The exceptions are the interesting ones — a bank transfer
+/// marked received by a person, a key sent again, a price changed — and each
+/// of them is somebody deciding something. "Who marked this order paid, and
+/// when?" is a question that gets asked exactly once, in an argument, and
+/// having no answer is expensive.
+model AdminAction {
+  id String @id @default(cuid())
+
+  /// The administrator's address, copied rather than joined: the record has to
+  /// outlive the account, and it is evidence of who acted at the time.
+  actorEmail String
+
+  /// What was done — "order.mark-paid", "order.resend-keys", "price.update".
+  action String
+  /// What it was done to: an order number, a SKU.
+  subject String
+  /// The change in words, for somebody reading this in a year.
+  detail String
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([subject])
+}
+
 model Notification {
   id      String              @id @default(cuid())
   userId  String?
