@@ -11,7 +11,9 @@ import type { ScryptOptions } from "node:crypto";
 import { promisify } from "node:util";
 import { cookies, headers } from "next/headers";
 
+import type { OtpPurpose } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/db";
+import { notify } from "@/lib/notify";
 
 /**
  * `promisify` picks scrypt's three-argument overload, which cannot take the
@@ -182,7 +184,11 @@ const OTP_MAX_ATTEMPTS = 5;
 /** No more than this many codes per address in the window, to stop mail-bombing. */
 const OTP_MAX_PER_HOUR = 5;
 
-export type OtpPurpose = "VERIFY_EMAIL" | "SIGN_IN";
+/**
+ * Taken from the schema rather than restated here. A hand-written union drifts
+ * the moment a purpose is added, and drifts silently.
+ */
+export type { OtpPurpose } from "@/generated/prisma/enums";
 
 function hashCode(code: string): string {
   return createHash("sha256").update(code).digest("hex");
@@ -274,11 +280,93 @@ export async function verifyOtp(
     };
   }
 
-  // Consumed on the way out, so a code cannot be replayed even if two requests
-  // arrive with it at once.
-  await prisma.emailOtp.update({
-    where: { id: otp.id },
+  // Consumed with a conditional update, so a code cannot be replayed even if
+  // two requests arrive carrying it at the same instant: the database
+  // serialises them and the loser matches zero rows. An unconditional update
+  // would let both through, which for a password reset means two people
+  // holding one code both getting in.
+  const consumed = await prisma.emailOtp.updateMany({
+    where: { id: otp.id, consumedAt: null },
     data: { consumedAt: new Date() },
   });
+  if (consumed.count === 0) {
+    return { ok: false, error: "That code has already been used. Request a new one." };
+  }
   return { ok: true };
+}
+
+/**
+ * Change a password on the strength of a one-time code.
+ *
+ * The session cookie and the redirect belong to the server action; everything
+ * that decides whether the change is safe lives here, where it can be tested
+ * without a request.
+ *
+ * Order matters. The password is checked for shape *before* the code is
+ * verified, so a password that is too short does not burn a code the customer
+ * then has to request again. And every existing session is deleted after the
+ * change: people reset a password because they believe somebody else has it,
+ * and a reset that leaves the intruder signed in is not a reset.
+ */
+export async function resetPasswordWithCode(
+  email: string,
+  code: string,
+  password: string,
+): Promise<
+  { ok: true; userId: string } | { ok: false; error: string; field?: string }
+> {
+  const weak = passwordProblem(password);
+  if (weak) return { ok: false, error: weak, field: "password" };
+
+  const user = await prisma.user.findUnique({
+    where: { email: normaliseEmail(email) },
+  });
+
+  /**
+   * One message for every way this can fail: no such account, wrong code,
+   * expired code, out of attempts, already used.
+   *
+   * `verifyOtp`'s own messages are more helpful — "4 attempts left" tells a
+   * signed-in customer exactly where they stand on /verify. Here they would
+   * also tell a stranger that the address has an account with a live code
+   * against it, which is the question this whole flow refuses to answer. So
+   * they are collapsed, and the part that matters to somebody who is stuck —
+   * ask for a new one — survives.
+   */
+  const REFUSED = {
+    ok: false as const,
+    error: "That code is not right, or it has expired. Ask for a new one.",
+    field: "code",
+  };
+
+  if (!user) return REFUSED;
+
+  const checked = await verifyOtp(user.id, "PASSWORD_RESET", code);
+  if (!checked.ok) return REFUSED;
+
+  const { hash, salt } = await hashPassword(password);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash: hash,
+      passwordSalt: salt,
+      // Reading the code proves control of the mailbox, which is the same
+      // thing the verification code proves. An account that never got round
+      // to confirming is confirmed by this.
+      emailVerifiedAt: user.emailVerifiedAt ?? new Date(),
+    },
+  });
+
+  await prisma.session.deleteMany({ where: { userId: user.id } });
+
+  await notify(
+    "account.password-changed",
+    { userId: user.id, email: user.email },
+    {
+      name: user.name,
+      when: `${new Date().toISOString().replace("T", " ").slice(0, 16)} UTC`,
+    },
+  );
+
+  return { ok: true, userId: user.id };
 }

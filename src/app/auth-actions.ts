@@ -13,6 +13,7 @@ import {
   normaliseEmail,
   OTP_TTL_TEXT,
   passwordProblem,
+  resetPasswordWithCode,
   sweepExpired,
   verifyOtp,
   verifyPassword,
@@ -22,11 +23,34 @@ import { prisma } from "@/lib/db";
 import { notify } from "@/lib/notify";
 import { appUrl } from "@/lib/stripe";
 
-export type AuthError = { message: string; field?: string } | null;
+export type AuthError = {
+  message: string;
+  field?: string;
+  /**
+   * What was typed, echoed back so a rejected form is not an empty one.
+   *
+   * React resets an uncontrolled form once its action returns, so without this
+   * a mistyped password costs you your email address too — and on the register
+   * form, your name, phone number and WhatsApp choice as well. Passwords are
+   * never in here: retyping one after a failure is expected, and echoing it
+   * would put it in the payload sent back to the browser.
+   */
+  values?: Record<string, string>;
+} | null;
 
 function str(form: FormData, key: string): string {
   const value = form.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+/** The named fields exactly as typed, for echoing back on a failure. */
+function keep(form: FormData, ...names: string[]): Record<string, string> {
+  const kept: Record<string, string> = {};
+  for (const name of names) {
+    const value = form.get(name);
+    if (typeof value === "string") kept[name] = value;
+  }
+  return kept;
 }
 
 /**
@@ -60,13 +84,16 @@ export async function register(
   const password = str(form, "password");
   const phoneRaw = str(form, "phone");
   const whatsappOptIn = form.get("whatsappOptIn") === "on";
+  const values = keep(form, "name", "email", "phone", "whatsappOptIn");
 
-  if (name.length < 2) return { message: "Enter your name.", field: "name" };
+  if (name.length < 2) {
+    return { message: "Enter your name.", field: "name", values };
+  }
   if (!emailLooksValid(email)) {
-    return { message: "Enter a valid email address.", field: "email" };
+    return { message: "Enter a valid email address.", field: "email", values };
   }
   const weak = passwordProblem(password);
-  if (weak) return { message: weak, field: "password" };
+  if (weak) return { message: weak, field: "password", values };
 
   let phone: string | null = null;
   if (phoneRaw) {
@@ -76,6 +103,7 @@ export async function register(
         message:
           "Enter the number in international format, starting with the country code — +91 98765 43210.",
         field: "phone",
+        values,
       };
     }
   }
@@ -83,6 +111,7 @@ export async function register(
     return {
       message: "Add a phone number to receive WhatsApp updates.",
       field: "phone",
+      values,
     };
   }
 
@@ -95,6 +124,7 @@ export async function register(
     return {
       message: "There is already an account with that address. Sign in instead.",
       field: "email",
+      values,
     };
   }
 
@@ -134,6 +164,7 @@ export async function signIn(
   const email = normaliseEmail(str(form, "email"));
   const password = str(form, "password");
   const next = str(form, "next");
+  const values = keep(form, "email");
 
   const user = await prisma.user.findUnique({ where: { email } });
 
@@ -145,7 +176,7 @@ export async function signIn(
     : await verifyPassword(password, "0".repeat(128), "decoy");
 
   if (!user || !ok) {
-    return { message: "That email address and password do not match." };
+    return { message: "That email address and password do not match.", values };
   }
 
   await createSession(user.id);
@@ -214,8 +245,11 @@ export async function updateProfile(
   const name = str(form, "name");
   const phoneRaw = str(form, "phone");
   const whatsappOptIn = form.get("whatsappOptIn") === "on";
+  const values = keep(form, "name", "phone", "whatsappOptIn");
 
-  if (name.length < 2) return { message: "Enter your name.", field: "name" };
+  if (name.length < 2) {
+    return { message: "Enter your name.", field: "name", values };
+  }
 
   let phone: string | null = null;
   if (phoneRaw) {
@@ -225,6 +259,7 @@ export async function updateProfile(
         message:
           "Enter the number in international format, starting with the country code.",
         field: "phone",
+        values,
       };
     }
   }
@@ -232,6 +267,7 @@ export async function updateProfile(
     return {
       message: "Add a phone number to receive WhatsApp updates.",
       field: "phone",
+      values,
     };
   }
 
@@ -242,4 +278,93 @@ export async function updateProfile(
 
   revalidatePath("/account");
   return { message: "Saved." };
+}
+
+// ---------------------------------------------------------------------------
+// Forgotten passwords
+// ---------------------------------------------------------------------------
+
+/**
+ * Step one: ask for a code.
+ *
+ * Whether or not the address has an account, the answer is identical and so is
+ * the next page. Anything else turns this form into a way to ask "does this
+ * company buy software here?" — commercially interesting to a competitor, and
+ * nobody's business but the customer's.
+ */
+export async function requestPasswordReset(
+  _previous: AuthError,
+  form: FormData,
+): Promise<AuthError> {
+  const email = normaliseEmail(str(form, "email"));
+  const values = keep(form, "email");
+  if (!emailLooksValid(email)) {
+    return { message: "Enter a valid email address.", field: "email", values };
+  }
+
+  await sendResetCode(email);
+  redirect(`/reset?email=${encodeURIComponent(email)}`);
+}
+
+/** Step one again, from the page where the code is entered. */
+export async function resendResetCode(email: string): Promise<AuthError> {
+  const clean = normaliseEmail(email);
+  if (!emailLooksValid(clean)) {
+    return { message: "Enter a valid email address." };
+  }
+  await sendResetCode(clean);
+  return { message: "If that address has an account, another code is on its way." };
+}
+
+/**
+ * Issue and send, or quietly do nothing.
+ *
+ * Errors are swallowed on purpose. `issueOtp` refuses after five codes in an
+ * hour, and surfacing that refusal would answer the enumeration question the
+ * rest of this flow is careful not to: only a real account can be rate
+ * limited. The cost is that somebody who has genuinely hit the limit waits for
+ * an email that is not coming; the server log says why.
+ */
+async function sendResetCode(email: string): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) return;
+
+  const issued = await issueOtp(user.id, "PASSWORD_RESET");
+  if ("error" in issued) {
+    console.warn(`[auth] reset code not issued for ${user.id}: ${issued.error}`);
+    return;
+  }
+
+  await notify(
+    "otp.reset",
+    { userId: user.id, email: user.email },
+    { name: user.name, code: issued.code, ttl: OTP_TTL_TEXT },
+  );
+}
+
+/** Step two: prove possession of the mailbox, then choose a new password. */
+export async function resetPassword(
+  _previous: AuthError,
+  form: FormData,
+): Promise<AuthError> {
+  // The code is echoed back as well as the address: a password that is too
+  // short must not cost the customer the code they just went to their inbox
+  // for.
+  const values = keep(form, "email", "code");
+
+  const result = await resetPasswordWithCode(
+    str(form, "email"),
+    str(form, "code"),
+    str(form, "password"),
+  );
+  if (!result.ok) return { message: result.error, field: result.field, values };
+
+  // Every session was just deleted, including this browser's. A new one is
+  // issued here so the customer lands signed in rather than at the sign-in
+  // page they have just proved they do not need.
+  await createSession(result.userId);
+  await adoptCart(result.userId);
+
+  revalidatePath("/", "layout");
+  redirect("/account");
 }

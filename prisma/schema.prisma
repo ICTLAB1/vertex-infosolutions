@@ -430,6 +430,7 @@ model Session {
 enum OtpPurpose {
   VERIFY_EMAIL
   SIGN_IN
+  PASSWORD_RESET
 }
 
 /// A one-time code sent by email.

@@ -89,7 +89,7 @@ event and asserting the keys are unchanged.
 ```
 prisma/schema.prisma     the data model, commented
 prisma/seed.ts           sample catalogue — replace before launch
-src/lib/auth.ts          passwords (scrypt), sessions, one-time codes
+src/lib/auth.ts          passwords (scrypt), sessions, one-time codes, reset
 src/lib/notify.ts        the outbox: email and WhatsApp, composed and recorded
 src/lib/orders.ts        fulfilOrder — the once-only claim
 src/lib/renewals.ts      licence expiry dates, and the reminder sweep
@@ -124,6 +124,15 @@ infra/main.bicep         the whole Azure estate
 - **An order page is scoped to its owner.** The query filters on `userId` as
   well as the order number, so guessing a number gets a 404 rather than
   somebody else's keys.
+- **A password reset ends every session.** People reset a password because
+  they think somebody else has it, so a reset that leaves the intruder signed
+  in is not a reset. Reading the code also verifies the email address, since it
+  proves the same thing the verification code proves.
+- **The forgotten-password flow never says whether an account exists.** Same
+  message, same next page, and every way of failing — no such account, wrong
+  code, expired, out of attempts — collapses into one answer. `verifyOtp`'s
+  more helpful messages stay on `/verify`, where the customer is already
+  signed in.
 - **Licence keys never go over WhatsApp.** A key forwarded in a chat is
   somebody else's licence.
 - **Nothing renews itself, and nothing expires unannounced.** There is no card
@@ -219,8 +228,6 @@ before writing to it, drop one a release later.
       copy, not behaviour.
 - [ ] Add a retry sweep over `Notification` rows left `FAILED`. They are
       recorded, but nothing currently retries them.
-- [ ] Add password reset. There is no "forgot password" flow yet — the OTP
-      machinery is there for it (`OtpPurpose.SIGN_IN`) but unwired.
 - [ ] Rate-limit sign-in by IP as well as by account.
 - [ ] **Confirm the GST treatment with your accountant.** The store charges
       18% GST on Indian sales and treats everything else as a zero-rated export

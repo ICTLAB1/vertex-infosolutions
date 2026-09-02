@@ -7,7 +7,10 @@ import { useFormStatus } from "react-dom";
 import {
   confirmEmail,
   register,
+  requestPasswordReset,
   resendCode,
+  resendResetCode,
+  resetPassword,
   signIn,
   updateProfile,
   type AuthError,
@@ -43,6 +46,7 @@ function Field({
   name,
   hint,
   error,
+  defaultValue,
   ...rest
 }: {
   label: string;
@@ -51,11 +55,17 @@ function Field({
   error: AuthError;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   const bad = error?.field === name;
+  // React empties an uncontrolled form once its action returns, so a rejected
+  // form would otherwise come back blank and the customer would retype an
+  // address they had already got right. The action echoes back what was typed;
+  // that wins over whatever the page supplied.
+  const kept = error?.values?.[name] ?? defaultValue;
   return (
     <label className="block">
       <span className="block text-[13px] font-semibold text-ink">{label}</span>
       <input
         name={name}
+        defaultValue={kept}
         aria-invalid={bad || undefined}
         className={`mt-1 w-full rounded-md border bg-white px-3 py-2 text-[14px] ${
           bad ? "border-deal ring-1 ring-deal" : "border-line"
@@ -104,7 +114,12 @@ export function RegisterForm() {
         hint="International format, with the country code."
       />
       <label className="flex items-start gap-2.5 rounded-md border border-line bg-ground/40 p-3">
-        <input type="checkbox" name="whatsappOptIn" className="mt-0.5" />
+        <input
+          type="checkbox"
+          name="whatsappOptIn"
+          defaultChecked={error?.values?.whatsappOptIn === "on"}
+          className="mt-0.5"
+        />
         <span className="text-[13px] text-muted">
           <span className="font-semibold text-ink">
             Send order updates on WhatsApp.
@@ -148,6 +163,11 @@ export function SignInForm({ next }: { next?: string }) {
         required
       />
       <Submit label="Sign in" busy="Signing in…" />
+      <p className="text-center text-[13px]">
+        <Link href="/forgot" className="text-link underline">
+          Forgotten your password?
+        </Link>
+      </p>
       <p className="text-center text-[13px] text-muted">
         New here?{" "}
         <Link href="/register" className="text-link underline">
@@ -238,7 +258,9 @@ export function ProfileForm({
         <input
           type="checkbox"
           name="whatsappOptIn"
-          defaultChecked={whatsappOptIn}
+          defaultChecked={
+            error?.values ? error.values.whatsappOptIn === "on" : whatsappOptIn
+          }
           className="mt-0.5"
         />
         <span className="text-[13px] text-muted">
@@ -267,6 +289,111 @@ export function ResendForm() {
           {state.message}
         </p>
       ) : null}
+      <button type="submit" className="text-[13px] text-link hover:underline">
+        Send another code
+      </button>
+      <p className="mt-1 text-[12px] text-faint">
+        Check the spam folder first — an email carrying a six-digit code is a
+        shape that filters dislike.
+      </p>
+    </form>
+  );
+}
+
+export function ForgotForm({ email }: { email?: string }) {
+  const [error, action] = useActionState<AuthError, FormData>(
+    requestPasswordReset,
+    null,
+  );
+
+  return (
+    <form action={action} className="space-y-3">
+      <Problem error={error} />
+      <Field
+        label="Email address"
+        name="email"
+        type="email"
+        autoComplete="email"
+        defaultValue={email}
+        error={error}
+        hint="The address on the account. The code goes there and nowhere else."
+        required
+      />
+      <Submit label="Send me a code" busy="Sending…" />
+      <p className="text-center text-[13px] text-muted">
+        Remembered it?{" "}
+        <Link href="/signin" className="text-link underline">
+          Sign in
+        </Link>
+      </p>
+    </form>
+  );
+}
+
+export function ResetForm({ email }: { email: string }) {
+  const [error, action] = useActionState<AuthError, FormData>(
+    resetPassword,
+    null,
+  );
+
+  return (
+    <form action={action} className="space-y-3">
+      <Problem error={error} />
+      <Field
+        label="Email address"
+        name="email"
+        type="email"
+        autoComplete="email"
+        defaultValue={email}
+        error={error}
+        required
+      />
+      <label className="block">
+        <span className="block text-[13px] font-semibold text-ink">
+          Six-digit code
+        </span>
+        <input
+          name="code"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={6}
+          placeholder="000000"
+          required
+          defaultValue={error?.values?.code}
+          aria-invalid={error?.field === "code" || undefined}
+          className={`mt-1 w-full rounded-md border bg-white px-3 py-2 text-center font-mono text-[22px] tracking-[0.4em] ${
+            error?.field === "code" ? "border-deal ring-1 ring-deal" : "border-line"
+          }`}
+        />
+      </label>
+      <Field
+        label="New password"
+        name="password"
+        type="password"
+        autoComplete="new-password"
+        error={error}
+        hint="At least 12 characters. A short phrase you can remember is ideal."
+        required
+      />
+      <Submit label="Set the new password" busy="Setting it…" />
+    </form>
+  );
+}
+
+export function ResendResetForm({ email }: { email: string }) {
+  const [state, action] = useActionState<AuthError, FormData>(
+    async (_previous, form) => resendResetCode(String(form.get("email") ?? "")),
+    null,
+  );
+
+  return (
+    <form action={action}>
+      {state ? (
+        <p role="status" className="mb-2 text-[13px] text-ok">
+          {state.message}
+        </p>
+      ) : null}
+      <input type="hidden" name="email" value={email} />
       <button type="submit" className="text-[13px] text-link hover:underline">
         Send another code
       </button>

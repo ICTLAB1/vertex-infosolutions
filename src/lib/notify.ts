@@ -22,7 +22,9 @@ import { getSiteConfig } from "@/lib/site";
 export type NotifyTemplate =
   | "otp.verify"
   | "otp.signin"
+  | "otp.reset"
   | "account.welcome"
+  | "account.password-changed"
   | "order.paid"
   | "order.keys"
   | "order.pending"
@@ -220,6 +222,42 @@ export function compose(
           "",
           `— ${brand}`,
         ].join("\n"),
+      };
+
+    case "otp.reset":
+      return {
+        subject: `${data.code} is your ${brand} password reset code`,
+        body: [
+          `Hello ${data.name},`,
+          "",
+          `Your password reset code is ${data.code}. It expires in ${data.ttl}.`,
+          "",
+          "Entering it lets you choose a new password. Until you do, your current password still works and nothing about your account has changed.",
+          "",
+          `If you did not ask for this, somebody typed your address into our reset form. That on its own gives them nothing — but if it keeps happening, tell us at ${support}.`,
+          "",
+          `— ${brand}`,
+        ].join("\n"),
+        // Never over WhatsApp. This code is the whole of what stands between a
+        // chat thread and somebody else's account.
+      };
+
+    case "account.password-changed":
+      return {
+        subject: `Your ${brand} password was changed`,
+        body: [
+          `Hello ${data.name},`,
+          "",
+          `The password on your account was changed on ${data.when}, and everywhere that was signed in has been signed out.`,
+          "",
+          "If that was you, there is nothing to do.",
+          "",
+          `If it was not, your email address has been compromised as well as the account — change that password first, then tell us at ${support} straight away. Do not reset this account again until you have.`,
+          "",
+          `— ${brand}`,
+        ].join("\n"),
+        // Never over WhatsApp: this is the record, and it belongs in the
+        // mailbox alongside the reset code it answers.
       };
 
     case "account.welcome":
