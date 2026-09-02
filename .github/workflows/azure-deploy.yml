@@ -40,6 +40,29 @@ env:
 jobs:
   verify:
     runs-on: ubuntu-latest
+
+    # The suite includes tests that exercise the once-only fulfilment claim and
+    # the webhook signature against a real database, because those are the two
+    # places a mistake costs money. They skip without DATABASE_URL, so CI
+    # provides one rather than letting them quietly not run.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: vertex
+          POSTGRES_PASSWORD: vertex
+          POSTGRES_DB: vertex_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vertex -d vertex_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://vertex:vertex@localhost:5432/vertex_test?schema=public
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,10 +72,16 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - name: Apply migrations to the test database
+        run: npx prisma migrate deploy
+      - run: npm test
       # The build must pass without a database. Every route is dynamic, so it
       # does; if that ever stops being true this step catches it here rather
       # than in the image build.
-      - run: npm run build
+      - name: Build without a database
+        run: npm run build
+        env:
+          DATABASE_URL: ""
 
   deploy:
     needs: verify

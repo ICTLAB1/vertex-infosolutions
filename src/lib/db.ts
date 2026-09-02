@@ -5,11 +5,17 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
 /**
- * One client per process.
+ * The database client.
  *
- * Next's dev server re-evaluates modules on every edit, and a fresh client each
- * time exhausts the database's connections within a few saves, so in
- * development the instance is parked on `globalThis` and reused.
+ * Constructed lazily, on first use rather than on import. That matters in three
+ * places: a page that imports a module which merely *mentions* `prisma` no
+ * longer needs a reachable database to render; `next build` does not need one
+ * to compile; and a unit test can import `lib/auth` or `lib/notify` — both of
+ * which reference this — without standing up Postgres first.
+ *
+ * One client per process. Next's dev server re-evaluates modules on every edit,
+ * and a fresh client each time exhausts the database's connections within a few
+ * saves, so in development the instance is parked on `globalThis` and reused.
  *
  * On Azure this points at Azure Database for PostgreSQL Flexible Server, which
  * requires TLS. `sslmode=require` belongs in `DATABASE_URL` rather than being
@@ -40,8 +46,22 @@ function createClient(): PrismaClient {
   return new PrismaClient({ adapter });
 }
 
-export const prisma: PrismaClient = globalForPrisma.prisma ?? createClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+function client(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createClient();
+  }
+  return globalForPrisma.prisma;
 }
+
+/**
+ * A proxy so `prisma.order.findMany(...)` reads naturally while the client
+ * underneath is still built on demand. Methods are bound to the real client,
+ * because Prisma's own internals rely on `this`.
+ */
+export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
+  get(_target, property) {
+    const real = client() as unknown as Record<string | symbol, unknown>;
+    const value = real[property];
+    return typeof value === "function" ? value.bind(real) : value;
+  },
+});
