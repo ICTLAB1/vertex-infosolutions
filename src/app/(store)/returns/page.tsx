@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { pageMetadata } from "@/lib/seo";
 import { H2, PolicyPage, Ul } from "@/components/policy";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Refunds & cancellations",
   description:
-    "When a software licence can be refunded, when it cannot, and how the money comes back.",
-};
+    "When a software licence can be refunded and when it cannot, how the money comes back, and how GST is reversed on an Indian order.",
+  path: "/returns",
+});
 
 export default function ReturnsPage() {
   return (

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { signOut } from "@/app/auth-actions";
 import { isAdmin } from "@/lib/admin";
 import { getUser } from "@/lib/auth";
@@ -10,7 +11,7 @@ import type { CurrencyCode } from "@/lib/market";
 import { formatMoney } from "@/lib/money";
 import { REMIND_DAYS_AHEAD } from "@/lib/renewals";
 
-export const metadata: Metadata = { title: "Your account", robots: { index: false } };
+export const metadata: Metadata = { title: "Your account", ...NOINDEX };
 
 export default async function AccountPage(props: PageProps<"/account">) {
   const user = await getUser();

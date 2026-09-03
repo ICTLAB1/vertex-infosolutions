@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { pageMetadata } from "@/lib/seo";
 import { H2, PolicyPage, Ul } from "@/components/policy";
 import { getSiteConfig } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Contact & complaints",
+export const metadata: Metadata = pageMetadata({
+  title: "Contact Vertex Infosolutions",
   description:
-    "How to reach Vertex Infosolutions, how long we take to answer, and how to escalate a complaint.",
-};
+    "Ask about licensing before you buy, request a volume quote, or get help with an order. Email and phone support from an authorised Microsoft, Adobe and Autodesk reseller.",
+  path: "/contact",
+});
 
 export default function ContactPage() {
   const config = getSiteConfig();

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { NOINDEX } from "@/lib/seo";
 import { removeFromCart, setQty } from "@/app/actions";
 import { Glyph } from "@/components/glyph";
 import { QtyInput } from "@/components/qty-input";
@@ -18,7 +19,7 @@ import { TERM_LABELS } from "@/lib/catalogue";
 import type { CurrencyCode } from "@/lib/market";
 import { formatMoney } from "@/lib/money";
 
-export const metadata: Metadata = { title: "Your cart" };
+export const metadata: Metadata = { title: "Your cart", ...NOINDEX };
 
 export default async function CartPage() {
   const [cart, market] = await Promise.all([getCart(), getMarket()]);

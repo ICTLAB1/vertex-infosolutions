@@ -129,6 +129,34 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
         dangerouslySetInnerHTML={{
           __html: jsonLd({
             "@context": "https://schema.org",
+            "@graph": [
+              {
+                // Mirrors the breadcrumb the page already shows, so a search
+                // result carries "All > Microsoft > Business Premium" rather
+                // than a bare URL.
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  {
+                    "@type": "ListItem",
+                    position: 1,
+                    name: "All licences",
+                    item: absolute("/s"),
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: product.brand.name,
+                    item: absolute(`/s?brand=${product.brand.slug}`),
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 3,
+                    name: product.name,
+                    item: absolute(`/product/${product.slug}`),
+                  },
+                ],
+              },
+              {
             "@type": "Product",
             name: product.name,
             description: product.summary,
@@ -145,6 +173,8 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               itemCondition: "https://schema.org/NewCondition",
               seller: { "@type": "Organization", name: "Vertex Infosolutions" },
             },
+              },
+            ],
           }),
         }}
       />

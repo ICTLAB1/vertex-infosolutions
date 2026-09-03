@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { pageMetadata } from "@/lib/seo";
 import { H2, PolicyPage, Ul } from "@/components/policy";
 
-export const metadata: Metadata = {
-  title: "How licensing works",
+export const metadata: Metadata = pageMetadata({
+  title: "How software licensing works",
   description:
-    "What you are actually buying: subscription versus perpetual, named users, seat reassignment, renewals, and how to spot a licence that will stop working.",
-};
+    "Subscription or perpetual, named users or devices, and why a Microsoft CSP subscription arrives in a new tenant. What we would tell you on the phone before you buy.",
+  path: "/licensing",
+});
 
 export default function LicensingPage() {
   return (

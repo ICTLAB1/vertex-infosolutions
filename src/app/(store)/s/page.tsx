@@ -10,8 +10,70 @@ import {
   TERM_LABELS,
 } from "@/lib/catalogue";
 import { formatMoney } from "@/lib/money";
+import { absolute, jsonLd, NOINDEX, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Browse" };
+/**
+ * What a browse page says it is, and whether it should be indexed at all.
+ *
+ * A shelf — "all Adobe", "everything under security" — is worth indexing: it
+ * is how somebody searching for a publisher rather than a product arrives.
+ * A *filtered* shelf is not. Sort order, price band, rating and free text
+ * multiply into thousands of URLs holding the same products in a different
+ * order, and indexing them spends the crawl budget that should have gone on
+ * 499 product pages.
+ *
+ * So the canonical always points at the plain brand or category shelf, and
+ * anything narrower is marked noindex while still being followed — the links
+ * out of it lead to products worth having.
+ */
+export async function generateMetadata(
+  props: PageProps<"/s">,
+): Promise<Metadata> {
+  const params = (await props.searchParams) as Params;
+  const q = one(params, "q");
+  const brandSlug = one(params, "brand");
+  const categorySlug = one(params, "category");
+
+  const narrowed = Boolean(
+    q ||
+      one(params, "term") ||
+      one(params, "maxPrice") ||
+      one(params, "minRating") ||
+      (one(params, "sort") && one(params, "sort") !== "relevance"),
+  );
+
+  const [brands, categories] = await Promise.all([
+    getBrands(),
+    getCategories(),
+  ]);
+  const brand = brands.find((b) => b.slug === brandSlug);
+  const category = categories.find((c) => c.slug === categorySlug);
+
+  const shelf = brand?.name ?? category?.name;
+  const path = brand
+    ? `/s?brand=${brand.slug}`
+    : category
+      ? `/s?category=${category.slug}`
+      : "/s";
+
+  if (q) {
+    return {
+      title: `Search: ${q}`,
+      alternates: { canonical: path },
+      ...NOINDEX,
+    };
+  }
+
+  const title = shelf ? `${shelf} licences` : "All software licences";
+  const description = shelf
+    ? `Buy genuine ${shelf} software licences from an authorised reseller. GST invoice on every Indian order, zero-rated exports elsewhere, and licence details issued within one business day.`
+    : "Browse every Microsoft, Adobe and Autodesk licence we sell. Genuine licences from an authorised reseller, priced in INR with GST for India and USD everywhere else.";
+
+  return {
+    ...pageMetadata({ title, description, path }),
+    ...(narrowed ? NOINDEX : {}),
+  };
+}
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -244,6 +306,26 @@ export default async function BrowsePage(props: PageProps<"/s">) {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+              {/* The shelf, in the order it is shown. A crawler that reads
+                  this can follow the listing without parsing the grid, and
+                  the position is the one on the page rather than an
+                  alphabetical guess. */}
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                  __html: jsonLd({
+                    "@context": "https://schema.org",
+                    "@type": "ItemList",
+                    numberOfItems: products.length,
+                    itemListElement: products.map((product, i) => ({
+                      "@type": "ListItem",
+                      position: i + 1,
+                      url: absolute(`/product/${product.slug}`),
+                      name: product.name,
+                    })),
+                  }),
+                }}
+              />
               {products.map((product) => (
                 <ProductCard
                   key={product.id}

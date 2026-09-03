@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import type { CurrencyCode } from "@/lib/market";
 import { formatMoney } from "@/lib/money";
 
-export const metadata: Metadata = { title: "Your orders", robots: { index: false } };
+export const metadata: Metadata = { title: "Your orders", ...NOINDEX };
 
 export default async function OrdersPage() {
   const user = await getUser();

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { DELIVERY_WINDOW } from "@/lib/delivery";
 import type { CurrencyCode } from "@/lib/market";
+import { jsonLd } from "@/lib/seo";
 import { getSiteConfig } from "@/lib/site";
 
 /* ------------------------------------------------------------------ shared */
@@ -217,9 +218,16 @@ export function PaymentMethods({ currency }: { currency: CurrencyCode }) {
 export async function TrustAndSecurity() {
   const config = await getSiteConfig();
 
-  const faqs = [
+  const faqs: {
+    q: string;
+    a: React.ReactNode;
+    /** The same answer as text, for the structured data. */
+    plain: string;
+  }[] = [
     {
       q: "Is my payment secure?",
+      plain:
+        "Yes. Payment is taken on Stripe's own hosted page, not on ours. There is no card field anywhere on this website, so there is nothing here to intercept. The connection is encrypted end to end and Vertex never receives, stores or sees your card or UPI details.",
       a: (
         <>
           Yes. Payment is taken on Stripe&apos;s own hosted page, not on this
@@ -231,6 +239,8 @@ export async function TrustAndSecurity() {
     },
     {
       q: "Are the software licences genuine?",
+      plain:
+        "Yes, and you can check rather than take our word for it. Every listing shows the publisher's own SKU — the identifier on Microsoft's or Adobe's price list — so you can confirm the product is what it says. The licence is supplied under the publisher's own end-user terms, which you accept when you activate it.",
       a: (
         <>
           Yes, and you can check rather than take our word for it. Every listing
@@ -243,6 +253,8 @@ export async function TrustAndSecurity() {
     },
     {
       q: "Where do the licences come from?",
+      plain:
+        "Authorised distribution. Microsoft subscriptions are supplied through the Cloud Solution Provider programme; Adobe through our certified reseller agreement. They are not recovered consumer keys, not OEM keys detached from the hardware they were sold with, and not grey-market volume keys.",
       a: (
         <>
           Authorised distribution. Microsoft subscriptions are supplied through
@@ -259,6 +271,8 @@ export async function TrustAndSecurity() {
     },
     {
       q: "Can I get a refund?",
+      plain:
+        "Before the licence is issued, in full and without argument. After it is issued a subscription generally cannot be returned, because the publisher does not take it back — but if it does not work we replace it or refund it, and a licence that never arrived is always refunded.",
       a: (
         <>
           Before the licence is issued, in full and without argument. After it
@@ -276,6 +290,8 @@ export async function TrustAndSecurity() {
     },
     {
       q: "Is customer support available?",
+      plain:
+        "Yes — before you buy as well as after, by email and phone. Licensing is where most money is wasted, and it is wasted before the order rather than after, so ask first.",
       a: (
         <>
           Yes — before you buy as well as after.{" "}
@@ -306,6 +322,26 @@ export async function TrustAndSecurity() {
       intro="The questions worth asking of any supplier you have not bought from before."
       delay={120}
     >
+      {/* The same questions and answers as structured data. Google shows
+          these under a result, and a shop nobody has bought from yet needs
+          every honest signal it can give. The text matches the page exactly —
+          structured data that says something the page does not is the one
+          way to turn this into a penalty. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((faq) => ({
+              "@type": "Question",
+              name: faq.q,
+              acceptedAnswer: { "@type": "Answer", text: faq.plain },
+            })),
+          }),
+        }}
+      />
+
       <div className="mt-3 divide-y divide-line-soft">
         {faqs.map((faq, i) => (
           <details

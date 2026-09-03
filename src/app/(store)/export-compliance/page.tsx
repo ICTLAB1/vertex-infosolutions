@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 
+import { pageMetadata } from "@/lib/seo";
 import { H2, PolicyPage, Ul } from "@/components/policy";
 import { RESTRICTED_COUNTRIES } from "@/lib/market";
 import { getSiteConfig } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Export compliance",
   description:
-    "Which destinations Vertex Infosolutions cannot supply, what you confirm when you order, and why we will not under-declare a shipment.",
-};
+    "Where we can and cannot supply software licences, the sanctions and end-use restrictions that apply, and what you are confirming when you order from outside India.",
+  path: "/export-compliance",
+});
 
 export default function ExportCompliancePage() {
   const config = getSiteConfig();

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { SignInForm } from "@/components/auth-forms";
 import { getUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  robots: { index: false },
+  ...NOINDEX,
 };
 
 export default async function SignInPage(props: PageProps<"/signin">) {

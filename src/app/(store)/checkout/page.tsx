@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { CheckoutForm } from "@/components/checkout-form";
 import { TenantNotice } from "@/components/tenant-notice";
 import { BulkQuoteLine } from "@/components/bulk-quote";
@@ -13,7 +14,7 @@ import { methodsFor } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Checkout",
-  robots: { index: false },
+  ...NOINDEX,
 };
 
 export default async function CheckoutPage() {

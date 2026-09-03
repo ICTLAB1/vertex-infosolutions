@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { pageMetadata } from "@/lib/seo";
 import { H2, PolicyPage, Ul } from "@/components/policy";
 import { getSiteConfig } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacy policy",
   description:
-    "What Vertex Infosolutions collects when you shop, why, who it is shared with, and the rights you have over it.",
-};
+    "What Vertex Infosolutions collects, why, how long it is kept, and who it is shared with. Written to be read rather than to be complied with.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   const config = getSiteConfig();

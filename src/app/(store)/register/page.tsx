@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { RegisterForm } from "@/components/auth-forms";
 import { getUser } from "@/lib/auth";
 
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
   title: "Create an account",
   description:
     "Create a Vertex Infosolutions account. Licence keys are delivered into it and stay there.",
+  ...NOINDEX,
 };
 
 export default async function RegisterPage() {

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { pageMetadata } from "@/lib/seo";
 import { H2, PolicyPage } from "@/components/policy";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Cookie policy",
   description:
-    "The two strictly necessary cookies this website sets, what they hold, and why there is no consent banner.",
-};
+    "Which cookies this shop sets, what each one is for, and which of them you can refuse without breaking the basket.",
+  path: "/cookies",
+});
 
 export default function CookiesPage() {
   return (

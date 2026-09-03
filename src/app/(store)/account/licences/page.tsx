@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { Glyph } from "@/components/glyph";
 import { getUser } from "@/lib/auth";
 import { TERM_LABELS } from "@/lib/catalogue";
@@ -10,7 +11,7 @@ import { expiryLabel, expiryState } from "@/lib/renewals";
 
 export const metadata: Metadata = {
   title: "Your licences",
-  robots: { index: false },
+  ...NOINDEX,
 };
 
 /**

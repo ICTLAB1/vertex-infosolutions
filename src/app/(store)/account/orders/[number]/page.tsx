@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { Glyph } from "@/components/glyph";
 import { DELIVERY_WINDOW } from "@/lib/delivery";
 import { getUser } from "@/lib/auth";
@@ -13,7 +14,7 @@ import { PAYMENT_METHOD_LABELS, STATUS_LABELS } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Your order",
-  robots: { index: false },
+  ...NOINDEX,
 };
 
 /**

@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { ProfileForm } from "@/components/auth-forms";
 import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { channelStatus } from "@/lib/notify";
 
-export const metadata: Metadata = { title: "Profile", robots: { index: false } };
+export const metadata: Metadata = { title: "Profile", ...NOINDEX };
 
 export default async function ProfilePage() {
   const user = await getUser();

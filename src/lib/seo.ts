@@ -35,3 +35,48 @@ export const OG_IMAGE = {
 export function jsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
+
+/**
+ * Metadata for an ordinary public page.
+ *
+ * Every indexable page needs three things and most of them had none: a title,
+ * a description a human would click, and a canonical URL. The canonical is the
+ * one that does real work — without it the same page reached by two paths, or
+ * with a tracking parameter on the end, competes with itself.
+ */
+export function pageMetadata({
+  title,
+  description,
+  path,
+}: {
+  title: string;
+  description: string;
+  path: string;
+}) {
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "website" as const,
+      title,
+      description,
+      url: path,
+      images: [OG_IMAGE],
+    },
+  };
+}
+
+/**
+ * Keep a page out of the index.
+ *
+ * `robots.txt` stops a crawler *reading* a page; it does not stop the URL
+ * being indexed from a link elsewhere, which is how an empty basket ends up in
+ * search results with no description under it. This says the other half.
+ *
+ * `follow` stays on: a crawler should not index the basket, but the links out
+ * of it to the catalogue are worth following.
+ */
+export const NOINDEX = {
+  robots: { index: false, follow: true },
+} as const;

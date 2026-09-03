@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { pageMetadata } from "@/lib/seo";
 import { H2, PolicyPage, Ul } from "@/components/policy";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "How delivery works",
   description:
-    "Every licence is delivered by email. What arrives, how fast, what to do if it does not, and why nothing ships.",
-};
+    "What arrives after payment and when: licence details to your account and your email within one business day, and what a Microsoft, Adobe or Autodesk licence actually looks like when it lands.",
+  path: "/delivery",
+});
 
 export default function DeliveryPage() {
   return (

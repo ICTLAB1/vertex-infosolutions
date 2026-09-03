@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { ResendForm, VerifyForm } from "@/components/auth-forms";
 import { getUser, OTP_TTL_TEXT } from "@/lib/auth";
 import { channelStatus } from "@/lib/notify";
@@ -8,7 +9,7 @@ import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Confirm your email",
-  robots: { index: false },
+  ...NOINDEX,
 };
 
 export default async function VerifyPage() {

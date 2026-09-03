@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import {
@@ -7,10 +8,24 @@ import {
   TrustAndSecurity,
 } from "@/components/home-sections";
 import { BulkQuoteBanner } from "@/components/bulk-quote";
+import { pageMetadata } from "@/lib/seo";
 import { ProductCard } from "@/components/product-card";
 import { getMarket } from "@/lib/cart";
 import { getBrands, getByBrand, getCategories, getFeatured } from "@/lib/catalogue";
 import type { CurrencyCode } from "@/lib/market";
+
+/**
+ * Stated here rather than left to the root layout: `alternates` does not
+ * inherit the way `title` does, so without this the home page — the one page
+ * most likely to be linked with a tracking parameter on the end — had no
+ * canonical at all.
+ */
+export const metadata: Metadata = pageMetadata({
+  title: "Microsoft, Adobe and Autodesk licences",
+  description:
+    "Buy genuine Microsoft, Adobe and Autodesk software licences online from an authorised reseller. Microsoft Solutions Partner, Adobe Certified Reseller, Autodesk Reseller. GST invoice on every Indian order, zero-rated exports elsewhere.",
+  path: "/",
+});
 
 export default async function HomePage() {
   const market = await getMarket();

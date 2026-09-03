@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { confirmCheckoutSession } from "@/app/actions";
 import { getUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Confirming your payment",
-  robots: { index: false },
+  ...NOINDEX,
 };
 
 /**

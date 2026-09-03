@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { ResendResetForm, ResetForm } from "@/components/auth-forms";
 import { getUser, normaliseEmail, OTP_TTL_TEXT } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -9,7 +10,7 @@ import { channelStatus } from "@/lib/notify";
 
 export const metadata: Metadata = {
   title: "Choose a new password",
-  robots: { index: false },
+  ...NOINDEX,
 };
 
 export default async function ResetPage(props: PageProps<"/reset">) {

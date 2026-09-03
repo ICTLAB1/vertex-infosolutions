@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { pageMetadata } from "@/lib/seo";
 import { H2, PolicyPage, Ul } from "@/components/policy";
 import { getSiteConfig } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Website terms of use",
   description:
-    "The terms on which you may use this website, as distinct from the terms on which we sell.",
-};
+    "The terms governing use of this website, as distinct from the terms of sale that govern a licence you buy through it.",
+  path: "/website-terms",
+});
 
 export default function WebsiteTermsPage() {
   const config = getSiteConfig();

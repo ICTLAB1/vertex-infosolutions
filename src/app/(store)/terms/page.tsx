@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { pageMetadata } from "@/lib/seo";
 import { H2, PolicyPage, Ul } from "@/components/policy";
 import { getSiteConfig } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Terms of sale",
   description:
-    "The terms on which Vertex Infosolutions sells Microsoft, Adobe and Autodesk licences, in India and internationally.",
-};
+    "The terms you agree to when buying a licence from Vertex Infosolutions: delivery, payment, refunds, and the publisher's own end-user terms that govern the software itself.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   const config = getSiteConfig();

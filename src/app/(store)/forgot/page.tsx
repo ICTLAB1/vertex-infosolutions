@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { NOINDEX } from "@/lib/seo";
 import { ForgotForm } from "@/components/auth-forms";
 import { getUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Forgotten password",
-  robots: { index: false },
+  ...NOINDEX,
 };
 
 export default async function ForgotPage(props: PageProps<"/forgot">) {
