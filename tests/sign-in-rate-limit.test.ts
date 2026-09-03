@@ -3,9 +3,12 @@ import { afterEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/db";
 import {
   ATTEMPT_TTL_MINUTES,
+  RESET_REQUEST_LIMITS,
   SIGN_IN_LIMITS,
   clearSignInFailures,
+  recordResetRequest,
   recordSignInFailure,
+  resetRequestLimit,
   signInLimit,
   sweepSignInAttempts,
 } from "@/lib/rate-limit";
@@ -32,7 +35,7 @@ describe.skipIf(!hasDatabase)("the sign-in limit", () => {
 
   afterEach(async () => {
     if (!hasDatabase) return;
-    await prisma.signInAttempt.deleteMany({
+    await prisma.authAttempt.deleteMany({
       where: { email: { contains: `limit.${stamp}.` } },
     });
   });
@@ -152,7 +155,7 @@ describe.skipIf(!hasDatabase)("the sign-in limit", () => {
     await sweepSignInAttempts(wellLater);
 
     expect(
-      await prisma.signInAttempt.count({ where: { email: address } }),
+      await prisma.authAttempt.count({ where: { email: address } }),
     ).toBe(0);
   });
 
@@ -163,7 +166,79 @@ describe.skipIf(!hasDatabase)("the sign-in limit", () => {
     await sweepSignInAttempts();
 
     expect(
-      await prisma.signInAttempt.count({ where: { email: address } }),
+      await prisma.authAttempt.count({ where: { email: address } }),
     ).toBe(1);
+  });
+});
+
+/**
+ * Asking for a password-reset code.
+ *
+ * A different problem from guessing a password, and the reason it needs its
+ * own counter: the reset form answers identically whether or not the address
+ * has an account — which is right — so nothing in the flow notices a script
+ * walking an address list. Every hit that lands on a real customer sends them
+ * an email they did not ask for, and `issueOtp`'s per-account limit cannot see
+ * it, because from its side a thousand addresses each asked once.
+ */
+describe.skipIf(!hasDatabase)("asking for a reset code", () => {
+  const stamp = Date.now();
+  const ip = `198.51.100.${stamp % 200}`;
+
+  afterEach(async () => {
+    await prisma.authAttempt.deleteMany({ where: { kind: "PASSWORD_RESET" } });
+  });
+
+  it("lets an ordinary forgetful person through", async () => {
+    for (let i = 0; i < RESET_REQUEST_LIMITS.perIp - 1; i += 1) {
+      await recordResetRequest(`someone.${i}@example.test`, ip);
+    }
+    expect((await resetRequestLimit(ip)).blocked).toBe(false);
+  });
+
+  it("stops a caller working through an address list", async () => {
+    for (let i = 0; i < RESET_REQUEST_LIMITS.perIp; i += 1) {
+      await recordResetRequest(`victim.${i}@example.test`, ip);
+    }
+    expect((await resetRequestLimit(ip)).blocked).toBe(true);
+  });
+
+  it("does not let one caller shut the form for another", async () => {
+    for (let i = 0; i < RESET_REQUEST_LIMITS.perIp; i += 1) {
+      await recordResetRequest(`victim.${i}@example.test`, ip);
+    }
+    expect((await resetRequestLimit(`203.0.113.${stamp % 200}`)).blocked).toBe(
+      false,
+    );
+  });
+
+  it("never blocks callers the edge could not identify", async () => {
+    // They all share the "unknown" bucket, so refusing them together would let
+    // one script shut the form for everybody behind a proxy that sends no
+    // header. The per-account limit inside issueOtp still holds for them.
+    for (let i = 0; i < RESET_REQUEST_LIMITS.perIp * 3; i += 1) {
+      await recordResetRequest(`someone.${i}@example.test`, "unknown");
+    }
+    expect((await resetRequestLimit("unknown")).blocked).toBe(false);
+  });
+
+  it("forgets a request once its window has passed", async () => {
+    for (let i = 0; i < RESET_REQUEST_LIMITS.perIp; i += 1) {
+      await recordResetRequest(`victim.${i}@example.test`, ip);
+    }
+    const later = new Date(
+      Date.now() + (RESET_REQUEST_LIMITS.windowMinutes + 1) * 60_000,
+    );
+    expect((await resetRequestLimit(ip, later)).blocked).toBe(false);
+  });
+
+  it("keeps its counter apart from the sign-in one", async () => {
+    // Somebody who mistyped their password four times is not also one reset
+    // request away from being refused, and vice versa.
+    for (let i = 0; i < RESET_REQUEST_LIMITS.perIp; i += 1) {
+      await recordResetRequest(`victim.${i}@example.test`, ip);
+    }
+    const email = `sign.in.${stamp}@example.test`;
+    expect((await signInLimit(email, ip)).blocked).toBe(false);
   });
 });

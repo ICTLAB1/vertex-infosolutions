@@ -103,7 +103,7 @@ src/lib/money.ts         integer minor units, per currency; inclusive-tax split
 src/lib/cart.ts          basket, and the one function that computes what is owed
 src/lib/site.ts          who the seller legally is; warns when unconfigured
 src/lib/admin.ts         who may run the store, and the record of what they did
-src/lib/rate-limit.ts    slowing down somebody guessing passwords
+src/lib/rate-limit.ts    slowing down password guessing and reset spraying
 src/lib/enquiries.ts     questions from people who have not bought anything
 src/app/actions.ts       add to cart, switch market, place an order
 src/app/contact-actions.ts  the public contact form, honeypot and IP limit
@@ -142,7 +142,11 @@ infra/main.bicep         the whole Azure estate
   message, same next page, and every way of failing — no such account, wrong
   code, expired, out of attempts — collapses into one answer. `verifyOtp`'s
   more helpful messages stay on `/verify`, where the customer is already
-  signed in.
+  signed in. It is limited per caller as well as per account, because the
+  identical answers that stop enumeration also stop the flow noticing a script
+  walking an address list — and every hit that lands on a real customer sends
+  them mail they did not ask for. The request is counted before the account is
+  looked up, so the counter cannot become the answer either.
 - **Licence keys never go over WhatsApp.** A key forwarded in a chat is
   somebody else's licence.
 - **Administrators are configuration, not a database row.** `ADMIN_EMAILS` on
@@ -316,9 +320,6 @@ before writing to it, drop one a release later.
 - [ ] Let an administrator correct the address on an abandoned message and
       send it there. Today a message given up on because the address was wrong
       needs the customer to fix their account first.
-- [ ] Rate-limit the forgotten-password form by IP too. `issueOtp` already
-      caps codes per account per hour, but one caller can still walk an address
-      list and make the store send mail on each one.
 - [ ] **Confirm the GST treatment with your accountant.** The store charges
       18% GST on Indian sales and treats everything else as a zero-rated export
       of services — which requires an LUT, or paying IGST and claiming a refund.

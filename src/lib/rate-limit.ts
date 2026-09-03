@@ -32,6 +32,26 @@ import { prisma } from "@/lib/db";
  * that matter are protected by the twelve-character minimum as well.
  */
 
+/**
+ * How often one caller may ask for a password-reset code.
+ *
+ * A different problem from guessing a password. The reset form is careful to
+ * answer identically whether or not the address has an account, which stops it
+ * answering "does this company buy from you?" — but it does not stop a script
+ * walking an address list and posting each one, and every hit that lands on a
+ * real customer sends them an email they did not ask for. The per-account
+ * limit inside `issueOtp` cannot see that: from its side, a thousand addresses
+ * asked once each.
+ *
+ * So this one is counted on the caller alone, and generously, because a shared
+ * office behind one address contains people who forget passwords. Twelve an
+ * hour is far more than any person needs and far less than a list is worth.
+ */
+export const RESET_REQUEST_LIMITS = {
+  perIp: 12,
+  windowMinutes: 60,
+} as const;
+
 export const SIGN_IN_LIMITS = {
   /** This caller, this address. */
   perPair: 5,
@@ -123,10 +143,11 @@ export async function signInLimit(
 ): Promise<SignInLimit> {
   const since = new Date(now.getTime() - SIGN_IN_LIMITS.windowMinutes * 60_000);
 
+  const kind = "SIGN_IN" as const;
   const [pair, fromIp, forEmail] = await Promise.all([
-    prisma.signInAttempt.count({ where: { email, ip, createdAt: { gt: since } } }),
-    prisma.signInAttempt.count({ where: { ip, createdAt: { gt: since } } }),
-    prisma.signInAttempt.count({ where: { email, createdAt: { gt: since } } }),
+    prisma.authAttempt.count({ where: { kind, email, ip, createdAt: { gt: since } } }),
+    prisma.authAttempt.count({ where: { kind, ip, createdAt: { gt: since } } }),
+    prisma.authAttempt.count({ where: { kind, email, createdAt: { gt: since } } }),
   ]);
 
   const blocked =
@@ -141,7 +162,48 @@ export async function recordSignInFailure(
   email: string,
   ip: string,
 ): Promise<void> {
-  await prisma.signInAttempt.create({ data: { email, ip } });
+  await prisma.authAttempt.create({ data: { kind: "SIGN_IN", email, ip } });
+}
+
+/**
+ * Whether this caller may ask for another reset code.
+ *
+ * Recorded on every request rather than only on the ones that found an
+ * account: counting only the hits would make the counter itself an answer to
+ * "does this address have an account?", which is the question this whole flow
+ * is built not to answer.
+ */
+export async function resetRequestLimit(
+  ip: string,
+  now: Date = new Date(),
+): Promise<SignInLimit> {
+  if (ip === "unknown") {
+    // Every caller the edge could not identify shares this bucket, and
+    // refusing them together would let one script shut the form for all of
+    // them. The per-account limit inside `issueOtp` still holds.
+    return { blocked: false, retryAfterMinutes: 0 };
+  }
+
+  const since = new Date(
+    now.getTime() - RESET_REQUEST_LIMITS.windowMinutes * 60_000,
+  );
+  const asked = await prisma.authAttempt.count({
+    where: { kind: "PASSWORD_RESET", ip, createdAt: { gt: since } },
+  });
+
+  return {
+    blocked: asked >= RESET_REQUEST_LIMITS.perIp,
+    retryAfterMinutes: RESET_REQUEST_LIMITS.windowMinutes,
+  };
+}
+
+export async function recordResetRequest(
+  email: string,
+  ip: string,
+): Promise<void> {
+  await prisma.authAttempt.create({
+    data: { kind: "PASSWORD_RESET", email, ip },
+  });
 }
 
 /**
@@ -152,14 +214,17 @@ export async function recordSignInFailure(
  * for the rest of the quarter hour.
  */
 export async function clearSignInFailures(email: string): Promise<void> {
-  await prisma.signInAttempt.deleteMany({ where: { email } });
+  // Sign-in failures only. A successful sign-in says nothing about whether the
+  // caller has been spraying the reset form.
+  await prisma.authAttempt.deleteMany({ where: { kind: "SIGN_IN", email } });
 }
 
 /** Drop attempts nothing will read again. Called by the existing sweep. */
 export async function sweepSignInAttempts(now: Date = new Date()): Promise<void> {
-  await prisma.signInAttempt.deleteMany({
-    where: {
-      createdAt: { lt: new Date(now.getTime() - ATTEMPT_TTL_MINUTES * 60_000) },
-    },
+  // The reset window is the longer of the two, so the sweep has to outlive it
+  // or the limiter would forget faster than it counts.
+  const ttl = Math.max(ATTEMPT_TTL_MINUTES, RESET_REQUEST_LIMITS.windowMinutes);
+  await prisma.authAttempt.deleteMany({
+    where: { createdAt: { lt: new Date(now.getTime() - ttl * 60_000) } },
   });
 }

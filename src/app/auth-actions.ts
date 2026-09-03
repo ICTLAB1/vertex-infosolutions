@@ -23,7 +23,9 @@ import { getCart } from "@/lib/cart";
 import {
   clearSignInFailures,
   clientIp,
+  recordResetRequest,
   recordSignInFailure,
+  resetRequestLimit,
   signInLimit,
 } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db";
@@ -329,6 +331,9 @@ export async function requestPasswordReset(
     return { message: "Enter a valid email address.", field: "email", values };
   }
 
+  const limited = await guardResetRequest(email);
+  if (limited) return { ...limited, values };
+
   await sendResetCode(email);
   redirect(`/reset?email=${encodeURIComponent(email)}`);
 }
@@ -339,8 +344,32 @@ export async function resendResetCode(email: string): Promise<AuthError> {
   if (!emailLooksValid(clean)) {
     return { message: "Enter a valid email address." };
   }
+
+  const limited = await guardResetRequest(clean);
+  if (limited) return limited;
+
   await sendResetCode(clean);
   return { message: "If that address has an account, another code is on its way." };
+}
+
+/**
+ * Whether this caller has asked for enough reset codes.
+ *
+ * The request is recorded before the account is looked up and whatever the
+ * lookup finds, so the counter cannot become the answer to "does this address
+ * have an account?" — the question the identical responses above exist to
+ * refuse. Returns the refusal to show, or null to go ahead.
+ */
+async function guardResetRequest(email: string): Promise<AuthError | null> {
+  const ip = clientIp(await headers());
+  const limit = await resetRequestLimit(ip);
+  if (limit.blocked) {
+    return {
+      message: `That is a lot of reset codes from one place. Try again in ${limit.retryAfterMinutes} minutes, or email us if you are genuinely locked out.`,
+    };
+  }
+  await recordResetRequest(email, ip);
+  return null;
 }
 
 /**

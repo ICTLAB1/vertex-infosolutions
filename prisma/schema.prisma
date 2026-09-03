@@ -483,8 +483,18 @@ enum OtpPurpose {
 /// exists. If only real accounts were counted, "too many attempts" would
 /// answer the question the rest of the sign-in flow refuses to: whether that
 /// address has an account here.
-model SignInAttempt {
+/// A refused or costly authentication attempt, kept just long enough to
+/// rate-limit the next one.
+///
+/// One table for two flows, because they share a sweep, a shape and a notion
+/// of a window — and `kind` keeps their counters apart, so somebody who
+/// mistyped their password four times is not also one reset request from being
+/// refused. The table is still called SignInAttempt in the database; only the
+/// name in this file grew to match what it holds.
+model AuthAttempt {
   id String @id @default(cuid())
+
+  kind AuthAttemptKind @default(SIGN_IN)
 
   email String
   /// The caller's address as the edge reported it, or "unknown" when nothing
@@ -493,10 +503,18 @@ model SignInAttempt {
 
   createdAt DateTime @default(now())
 
-  /// The three windows the limiter reads, each a different attack.
-  @@index([email, ip, createdAt])
-  @@index([ip, createdAt])
-  @@index([email, createdAt])
+  /// The windows the limiter reads, each a different attack.
+  @@index([kind, email, ip, createdAt])
+  @@index([kind, ip, createdAt])
+  @@index([kind, email, createdAt])
+  @@map("SignInAttempt")
+}
+
+enum AuthAttemptKind {
+  SIGN_IN
+  /// A request for a password-reset code. Costly rather than refused: each one
+  /// sends an email to somebody who did not ask for it.
+  PASSWORD_RESET
 }
 
 /// A one-time code sent by email.
