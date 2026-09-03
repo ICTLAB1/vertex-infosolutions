@@ -31,10 +31,23 @@ export function inrShelfPrice(listExGstMinor: number): number {
 }
 
 /**
- * What an export buyer pays, in whole dollars. No GST — the sale is
- * zero-rated — and never less than a dollar, because a rounded-down zero would
- * be a free licence.
+ * What an export buyer pays, in whole dollars.
+ *
+ * Converted from the *tax-inclusive* rupee figure, by instruction: the export
+ * price is set at the same level as the domestic one rather than 18% below it.
+ *
+ * That is a pricing decision, and it is not a tax. An Indian supply of a
+ * software licence to a customer outside India is a zero-rated export, so no
+ * GST is chargeable on it and none is collected here — the export invoice shows
+ * no tax line and says the supply is zero-rated, which is what the law
+ * requires and what `totalsFor` computes. The 18% is simply part of the price
+ * abroad. Calling it GST on an invoice would be a false tax statement, so
+ * nothing in this application does.
+ *
+ * Never less than a dollar, because a rounded-down zero would be a free
+ * licence.
  */
 export function usdShelfPrice(listExGstMinor: number): number {
-  return Math.max(1, Math.round(listExGstMinor / 100 / INR_PER_USD));
+  const inclusive = (listExGstMinor / 100) * (1 + GST_PERCENT / 100);
+  return Math.max(1, Math.round(inclusive / INR_PER_USD));
 }

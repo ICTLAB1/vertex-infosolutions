@@ -39,13 +39,16 @@ describe("the Microsoft price book", () => {
     expect(premium!.variants[0].inr).toEqual([25913, 25913]);
   });
 
-  it("prices an export from the figure before GST", () => {
+  it("sets the export price at the same level as the domestic one", () => {
     const premium = MICROSOFT_PRODUCTS.find(
       (p) => p.name === "Microsoft 365 Business Premium",
     )!;
-    // 21,960 before GST, not 25,913 after it — an export carries no Indian tax,
-    // so converting the tax-inclusive figure would export the GST too.
-    expect(premium.variants[0].usd[1]).toBe(Math.round(21960 / INR_PER_USD));
+    // Converted from the tax-inclusive figure by instruction, so the price
+    // abroad matches the price at home. The 18% is price, not tax: an export
+    // is zero-rated and the invoice shows no tax line.
+    expect(premium.variants[0].usd[1]).toBe(
+      Math.round((21960 * 1.18) / INR_PER_USD),
+    );
   });
 
   it("never strikes through a price that was never charged", () => {
