@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { addToCart, buyNow } from "@/app/actions";
 import { ProductImage } from "@/components/product-image";
+import { Assurance } from "@/components/assurance";
 import { TenantNotice } from "@/components/tenant-notice";
 import { deliveryHeadline, deliverySummary } from "@/lib/delivery";
 import { Stars } from "@/components/stars";
@@ -117,13 +118,18 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
           </h1>
           <p className="mt-1 text-[14px] text-muted">{product.summary}</p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px]">
-            <Stars value={average} size={16} />
-            <span className="text-ink">{average.toFixed(1)}</span>
-            <a href="#reviews" className="text-link hover:underline">
-              {count === 1 ? "1 review" : `${count} reviews`}
-            </a>
-          </div>
+          {/* Five grey stars over "0.0" says "nobody bought this" more loudly
+              than saying nothing. With no reviews the row is simply absent and
+              the assurance panel below carries the weight instead. */}
+          {count > 0 ? (
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px]">
+              <Stars value={average} size={16} />
+              <span className="text-ink">{average.toFixed(1)}</span>
+              <a href="#reviews" className="text-link hover:underline">
+                {count === 1 ? "1 review" : `${count} reviews`}
+              </a>
+            </div>
+          ) : null}
 
           <hr className="my-3 border-line-soft" />
 
@@ -174,6 +180,12 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             <span className="px-1.5 text-faint">·</span>
             <span className="text-muted">{TERM_NOTES[product.term]}</span>
           </p>
+
+          <Assurance
+            brand={product.brand.name}
+            domestic={market.domestic}
+            sku={variant.sku.startsWith("MS-") ? variant.sku.slice(3) : null}
+          />
 
           {sellable.length > 1 ? (
             <div className="mt-4">

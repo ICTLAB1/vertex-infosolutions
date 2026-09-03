@@ -133,10 +133,6 @@ const PRODUCTS: SeedProduct[] = [
       { sku: "ADB-CCT-ALL-5S", name: "5 seats, 1 year", seats: 5, usd: [4500, 4020], inr: [330000, 299000] },
       { sku: "ADB-CCT-ALL-10S", name: "10 seats, 1 year", seats: 10, usd: [9000, 7900], inr: [660000, 585000] },
     ],
-    reviews: [
-      { author: "Studio Lead", country: "Germany", rating: 4, title: "Seat reassignment is the win", body: "Being able to move a seat when someone leaves has saved us buying spares. Invoicing was clean for our accounts team.", verified: true },
-      { author: "Ritu M.", country: "India", rating: 5, title: "Renewal reminder came a month early", body: "No auto-renew surprise, which is the opposite of our last supplier. Priced in rupees with GST, so nothing to reconcile.", verified: true },
-    ],
   },
   {
     slug: "adobe-creative-cloud-single-app-teams",
@@ -190,9 +186,6 @@ const PRODUCTS: SeedProduct[] = [
       { sku: "ADB-ACRO-PRO-1S", name: "1 seat, 1 year", seats: 1, usd: [239, 215], inr: [18500, 17000] },
       { sku: "ADB-ACRO-PRO-5S", name: "5 seats, 1 year", seats: 5, usd: [1195, 1040], inr: [92500, 82000] },
     ],
-    reviews: [
-      { author: "Farah A.", country: "United Arab Emirates", rating: 4, title: "E-signature replaced a courier", body: "We were posting contracts. Now they come back the same afternoon. The licence covers what we needed without going to All Apps.", verified: true },
-    ],
   },
   {
     slug: "adobe-substance-3d-collection",
@@ -243,10 +236,6 @@ const PRODUCTS: SeedProduct[] = [
     variants: [
       { sku: "ADSK-ACAD-1Y", name: "1 user, 1 year", seats: 1, usd: [2230, 2030], inr: [166000, 152000] },
       { sku: "ADSK-ACAD-3Y", name: "1 user, 3 years", seats: 1, usd: [6350, 5480], inr: [472000, 410000] },
-    ],
-    reviews: [
-      { author: "Sandeep R.", country: "India", rating: 5, title: "Assigned to our account within minutes", body: "Bought two seats. Both appeared in our Autodesk account portal the same evening and we assigned them ourselves.", verified: true },
-      { author: "Marcus H.", country: "Australia", rating: 4, title: "Three-year term saved real money", body: "The multi-year price is meaningfully better if you know you are keeping it. Worth asking about before you buy annual.", verified: true },
     ],
   },
   {
@@ -578,9 +567,6 @@ const PRODUCTS: SeedProduct[] = [
     variants: [
       { sku: "ADSK-AEC-1Y", name: "1 user, 1 year", seats: 1, usd: [3550, 3240], inr: [264000, 242000] },
       { sku: "ADSK-AEC-3Y", name: "1 user, 3 years", seats: 1, usd: [10100, 8750], inr: [750000, 652000] },
-    ],
-    reviews: [
-      { author: "Practice Director", country: "India", rating: 5, title: "Cheaper than Revit and Civil 3D separately", body: "We were buying two products per seat. The collection costs less than that and adds Navisworks, which we now use on every job.", verified: true },
     ],
   },
   {

@@ -164,24 +164,6 @@ const EDITORIAL: Record<
     ],
     specs: { Platform: "Windows, macOS, iOS, Android, web" },
     featured: true,
-    reviews: [
-      {
-        author: "Deepa L.",
-        country: "United States",
-        rating: 5,
-        title: "Keys arrived in under a minute",
-        body: "Ordered ten seats at 9pm and the keys were in my inbox before I closed the laptop. Redemption was straightforward.",
-        verified: true,
-      },
-      {
-        author: "Ashok G.",
-        country: "India",
-        rating: 4,
-        title: "GST invoice was clean",
-        body: "The GST invoice had our GSTIN on it so accounts could claim the input credit. That mattered more than the price.",
-        verified: true,
-      },
-    ],
   },
   "Microsoft 365 Business Premium": {
     summary:
@@ -194,16 +176,6 @@ const EDITORIAL: Record<
     ],
     specs: { "Seat cap": "300 users" },
     featured: true,
-    reviews: [
-      {
-        author: "Priya N.",
-        country: "India",
-        rating: 5,
-        title: "Intune alone justifies the step up",
-        body: "We moved from Standard after a lost laptop. Being able to wipe it remotely was worth the difference on its own.",
-        verified: true,
-      },
-    ],
   },
   "Microsoft 365 Apps for business": {
     summary:

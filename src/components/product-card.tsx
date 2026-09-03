@@ -69,7 +69,11 @@ export function ProductCard({
               <span className="text-[12px] text-link">{count}</span>
             </>
           ) : (
-            <span className="text-[12px] text-faint">No reviews yet</span>
+            // Not "No reviews yet", which advertises the absence. Something
+            // true about the listing instead.
+            <span className="text-[12px] text-muted">
+              Authorised reseller · genuine licence
+            </span>
           )}
         </div>
 
