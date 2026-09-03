@@ -111,7 +111,19 @@ export default async function CartPage() {
               </div>
             </dl>
 
-            {totals.unpriced > 0 ? (
+            {totals.overCeiling ? (
+              <p
+                role="alert"
+                className="mt-3 rounded-md border border-deal/40 bg-deal/5 p-2.5 text-[13px] text-deal"
+              >
+                This order is too large to place online. Reduce the quantities,
+                or{" "}
+                <Link href="/contact" className="underline">
+                  ask us for a quote
+                </Link>{" "}
+                and we will invoice you directly.
+              </p>
+            ) : totals.unpriced > 0 ? (
               <p
                 role="alert"
                 className="mt-3 rounded-md border border-deal/40 bg-deal/5 p-2.5 text-[13px] text-deal"

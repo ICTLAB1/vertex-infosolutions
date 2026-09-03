@@ -10,7 +10,7 @@ import {
   type CurrencyCode,
   type Market,
 } from "@/lib/market";
-import { splitInclusiveTax } from "@/lib/money";
+import { MAX_MINOR, splitInclusiveTax } from "@/lib/money";
 
 const CART_COOKIE = "vx_cart";
 const MARKET_COOKIE = "vx_market";
@@ -148,6 +148,8 @@ export type CartTotals = {
   count: number;
   /** Lines whose variant has no price in this currency — never purchasable. */
   unpriced: number;
+  /** True when the total is more than the order table can store. */
+  overCeiling: boolean;
 };
 
 /**
@@ -192,6 +194,7 @@ export function totalsFor(lines: CartLine[], market: Market): CartTotals {
     taxLabel: market.domestic ? "GST" : null,
     count,
     unpriced,
+    overCeiling: totalMinor > MAX_MINOR,
   };
 }
 

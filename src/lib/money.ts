@@ -43,6 +43,21 @@ function formatter(currency: CurrencyCode, exact: boolean): Intl.NumberFormat {
 }
 
 /** ₹9,200 or $150 — for prices on screen. */
+/**
+ * The largest amount the database can hold, in minor units.
+ *
+ * Every money column is a 32-bit integer, so a price or an order total stops
+ * at 2,147,483,647 paise — a little over two crore rupees, or about twenty-one
+ * million dollars. Arithmetic in JavaScript is exact far beyond that, so the
+ * limit only bites on the way into Postgres, which raises rather than wrapping:
+ * a total over the ceiling fails loudly instead of charging the wrong amount.
+ *
+ * That is the right failure, but it is still a failure, so the cart refuses
+ * such an order before it reaches the payment page rather than after. Widening
+ * the columns is the real fix when an order that large is a real prospect.
+ */
+export const MAX_MINOR = 2_147_483_647;
+
 export function formatMoney(minor: number, currency: CurrencyCode): string {
   return formatter(currency, false).format(Math.round(minor) / 100);
 }

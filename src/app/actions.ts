@@ -186,6 +186,15 @@ export async function placeOrder(
     };
   }
 
+  // An order this large cannot be recorded, so it must not be charged. Saying
+  // so here beats a database error after the customer has paid.
+  if (totals.overCeiling) {
+    return {
+      message:
+        "This order is too large to place online. Email us and we will quote it and invoice you directly.",
+    };
+  }
+
   const phone = str(form, "phone");
   const name = str(form, "billName");
   const country = str(form, "billCountry").toUpperCase();
