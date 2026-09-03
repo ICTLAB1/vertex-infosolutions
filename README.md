@@ -355,6 +355,7 @@ before writing to it, drop one a release later.
 | `npm run lint` | eslint |
 | `npm run db:migrate` | create and apply a migration |
 | `python3 scripts/import-price-list.py <file.xlsx>` | refresh `prisma/data/microsoft-price-list.json` from a new distributor price list (needs `pip install openpyxl`) |
+| `npm run db:deploy` | apply pending migrations to the database **and** regenerate the client — run this before `db:seed` after any `git pull` |
 | `npm run db:seed` | seed the catalogue — refuses if the database already holds products or orders; `-- --force` overrides |
 | `npm run db:reset` | drop and re-migrate (does not seed; run `db:seed` after) |
 
