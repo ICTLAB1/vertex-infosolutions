@@ -83,9 +83,9 @@ param stripeSecretKey string = ''
 @secure()
 param stripeWebhookSecret string = ''
 
-@description('Resend API key. Without it no one-time code is delivered and no account can be verified.')
+@description('Azure Communication Services connection string, from the Email-enabled resource. Sending is disabled when empty: messages are recorded and not sent.')
 @secure()
-param resendApiKey string = ''
+param acsConnectionString string = ''
 
 @description('Sender for all email, e.g. "Vertex Infosolutions <orders@example.com>".')
 param emailFrom string = ''
@@ -300,8 +300,8 @@ resource web 'Microsoft.Web/sites@2023-12-01' = {
           value: stripeWebhookSecret
         }
         {
-          name: 'RESEND_API_KEY'
-          value: resendApiKey
+          name: 'ACS_CONNECTION_STRING'
+          value: acsConnectionString
         }
         {
           name: 'EMAIL_FROM'

@@ -292,7 +292,7 @@ before writing to it, drop one a release later.
       `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
       `checkout.session.async_payment_failed`, `checkout.session.expired` and
       `charge.refunded`.
-- [ ] **Set `RESEND_API_KEY` and `EMAIL_FROM`.** Without them the one-time code
+- [ ] **Set `ACS_CONNECTION_STRING` and `EMAIL_FROM`.** Without them the one-time code
       is never delivered and nobody can verify an account, which means nobody
       can buy anything. Authenticate the sending domain (SPF, DKIM, DMARC) or
       the codes land in spam.

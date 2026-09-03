@@ -12,8 +12,8 @@
     "stripeSecretKey": { "value": "" },
     "stripeWebhookSecret": { "value": "" },
 
-    "resendApiKey": { "value": "" },
-    "emailFrom": { "value": "Vertex Infosolutions <orders@example.com>" },
+    "acsConnectionString": { "value": "" },
+    "emailFrom": { "value": "donotreply@your-domain.azurecomm.net" },
 
     "geoCountryHeader": { "value": "" },
     "clientIpHeader": { "value": "" },

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { EmailClient } from "@azure/communication-email";
+
 import { prisma } from "@/lib/db";
 import { invoiceAttachment } from "@/lib/invoice";
 import { getSiteConfig } from "@/lib/site";
@@ -45,7 +47,7 @@ type Recipient = {
 // ---------------------------------------------------------------------------
 
 function emailConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+  return Boolean(process.env.ACS_CONNECTION_STRING && process.env.EMAIL_FROM);
 }
 
 function whatsappConfigured(): boolean {
@@ -63,6 +65,26 @@ function whatsappConfigured(): boolean {
  */
 export type MailAttachment = { filename: string; content: string };
 
+let client: EmailClient | undefined;
+
+function emailClient(): EmailClient {
+  client ??= new EmailClient(process.env.ACS_CONNECTION_STRING!);
+  return client;
+}
+
+/**
+ * Azure wants a bare address where Resend accepted "Name <address>".
+ *
+ * Both forms are allowed in EMAIL_FROM because that is what somebody will
+ * type, and the display name a recipient sees comes from the sender username
+ * configured on the domain in Azure rather than from this string.
+ */
+function senderAddress(from: string): string {
+  const bracketed = from.match(/<([^>]+)>/);
+  return (bracketed ? bracketed[1] : from).trim();
+}
+
+
 async function sendEmail(
   to: string,
   subject: string,
@@ -74,29 +96,34 @@ async function sendEmail(
   }
 
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: process.env.EMAIL_FROM,
-        to: [to],
-        subject,
-        text: body,
-        // Base64, which is what the API takes. Omitted entirely when there is
-        // nothing to attach rather than sent as an empty array.
-        ...(attachments.length > 0 ? { attachments } : {}),
-      }),
+    const poller = await emailClient().beginSend({
+      senderAddress: senderAddress(process.env.EMAIL_FROM!),
+      content: { subject, plainText: body },
+      recipients: { to: [{ address: to }] },
+      ...(attachments.length > 0
+        ? {
+            attachments: attachments.map((attachment) => ({
+              name: attachment.filename,
+              // Azure requires a MIME type. Only invoices are attached today,
+              // but deriving it from the name keeps the next attachment from
+              // arriving mislabelled as a PDF.
+              contentType: attachment.filename.toLowerCase().endsWith(".pdf")
+                ? "application/pdf"
+                : "application/octet-stream",
+              contentInBase64: attachment.content,
+            })),
+          }
+        : {}),
     });
 
-    if (!response.ok) {
-      const detail = await response.text();
-      return { ok: false, error: `${response.status} ${detail.slice(0, 300)}` };
-    }
-    const payload = (await response.json()) as { id?: string };
-    return { ok: true, ref: payload.id ?? null };
+    // Deliberately not polled to completion. `beginSend` has already made the
+    // request, so a rejected key, an unverified sender or a malformed address
+    // has thrown by now and is recorded as a failure. What remains is Azure
+    // delivering it, which takes seconds to minutes — and a customer waiting
+    // on a page must not wait for that. The outbox sweep is what chases a
+    // delivery that never happens.
+    const state = poller.getOperationState() as { id?: string };
+    return { ok: true, ref: state.id ?? null };
   } catch (error) {
     return { ok: false, error: String(error).slice(0, 300) };
   }
