@@ -8,6 +8,8 @@ import { prisma } from "@/lib/db";
 import type { CurrencyCode } from "@/lib/market";
 import { formatMoneyExact, parseMoneyMinor } from "@/lib/money";
 import { notifyPending, fulfilOrder, sendKeys } from "@/lib/orders";
+import { looksLikeEmail } from "@/lib/enquiries";
+import { CREDENTIAL_TEMPLATES, type NotifyTemplate } from "@/lib/notify";
 
 /**
  * The handful of things a person still has to do.
@@ -480,4 +482,83 @@ export async function reopenEnquiry(
 
   revalidatePath("/admin/enquiries");
   return { ok: true, message: "Back on the open list." };
+}
+
+/**
+ * Point an abandoned message at a corrected address, and try again.
+ *
+ * The case this exists for is a typo: somebody registered as
+ * "name@gmial.com", the confirmation bounced six times and the sweep gave up,
+ * and until now the only way out was for a customer who never got the email to
+ * fix their own account.
+ *
+ * It refuses to redirect anything that carries a credential. A licence key or
+ * a one-time code sent to an address of an administrator's choosing is the
+ * whole of an attack, not a convenience — those go to the address on the
+ * account, and changing that is the customer's to do. The message is
+ * requeued rather than sent from here, so the back-off that stops us
+ * hammering a refusing mailbox still applies.
+ *
+ * The address on the account is deliberately left alone: this fixes one
+ * message, and a correction that silently rewrote where every future message
+ * goes would be a bigger change than the button says.
+ */
+export async function redirectNotification(
+  _previous: AdminResult,
+  form: FormData,
+): Promise<AdminResult> {
+  const admin = await requireAdmin("/admin/messages");
+  const id = str(form, "notificationId");
+  const to = str(form, "destination");
+
+  const message = await prisma.notification.findUnique({
+    where: { id },
+    select: { destination: true, template: true, channel: true, status: true },
+  });
+  if (!message) return { ok: false, message: "No such message." };
+  if (message.status === "SENT") {
+    return { ok: false, message: "That one already sent — nothing to redirect." };
+  }
+  if (CREDENTIAL_TEMPLATES.includes(message.template as NotifyTemplate)) {
+    return {
+      ok: false,
+      message:
+        "That message carries a licence key or a one-time code, so it can only go to the address on the account. The customer has to change it themselves.",
+    };
+  }
+  if (!to) return { ok: false, message: "Enter the corrected address." };
+  if (to === message.destination) {
+    return { ok: false, message: "That is the address it already failed on." };
+  }
+
+  if (message.channel === "EMAIL") {
+    if (!looksLikeEmail(to)) {
+      return { ok: false, message: "That does not look like an email address." };
+    }
+  } else if (!/^\+?[0-9][0-9\s-]{6,19}$/.test(to)) {
+    return { ok: false, message: "That does not look like a phone number." };
+  }
+
+  await prisma.notification.update({
+    where: { id },
+    data: {
+      destination: message.channel === "EMAIL" ? to.toLowerCase() : to,
+      status: "FAILED",
+      attempts: 0,
+      lastAttemptAt: null,
+      error: null,
+    },
+  });
+  await recordAdminAction(
+    admin,
+    "message.redirect",
+    to,
+    `${message.template} redirected from ${message.destination} and queued again.`,
+  );
+
+  revalidatePath("/admin/messages");
+  return {
+    ok: true,
+    message: "Redirected and queued. The next sweep will try it.",
+  };
 }

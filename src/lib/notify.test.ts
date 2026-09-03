@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { compose } from "@/lib/notify";
+import { CREDENTIAL_TEMPLATES, compose } from "@/lib/notify";
 
 /**
  * These assertions look pedantic and are not.
@@ -137,5 +137,69 @@ describe("template contents", () => {
       ttl: "10 minutes",
     });
     expect(verify.subject).toContain("482913");
+  });
+});
+
+/**
+ * Which messages an administrator may redirect.
+ *
+ * `/admin/messages` can point a bounced message at a corrected address — the
+ * commonest reason a message is abandoned is a typo in one. That must never
+ * extend to a message that carries the credential itself: sending a licence
+ * key or a one-time code to an address somebody chose in a form is the whole
+ * of an attack.
+ *
+ * The list is a constant, so this checks the constant against what the
+ * templates actually render. A new template that puts a key in its body is the
+ * mistake being guarded against, and it would pass a test that only read the
+ * list.
+ */
+describe("what may not be redirected", () => {
+  const CODE = "482913";
+  const KEY = "VX-9EF7-8F88-65F5";
+
+  const samples: Record<string, Record<string, string>> = {
+    "otp.verify": { name: "Anita", code: CODE, ttl: "10 minutes" },
+    "otp.signin": { name: "Anita", code: CODE, ttl: "10 minutes" },
+    "otp.reset": { name: "Anita", code: CODE, ttl: "10 minutes" },
+    "order.keys": {
+      name: "Anita",
+      number: "VX-2026-123456",
+      keys: `Microsoft 365\n  ${KEY}`,
+      orderUrl: "https://example.com/account/orders/VX-2026-123456",
+    },
+  };
+
+  it("covers every template that renders a code or a key", () => {
+    for (const [template, data] of Object.entries(samples)) {
+      const mail = compose(template as Parameters<typeof compose>[0], data);
+      const carries = mail.body.includes(CODE) || mail.body.includes(KEY);
+      expect(carries, `${template} sample does not exercise the credential`).toBe(
+        true,
+      );
+      expect(
+        CREDENTIAL_TEMPLATES,
+        `${template} renders a credential and must not be redirectable`,
+      ).toContain(template);
+    }
+  });
+
+  it("also covers the one that says a password just changed", () => {
+    // Not a credential itself, but the message somebody would want redirected
+    // away from the real owner while taking over an account.
+    expect(CREDENTIAL_TEMPLATES).toContain("account.password-changed");
+  });
+
+  it("leaves the ordinary messages redirectable", () => {
+    // The whole point of the feature: a confirmation that bounced on a typo.
+    for (const template of [
+      "order.paid",
+      "order.pending",
+      "licence.expiring",
+      "account.welcome",
+      "enquiry.acknowledged",
+    ] as const) {
+      expect(CREDENTIAL_TEMPLATES).not.toContain(template);
+    }
   });
 });

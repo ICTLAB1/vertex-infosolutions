@@ -6,6 +6,7 @@ import { useFormStatus } from "react-dom";
 import {
   markEnquiryHandled,
   markPaymentReceived,
+  redirectNotification,
   resendKeys,
   resendPaymentInstructions,
   updatePrice,
@@ -243,6 +244,53 @@ export function HandleEnquiryForm({ enquiryId }: { enquiryId: string }) {
         />
       </label>
       <Go label="Mark handled" busy="Saving…" />
+      <Outcome result={result} />
+    </form>
+  );
+}
+
+/**
+ * Sending a bounced message to a corrected address.
+ *
+ * Shown only where it is allowed. A message carrying a licence key or a
+ * one-time code is refused by the action whatever is typed here, and the page
+ * does not offer the field at all — an input that always fails is worse than
+ * no input.
+ */
+export function RedirectMessageForm({
+  notificationId,
+  channel,
+  destination,
+}: {
+  notificationId: string;
+  channel: string;
+  destination: string;
+}) {
+  const [result, run] = useActionState<AdminResult, FormData>(
+    redirectNotification,
+    null,
+  );
+  const email = channel === "EMAIL";
+
+  return (
+    <form action={run} className="space-y-2">
+      <input type="hidden" name="notificationId" value={notificationId} />
+      <label className="block">
+        <span className="block text-[12px] font-semibold text-muted">
+          Send it to a corrected {email ? "address" : "number"} instead
+        </span>
+        <input
+          name="destination"
+          type={email ? "email" : "tel"}
+          defaultValue={destination}
+          className="mt-1 w-full max-w-sm rounded-md border border-line bg-white px-3 py-1.5 text-[13px]"
+        />
+      </label>
+      <Go label="Redirect and try again" busy="Queueing…" />
+      <p className="text-[12px] text-faint">
+        Fixes this message only. The address on the customer&apos;s account is
+        left alone — changing that is theirs to do.
+      </p>
       <Outcome result={result} />
     </form>
   );

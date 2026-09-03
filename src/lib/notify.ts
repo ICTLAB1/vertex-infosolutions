@@ -22,6 +22,23 @@ import { getSiteConfig } from "@/lib/site";
  * from being somebody else's licence.
  */
 
+/**
+ * Messages that may not be sent anywhere but the address on the account.
+ *
+ * Each of these carries something that *is* the credential — a licence key, a
+ * one-time code — so "send it to this other address instead" is the whole of
+ * an attack rather than a convenience. An administrator can redirect a
+ * confirmation or a reminder that bounced; changing where a key goes is an
+ * account change, made by the customer, after proving the new address.
+ */
+export const CREDENTIAL_TEMPLATES: readonly NotifyTemplate[] = [
+  "otp.verify",
+  "otp.signin",
+  "otp.reset",
+  "order.keys",
+  "account.password-changed",
+] as const;
+
 export type NotifyTemplate =
   | "otp.verify"
   | "otp.signin"

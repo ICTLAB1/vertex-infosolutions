@@ -178,7 +178,11 @@ infra/main.bicep         the whole Azure estate
   code out of their spam folder. A provider answering 4xx is refusing the
   request, not having an outage, so that is abandoned at once. `FAILED` and
   `ABANDONED` are different rows because "we will try again" and "nobody will
-  try again" are different facts.
+  try again" are different facts. An administrator can point an abandoned
+  message at a corrected address and requeue it — the commonest reason one is
+  abandoned is a typo — except where the message carries a licence key or a
+  one-time code. Those go to the address on the account and nowhere else:
+  "send this credential wherever I say" is not a support tool.
 - **The invoice is attached, not linked.** A link needs an account, a password
   and the store still existing in three years. The file is rendered at send
   time from the order and never stored, so a retry days later attaches the same
@@ -321,9 +325,6 @@ before writing to it, drop one a release later.
       bounced.
 - [ ] **Set `ADMIN_EMAILS`.** Nobody can reach `/admin` until you do, which
       means nobody can record a bank transfer or re-send a customer's keys.
-- [ ] Let an administrator correct the address on an abandoned message and
-      send it there. Today a message given up on because the address was wrong
-      needs the customer to fix their account first.
 - [ ] **Confirm the GST treatment with your accountant.** The store charges
       18% GST on Indian sales and treats everything else as a zero-rated export
       of services — which requires an LUT, or paying IGST and claiming a refund.
