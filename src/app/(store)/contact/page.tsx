@@ -16,9 +16,11 @@ export const metadata: Metadata = pageMetadata({
 /**
  * Which of the three enquiry kinds the form should open on.
  *
- * The shop invites a volume quote from four places, and all of them link here
- * with `?about=bulk`. Arriving on a form already set to the thing you clicked
- * is the difference between answering a question and filling in a form.
+ * The shop asks people to get in touch from several places — the volume-quote
+ * banners link here with `?about=bulk`, and every quote-only listing with
+ * `?about=quote` and its slug. Arriving on a form already set to the thing you
+ * clicked is the difference between answering a question and filling in a
+ * form.
  */
 function kindFrom(about: string | string[] | undefined): string {
   const value = Array.isArray(about) ? about[0] : about;
@@ -53,11 +55,11 @@ export default async function ContactPage(props: PageProps<"/contact">) {
       </p>
 
       <H2>
-        {kind === "VOLUME_QUOTE" ? "Ask for a volume quote" : "Send us a message"}
+        {kind === "VOLUME_QUOTE" ? "Ask for a price" : "Send us a message"}
       </H2>
       <p>
         {kind === "VOLUME_QUOTE"
-          ? "Tell us the product and how many seats. Volume pricing is lower than the price on the shelf, and we will come back with a figure rather than a brochure."
+          ? "Tell us the product and how many seats. Some licences — Autodesk among them — are quoted rather than shelved, and volume pricing is lower than the shelf price on the rest. Either way you get a figure back, not a brochure."
           : "This reaches the same people as the email address below, and it is recorded here whether or not the email gets through. You will get an acknowledgement to the address you give."}
       </p>
       <ContactForm defaultKind={kind} productSlug={productSlug} />

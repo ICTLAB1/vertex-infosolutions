@@ -279,7 +279,9 @@ before writing to it, drop one a release later.
 
 - [ ] Fill in every field in `.env` — the footer and `/contact` render only
       what is configured, and development shows a banner listing what is missing.
-- [ ] Replace the Adobe and Autodesk sample prices with their real price books — **both currencies**.
+- [ ] Load the Autodesk price book and clear `quoteOnly` on those eleven
+      products — **both currencies**. Until then they list honestly at "price on
+      request" and route to the enquiry form; they cannot be added to a basket.
 - [ ] Replace the derived USD prices with Microsoft's published USD list (see `INR_PER_USD` in `prisma/microsoft.ts`).
       A variant missing an INR row silently disappears from the Indian store.
 - [ ] Wire a real geo-IP source and set `GEO_COUNTRY_HEADER`. Without one the

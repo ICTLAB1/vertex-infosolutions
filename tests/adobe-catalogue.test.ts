@@ -35,7 +35,7 @@ describe("the Adobe price book", () => {
     // Converted from the tax-inclusive rupee figure by instruction, so the
     // price abroad matches the price at home. The 18% is price, not tax: the
     // export invoice still shows no tax line, because the supply is zero-rated.
-    expect(photoshop.variants[0].usd[1]).toBe(
+    expect(photoshop.variants[0]!.usd![1]).toBe(
       Math.round((41676.42 * 1.18) / INR_PER_USD),
     );
   });

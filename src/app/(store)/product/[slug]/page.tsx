@@ -7,6 +7,7 @@ import { ProductImage } from "@/components/product-image";
 import { Assurance } from "@/components/assurance";
 import { BulkQuoteLine } from "@/components/bulk-quote";
 import { TenantNotice } from "@/components/tenant-notice";
+import { QuoteOnlyProduct } from "./quote-only";
 import { deliveryHeadline, deliverySummary } from "@/lib/delivery";
 import { absolute, jsonLd, OG_IMAGE } from "@/lib/seo";
 import { Stars } from "@/components/stars";
@@ -33,7 +34,9 @@ export async function generateMetadata(
   const price = product.variants.find((v) => v.prices.length > 0)?.prices[0];
   const priced = price
     ? ` ${formatMoney(price.priceMinor, market.currency)}${market.domestic ? " incl. GST" : ""}.`
-    : "";
+    : product.quoteOnly
+      ? " Priced on request — quoted within one business day."
+      : "";
 
   return {
     title: product.name,
@@ -74,6 +77,15 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
   if (!product) notFound();
 
   const sellable = sellableVariants(product.variants);
+
+  // Sold, but not at a published price. A page of its own rather than a
+  // conditional through the priced one: nearly every line below is about a
+  // figure, and threading "if there is a price" through all of them is how a
+  // blank or a zero eventually reaches a customer.
+  if (product.quoteOnly) {
+    return <QuoteOnlyProduct product={product} domestic={market.domestic} />;
+  }
+
   // A product with no price in this market genuinely is not sold here. Saying
   // so beats rendering a page with a blank where the price should be.
   if (sellable.length === 0) {

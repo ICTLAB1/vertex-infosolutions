@@ -24,15 +24,21 @@ export function ProductCard({
   domestic: boolean;
 }) {
   const sellable = sellableVariants(product.variants);
-  if (sellable.length === 0) return null;
+  // A quote-only product has no price row anywhere and is still on sale; a
+  // priced one with nothing in this currency is not sold in this market.
+  if (sellable.length === 0 && !product.quoteOnly) return null;
 
-  const cheapest = sellable.reduce((low, variant) =>
-    priceOf(variant)!.priceMinor < priceOf(low)!.priceMinor ? variant : low,
-  );
-  const price = priceOf(cheapest)!;
+  const cheapest =
+    sellable.length > 0
+      ? sellable.reduce((low, variant) =>
+          priceOf(variant)!.priceMinor < priceOf(low)!.priceMinor ? variant : low,
+        )
+      : null;
+  const price = cheapest ? priceOf(cheapest)! : null;
   const { average, count } = ratingOf(product.reviews);
-  const off = discountPercent(price.listMinor, price.priceMinor);
-  const perSeat = Math.round(price.priceMinor / cheapest.seats);
+  const off = price ? discountPercent(price.listMinor, price.priceMinor) : 0;
+  const perSeat =
+    price && cheapest ? Math.round(price.priceMinor / cheapest.seats) : 0;
 
   return (
     <article className="group flex h-full flex-col rounded-lg border border-line bg-surface p-3 transition-shadow hover:shadow-md">
@@ -77,31 +83,43 @@ export function ProductCard({
           )}
         </div>
 
-        <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
-          {off > 0 ? (
-            <span className="text-[13px] font-semibold text-deal">-{off}%</span>
-          ) : null}
-          <span className="text-[19px] font-bold text-ink">
-            {formatMoney(price.priceMinor, currency)}
-          </span>
-          {off > 0 ? (
-            <span className="text-[12px] text-faint line-through">
-              {formatMoney(price.listMinor, currency)}
-            </span>
-          ) : null}
-        </div>
+        {price ? (
+          <>
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
+              {off > 0 ? (
+                <span className="text-[13px] font-semibold text-deal">
+                  -{off}%
+                </span>
+              ) : null}
+              <span className="text-[19px] font-bold text-ink">
+                {formatMoney(price.priceMinor, currency)}
+              </span>
+              {off > 0 ? (
+                <span className="text-[12px] text-faint line-through">
+                  {formatMoney(price.listMinor, currency)}
+                </span>
+              ) : null}
+            </div>
 
-        {/* Per-seat is how these products are actually compared, and a
-            multi-seat SKU's headline number hides it. */}
-        {cheapest.seats > 1 ? (
-          <p className="text-[12px] text-muted">
-            {formatMoney(perSeat, currency)} per seat
+            {/* Per-seat is how these products are actually compared, and a
+                multi-seat SKU's headline number hides it. */}
+            {cheapest && cheapest.seats > 1 ? (
+              <p className="text-[12px] text-muted">
+                {formatMoney(perSeat, currency)} per seat
+              </p>
+            ) : null}
+          </>
+        ) : (
+          // Not a blank, and not a zero. The shop sells this and has to be
+          // asked what it costs, which is a sentence, not a missing number.
+          <p className="mt-2 text-[19px] font-bold text-ink">
+            Price on request
           </p>
-        ) : null}
+        )}
 
         <p className="mt-0.5 text-[12px] text-muted">
           {TERM_LABELS[product.term]}
-          {domestic ? " · incl. GST" : ""}
+          {price && domestic ? " · incl. GST" : ""}
         </p>
 
         {sellable.length > 1 ? (
@@ -112,7 +130,9 @@ export function ProductCard({
 
         <div className="mt-auto pt-2 text-[12px]">
           <p className="font-semibold text-ok">
-            {deliveryShort(product.cspNewTenant)}
+            {product.quoteOnly
+              ? "Quoted within one business day"
+              : deliveryShort(product.cspNewTenant)}
           </p>
         </div>
       </div>

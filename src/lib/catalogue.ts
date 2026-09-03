@@ -38,6 +38,7 @@ export function productSelect(currency: CurrencyCode) {
     logo: true,
     featured: true,
     cspNewTenant: true,
+    quoteOnly: true,
     brand: { select: { name: true, slug: true } },
     category: { select: { name: true, slug: true } },
     variants: {
@@ -70,6 +71,21 @@ export function sellableVariants<T extends { prices: unknown[] }>(
   variants: T[],
 ): T[] {
   return variants.filter((variant) => variant.prices.length > 0);
+}
+
+/**
+ * Whether this product belongs in the market at all.
+ *
+ * Two different absences look identical in the data and mean opposite things.
+ * A priced product with no row in this currency is not sold here, and hiding
+ * it is right. A quote-only product has no row in any currency by design —
+ * it is sold everywhere, at a price we have to be asked for — and hiding it
+ * would take a whole publisher off the shelf.
+ */
+export function isListable<T extends { quoteOnly: boolean; variants: { prices: unknown[] }[] }>(
+  product: T,
+): boolean {
+  return product.quoteOnly || sellableVariants(product.variants).length > 0;
 }
 
 export async function getProduct(slug: string, currency: CurrencyCode) {
@@ -198,9 +214,14 @@ export async function browse(filters: BrowseFilters, currency: CurrencyCode) {
   });
 
   const decorated = products
-    // A product with no price in this market is not shown in it at all.
-    .filter((product) => sellableVariants(product.variants).length > 0)
+    // A priced product with no price in this market is not shown in it. A
+    // quote-only one has no price anywhere and is shown everywhere.
+    .filter(isListable)
     .map((product) => {
+      // Infinity for a quote-only product, which is deliberate in both places
+      // it is read: it sorts to the end of a price sort, and it fails a
+      // maximum-price filter, because somebody who typed a ceiling has asked
+      // to see things that cost less than it and we cannot say that this does.
       const cheapest = sellableVariants(product.variants).reduce(
         (low, variant) => Math.min(low, priceOf(variant)!.priceMinor),
         Number.POSITIVE_INFINITY,
@@ -218,12 +239,23 @@ export async function browse(filters: BrowseFilters, currency: CurrencyCode) {
       return true;
     });
 
+  // A quote-only product has no price, so it goes last in either direction —
+  // not first in one of them. Sorting descending on Infinity would put the
+  // things we cannot price at the top of "most expensive first", which reads
+  // as a claim about their price.
+  const unpriced = (n: number) => !Number.isFinite(n);
+
   switch (filters.sort) {
     case "price-asc":
       decorated.sort((a, b) => a.cheapest - b.cheapest);
       break;
     case "price-desc":
-      decorated.sort((a, b) => b.cheapest - a.cheapest);
+      decorated.sort((a, b) => {
+        if (unpriced(a.cheapest) !== unpriced(b.cheapest)) {
+          return unpriced(a.cheapest) ? 1 : -1;
+        }
+        return b.cheapest - a.cheapest;
+      });
       break;
     case "rating":
       decorated.sort((a, b) => b.rating - a.rating);

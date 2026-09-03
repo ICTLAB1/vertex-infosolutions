@@ -5,11 +5,16 @@
  * distributor list in `data/`, so those prices are Microsoft's published India
  * list price plus GST, not an invention.
  *
- * Adobe and Autodesk are still samples. Their prices are shaped like real ones
- * and are not real ones — the INR figure is not the USD figure converted,
- * because publishers price India as its own market and pretending otherwise
- * produces a catalogue that looks plausible and prices nothing correctly.
- * Replace them as each price book arrives.
+ * Adobe comes from the VIP channel list on the same basis, at the 1-9 seat
+ * band.
+ *
+ * Autodesk carries no price. Those listings are quote-only: they hold no
+ * `Price` row at all, and every surface asks the customer for a seat count
+ * instead of showing a figure. That is the honest state of a range whose price
+ * book we do not hold — the alternative, and what was here before, was eleven
+ * listings priced from imagination, which is not a display bug but a contract
+ * somebody can hold the shop to. Add the prices and clear `quoteOnly` when the
+ * price book arrives.
  *
  * INR prices are GST-inclusive, because that is what an Indian buyer expects to
  * see and what the law requires be displayed. USD prices carry no Indian tax at
@@ -129,9 +134,10 @@ const PRODUCTS: SeedProduct[] = [
       Reassignable: "Yes, through the Autodesk account portal",
     },
     featured: true,
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-ACAD-1Y", name: "1 user, 1 year", seats: 1, usd: [2230, 2030], inr: [166000, 152000] },
-      { sku: "ADSK-ACAD-3Y", name: "1 user, 3 years", seats: 1, usd: [6350, 5480], inr: [472000, 410000] },
+      { sku: "ADSK-ACAD-1Y", name: "1 user, 1 year", seats: 1 },
+      { sku: "ADSK-ACAD-3Y", name: "1 user, 3 years", seats: 1 },
     ],
   },
   {
@@ -153,8 +159,9 @@ const PRODUCTS: SeedProduct[] = [
       Delivery: "Electronic — assigned within one business day",
       Platform: "Windows, macOS, web, mobile",
     },
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-ACADLT-1Y", name: "1 user, 1 year", seats: 1, usd: [550, 500], inr: [41000, 38000] },
+      { sku: "ADSK-ACADLT-1Y", name: "1 user, 1 year", seats: 1 },
     ],
   },
   {
@@ -177,8 +184,9 @@ const PRODUCTS: SeedProduct[] = [
       Platform: "Windows",
     },
     featured: true,
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-REVIT-1Y", name: "1 user, 1 year", seats: 1, usd: [3470, 3150], inr: [258000, 236000] },
+      { sku: "ADSK-REVIT-1Y", name: "1 user, 1 year", seats: 1 },
     ],
   },
   {
@@ -200,9 +208,10 @@ const PRODUCTS: SeedProduct[] = [
       Delivery: "Electronic — assigned within one business day",
       Platform: "Windows, macOS",
     },
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-FUSION-1Y", name: "1 user, 1 year", seats: 1, usd: [840, 760], inr: [62000, 57000] },
-      { sku: "ADSK-FUSION-3Y", name: "1 user, 3 years", seats: 1, usd: [2390, 2050], inr: [176000, 154000] },
+      { sku: "ADSK-FUSION-1Y", name: "1 user, 1 year", seats: 1 },
+      { sku: "ADSK-FUSION-3Y", name: "1 user, 3 years", seats: 1 },
     ],
   },
   {
@@ -224,8 +233,9 @@ const PRODUCTS: SeedProduct[] = [
       Delivery: "Electronic — assigned within one business day",
       Platform: "Windows, macOS, Linux",
     },
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-MAYA-1Y", name: "1 user, 1 year", seats: 1, usd: [2400, 2190], inr: [179000, 164000] },
+      { sku: "ADSK-MAYA-1Y", name: "1 user, 1 year", seats: 1 },
     ],
   },
   {
@@ -247,8 +257,9 @@ const PRODUCTS: SeedProduct[] = [
       Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-INV-1Y", name: "1 user, 1 year", seats: 1, usd: [3295, 2995], inr: [245000, 225000] },
+      { sku: "ADSK-INV-1Y", name: "1 user, 1 year", seats: 1 },
     ],
   },
 
@@ -274,8 +285,9 @@ const PRODUCTS: SeedProduct[] = [
       Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-C3D-1Y", name: "1 user, 1 year", seats: 1, usd: [3190, 2900], inr: [237000, 217000] },
+      { sku: "ADSK-C3D-1Y", name: "1 user, 1 year", seats: 1 },
     ],
   },
   {
@@ -296,8 +308,9 @@ const PRODUCTS: SeedProduct[] = [
       Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-3DSMAX-1Y", name: "1 user, 1 year", seats: 1, usd: [2400, 2190], inr: [179000, 164000] },
+      { sku: "ADSK-3DSMAX-1Y", name: "1 user, 1 year", seats: 1 },
     ],
   },
   {
@@ -318,8 +331,9 @@ const PRODUCTS: SeedProduct[] = [
       Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-NWM-1Y", name: "1 user, 1 year", seats: 1, usd: [3060, 2790], inr: [227000, 208000] },
+      { sku: "ADSK-NWM-1Y", name: "1 user, 1 year", seats: 1 },
     ],
   },
   {
@@ -342,9 +356,10 @@ const PRODUCTS: SeedProduct[] = [
       Platform: "Windows",
     },
     featured: true,
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-AEC-1Y", name: "1 user, 1 year", seats: 1, usd: [3550, 3240], inr: [264000, 242000] },
-      { sku: "ADSK-AEC-3Y", name: "1 user, 3 years", seats: 1, usd: [10100, 8750], inr: [750000, 652000] },
+      { sku: "ADSK-AEC-1Y", name: "1 user, 1 year", seats: 1 },
+      { sku: "ADSK-AEC-3Y", name: "1 user, 3 years", seats: 1 },
     ],
   },
   {
@@ -366,8 +381,9 @@ const PRODUCTS: SeedProduct[] = [
       Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
+    quoteOnly: true,
     variants: [
-      { sku: "ADSK-PDMC-1Y", name: "1 user, 1 year", seats: 1, usd: [3550, 3240], inr: [264000, 242000] },
+      { sku: "ADSK-PDMC-1Y", name: "1 user, 1 year", seats: 1 },
     ],
   },
 ];
@@ -457,23 +473,35 @@ async function main() {
         featured: product.featured ?? false,
         logo: product.logo ?? null,
         cspNewTenant: product.cspNewTenant ?? false,
+        quoteOnly: product.quoteOnly ?? false,
         variants: {
           create: product.variants.map((variant) => ({
             sku: variant.sku,
             name: variant.name,
             seats: variant.seats,
+            // A quote-only product gets no price row in either currency. The
+            // absence is the safety: there is no figure in the database for a
+            // page, an invoice or a checkout to pick up by mistake.
             prices: {
               create: [
-                {
-                  currency: "USD",
-                  listMinor: variant.usd[0] * 100,
-                  priceMinor: variant.usd[1] * 100,
-                },
-                {
-                  currency: "INR",
-                  listMinor: variant.inr[0] * 100,
-                  priceMinor: variant.inr[1] * 100,
-                },
+                ...(variant.usd
+                  ? [
+                      {
+                        currency: "USD",
+                        listMinor: variant.usd[0] * 100,
+                        priceMinor: variant.usd[1] * 100,
+                      },
+                    ]
+                  : []),
+                ...(variant.inr
+                  ? [
+                      {
+                        currency: "INR",
+                        listMinor: variant.inr[0] * 100,
+                        priceMinor: variant.inr[1] * 100,
+                      },
+                    ]
+                  : []),
               ],
             },
           })),
@@ -512,7 +540,7 @@ async function main() {
   console.log(
     "\nMicrosoft prices come from the September 2026 India price book: list price plus 18% GST for India, and the same figure before GST converted at the rate in microsoft.ts for export.\n" +
       "Adobe prices come from the VIP channel list dated 6 September 2026, on the same basis, and are the 1-9 seat band.\n" +
-      "Autodesk is still sample prices — shaped like real ones, and not real ones. Replace them before taking an order.",
+      "Autodesk carries no price at all. Those listings are quote-only: they hold no Price row, so nothing can render or charge a figure for them, and every surface sends the customer to the enquiry form instead. Add the prices and clear quoteOnly when the Autodesk price book arrives.",
   );
 }
 

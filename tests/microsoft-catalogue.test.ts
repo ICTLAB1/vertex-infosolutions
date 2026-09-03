@@ -36,7 +36,7 @@ describe("the Microsoft price book", () => {
     expect(premium).toBeDefined();
     // Microsoft's published India list price is INR 21,960 per user per year,
     // exclusive of tax. The shelf shows it with 18% GST included.
-    expect(premium!.variants[0].inr).toEqual([25913, 25913]);
+    expect(premium!.variants[0]!.inr).toEqual([25913, 25913]);
   });
 
   it("sets the export price at the same level as the domestic one", () => {
@@ -46,7 +46,7 @@ describe("the Microsoft price book", () => {
     // Converted from the tax-inclusive figure by instruction, so the price
     // abroad matches the price at home. The 18% is price, not tax: an export
     // is zero-rated and the invoice shows no tax line.
-    expect(premium.variants[0].usd[1]).toBe(
+    expect(premium.variants[0]!.usd![1]).toBe(
       Math.round((21960 * 1.18) / INR_PER_USD),
     );
   });
@@ -54,8 +54,13 @@ describe("the Microsoft price book", () => {
   it("never strikes through a price that was never charged", () => {
     for (const product of MICROSOFT_PRODUCTS) {
       for (const variant of product.variants) {
-        expect(variant.inr[0]).toBe(variant.inr[1]);
-        expect(variant.usd[0]).toBe(variant.usd[1]);
+        // Prices are optional in the seed type, because a quote-only range
+        // carries none. This one is not quote-only: every Microsoft SKU comes
+        // from the price book and must have both figures.
+        expect(variant.inr, variant.sku).toBeDefined();
+        expect(variant.usd, variant.sku).toBeDefined();
+        expect(variant.inr![0]).toBe(variant.inr![1]);
+        expect(variant.usd![0]).toBe(variant.usd![1]);
       }
     }
   });
@@ -71,8 +76,8 @@ describe("the Microsoft price book", () => {
   it("drops the SKUs whose price the order tables cannot hold", () => {
     for (const product of MICROSOFT_PRODUCTS) {
       for (const variant of product.variants) {
-        expect(variant.inr[1] * 100).toBeLessThanOrEqual(MAX_MINOR);
-        expect(variant.usd[1] * 100).toBeLessThanOrEqual(MAX_MINOR);
+        expect(variant.inr![1] * 100).toBeLessThanOrEqual(MAX_MINOR);
+        expect(variant.usd![1] * 100).toBeLessThanOrEqual(MAX_MINOR);
       }
     }
     // And says which, rather than quietly shrinking the catalogue.
@@ -95,8 +100,8 @@ describe("the Microsoft price book", () => {
   it("charges at least a dollar for the cheapest add-on", () => {
     for (const product of MICROSOFT_PRODUCTS) {
       for (const variant of product.variants) {
-        expect(variant.usd[1]).toBeGreaterThan(0);
-        expect(variant.inr[1]).toBeGreaterThan(0);
+        expect(variant.usd![1]).toBeGreaterThan(0);
+        expect(variant.inr![1]).toBeGreaterThan(0);
       }
     }
   });

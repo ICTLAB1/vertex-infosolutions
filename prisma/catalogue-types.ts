@@ -22,10 +22,13 @@ export type SeedVariant = {
   sku: string;
   name: string;
   seats: number;
-  /** [list, price] in whole dollars. */
-  usd: [number, number];
+  /**
+   * [list, price] in whole dollars. Absent on a quote-only product, which has
+   * no published price in any currency — see `SeedProduct.quoteOnly`.
+   */
+  usd?: [number, number];
   /** [list, price] in whole rupees, GST-inclusive. */
-  inr: [number, number];
+  inr?: [number, number];
 };
 
 export type SeedProduct = {
@@ -42,6 +45,12 @@ export type SeedProduct = {
   logo?: string;
   /** Delivered into a newly created Microsoft tenant. See the schema. */
   cspNewTenant?: boolean;
+  /**
+   * Sold, but not at a published price. Its variants carry no figures and the
+   * seed writes no `Price` rows for them, so there is nothing a page could
+   * render by accident.
+   */
+  quoteOnly?: boolean;
   variants: SeedVariant[];
   reviews?: SeedReview[];
 };

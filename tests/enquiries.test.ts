@@ -64,7 +64,7 @@ describe("how an enquiry reads to us", () => {
     expect(mail.body).toContain(
       "Market:  USD · AE\n\nTwenty seats of Acrobat, annual.\n\nReply to them",
     );
-    expect(mail.subject).toBe("Volume quote request from Anita");
+    expect(mail.subject).toBe("Quote request from Anita");
   });
 
   it("names the company in the subject when there is one", () => {

@@ -43,6 +43,7 @@ export default async function AdminCataloguePage() {
       term: true,
       featured: true,
       published: true,
+      quoteOnly: true,
       brand: { select: { name: true } },
       category: { select: { name: true } },
       variants: {
@@ -58,13 +59,19 @@ export default async function AdminCataloguePage() {
     },
   });
 
-  const missing = products.flatMap((product) =>
-    product.variants.flatMap((variant) =>
-      CURRENCIES.filter(
-        (currency) => !variant.prices.some((price) => price.currency === currency),
-      ).map((currency) => ({ sku: variant.sku, currency })),
-    ),
-  );
+  // A quote-only product has no price by design, so it is not a gap. Counting
+  // it here would put a permanent red banner on the page, and a warning that
+  // is always on is a warning nobody reads.
+  const missing = products
+    .filter((product) => !product.quoteOnly)
+    .flatMap((product) =>
+      product.variants.flatMap((variant) =>
+        CURRENCIES.filter(
+          (currency) =>
+            !variant.prices.some((price) => price.currency === currency),
+        ).map((currency) => ({ sku: variant.sku, currency })),
+      ),
+    );
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-6">
@@ -114,6 +121,11 @@ export default async function AdminCataloguePage() {
                     Withdrawn
                   </span>
                 ) : null}
+                {product.quoteOnly ? (
+                  <span className="rounded bg-amber/20 px-2 py-0.5 font-semibold text-ink">
+                    Quoted per order
+                  </span>
+                ) : null}
                 {product.featured ? (
                   <span className="rounded bg-ok/10 px-2 py-0.5 font-semibold text-ok">
                     Featured
@@ -157,9 +169,13 @@ export default async function AdminCataloguePage() {
                         return (
                           <p
                             key={currency}
-                            className="self-center text-[13px] font-semibold text-deal"
+                            className={`self-center text-[13px] font-semibold ${
+                              product.quoteOnly ? "text-muted" : "text-deal"
+                            }`}
                           >
-                            No {currency} price — not sold in that market.
+                            {product.quoteOnly
+                              ? `No ${currency} price — quoted per order.`
+                              : `No ${currency} price — not sold in that market.`}
                           </p>
                         );
                       }

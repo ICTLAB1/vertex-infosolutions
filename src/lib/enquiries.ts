@@ -17,7 +17,9 @@ export const ENQUIRY_LIMITS = { perIp: 6, windowMinutes: 60 } as const;
 /** How each kind is named to a person, in the back office and in our own email. */
 export const KIND_LABELS: Record<EnquiryKind, string> = {
   GENERAL: "Enquiry",
-  VOLUME_QUOTE: "Volume quote request",
+  // Covers both reasons somebody asks for a figure: a volume band the cart
+  // cannot charge, and a licence we publish no price for at all.
+  VOLUME_QUOTE: "Quote request",
   LICENSING: "Licensing question",
 };
 

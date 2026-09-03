@@ -82,12 +82,18 @@ export async function addToCart(form: FormData) {
     where: { id: variantId },
     include: {
       prices: { where: { currency: market.currency } },
-      product: { select: { slug: true } },
+      product: { select: { slug: true, published: true, quoteOnly: true } },
     },
   });
-  // A variant with no price in this market is not sold here. Refusing the add
-  // is the honest outcome; adding it and showing a blank price is not.
-  if (!variant || variant.prices.length === 0) return;
+  // Three separate reasons to refuse, all of which look like a normal request
+  // by the time they reach here: a form left open on a page that has since
+  // been withdrawn, a variant not sold in this market, and a licence we do not
+  // publish a price for. Adding any of them and showing a blank price is not
+  // the honest outcome.
+  if (!variant) return;
+  if (!variant.product.published) return;
+  if (variant.product.quoteOnly) return;
+  if (variant.prices.length === 0) return;
 
   const cart = await ensureCart(market.currency, market.country);
   const existing = await prisma.cartItem.findUnique({

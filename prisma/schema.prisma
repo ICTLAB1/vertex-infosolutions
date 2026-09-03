@@ -150,6 +150,19 @@ model Product {
   /// order lines with it and make an old invoice unexplainable.
   published Boolean @default(true)
 
+  /// Sold, but not at a published price.
+  ///
+  /// Autodesk is licensed through a reseller agreement whose price book we do
+  /// not hold, and the alternative to this flag was a number somebody made up.
+  /// A quote-only product carries no `Price` row at all — so there is nothing
+  /// for a page to render by accident — and every surface that would show a
+  /// figure shows the way to ask for one instead. It cannot be added to a
+  /// basket, and `addToCart` refuses it even if a form is forged.
+  ///
+  /// Deleting the flag is what happens when the price book arrives: add the
+  /// prices, clear the flag, and the ordinary buying path takes over.
+  quoteOnly Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

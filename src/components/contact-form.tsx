@@ -7,7 +7,7 @@ import { submitEnquiry, type EnquiryResult } from "@/app/contact-actions";
 
 const KINDS = [
   { value: "GENERAL", label: "General enquiry" },
-  { value: "VOLUME_QUOTE", label: "Volume quote — 10 seats or more" },
+  { value: "VOLUME_QUOTE", label: "Price or volume quote" },
   { value: "LICENSING", label: "Licensing question before I buy" },
 ] as const;
 

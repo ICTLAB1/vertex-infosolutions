@@ -141,7 +141,7 @@ export async function submitEnquiry(
     ok: true,
     message:
       kind === "VOLUME_QUOTE"
-        ? "Thank you — we will come back with a quote within one business day."
+        ? "Thank you — we will come back with a firm price within one business day."
         : "Thank you — your message has reached us and we answer within one business day.",
   };
 }
