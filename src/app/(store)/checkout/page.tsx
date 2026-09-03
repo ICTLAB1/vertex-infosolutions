@@ -30,7 +30,7 @@ export default async function CheckoutPage() {
   const totals = totalsFor(cart.items, market);
   // Something priced in the other market cannot be checked out. The cart page
   // says which line and offers to remove it.
-  if (totals.unpriced > 0) redirect("/cart");
+  if (totals.unavailable > 0) redirect("/cart");
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-6">

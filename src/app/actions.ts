@@ -185,6 +185,13 @@ export async function placeOrder(
   const market = await getMarket();
   const totals = totalsFor(cart.items, market);
 
+  if (totals.withdrawn > 0) {
+    return {
+      message:
+        "Something in your cart is no longer on sale. Remove it to continue — and ask us if you still want it, because we can usually still supply it.",
+    };
+  }
+
   if (totals.unpriced > 0) {
     return {
       message:

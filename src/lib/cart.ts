@@ -73,6 +73,8 @@ export const cartInclude = {
               gstRatePercent: true,
               term: true,
               cspNewTenant: true,
+              published: true,
+              quoteOnly: true,
               brand: { select: { name: true } },
             },
           },
@@ -147,8 +149,17 @@ export type CartTotals = {
   taxRatePercent: number;
   taxLabel: string | null;
   count: number;
-  /** Lines whose variant has no price in this currency — never purchasable. */
+  /** Lines whose variant has no price in this currency — not sold here. */
   unpriced: number;
+  /**
+   * Lines whose product has since been taken off sale, or is quoted rather
+   * than priced. A basket outlives the listing in it: somebody adds a licence,
+   * an administrator withdraws it because its price was wrong, and without
+   * this the customer is still charged the wrong price an hour later.
+   */
+  withdrawn: number;
+  /** Everything that blocks checkout, whatever the reason. */
+  unavailable: number;
   /** True when the total is more than the order table can store. */
   overCeiling: boolean;
 };
@@ -164,12 +175,20 @@ export function totalsFor(lines: CartLine[], market: Market): CartTotals {
   let totalMinor = 0;
   let count = 0;
   let unpriced = 0;
+  let withdrawn = 0;
   // Every product the store sells is taxed at the same rate, but the rate is
   // read from the products rather than assumed, so a zero-rated line would be
   // handled correctly the day one exists.
   let weightedRate = 0;
 
   for (const line of lines) {
+    const product = line.variant.product;
+    // Checked before the price, because a withdrawn listing that still has a
+    // price row would otherwise total up as though nothing had happened.
+    if (!product.published || product.quoteOnly) {
+      withdrawn += 1;
+      continue;
+    }
     const price = line.variant.prices.find((p) => p.currency === currency);
     if (!price) {
       unpriced += 1;
@@ -195,6 +214,8 @@ export function totalsFor(lines: CartLine[], market: Market): CartTotals {
     taxLabel: market.domestic ? "GST" : null,
     count,
     unpriced,
+    withdrawn,
+    unavailable: unpriced + withdrawn,
     overCeiling: totalMinor > MAX_MINOR,
   };
 }

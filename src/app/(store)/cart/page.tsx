@@ -127,14 +127,14 @@ export default async function CartPage() {
                 </Link>{" "}
                 and we will invoice you directly.
               </p>
-            ) : totals.unpriced > 0 ? (
+            ) : totals.unavailable > 0 ? (
               <p
                 role="alert"
                 className="mt-3 rounded-md border border-deal/40 bg-deal/5 p-2.5 text-[13px] text-deal"
               >
-                {totals.unpriced === 1 ? "One item is" : `${totals.unpriced} items are`}{" "}
-                not sold in {totals.currency}. Remove{" "}
-                {totals.unpriced === 1 ? "it" : "them"} to continue.
+                {totals.unavailable === 1
+                  ? "One item above cannot be bought as it stands. Remove it to continue."
+                  : `${totals.unavailable} items above cannot be bought as they stand. Remove them to continue.`}
               </p>
             ) : (
               <Link
@@ -178,7 +178,10 @@ function CartRow({
 }) {
   const { variant } = line;
   const product = variant.product;
-  const price = variant.prices.find((p) => p.currency === currency);
+  const gone = !product.published || product.quoteOnly;
+  const price = gone
+    ? undefined
+    : variant.prices.find((p) => p.currency === currency);
 
   return (
     <li className="flex gap-4 py-4">
@@ -205,7 +208,21 @@ function CartRow({
         <p className="mt-0.5 font-mono text-[12px] text-faint">{variant.sku}</p>
         {product.cspNewTenant && <TenantNotice tone="line" />}
 
-        {price ? (
+        {gone ? (
+          // Withdrawn while it sat in the basket. Said plainly, with the way
+          // to still get it, rather than the line vanishing overnight and the
+          // customer wondering what they did.
+          <p className="mt-1 text-[13px] text-deal">
+            No longer on sale here — remove it to check out.{" "}
+            <Link
+              href={`/contact?about=quote&product=${product.slug}`}
+              className="underline"
+            >
+              Ask us for it
+            </Link>{" "}
+            and we can usually still supply it.
+          </p>
+        ) : price ? (
           <p className="mt-1 text-[13px] text-ok">
             {deliveryShort(product.cspNewTenant)}
             {domestic ? " · GST invoice included" : ""}
