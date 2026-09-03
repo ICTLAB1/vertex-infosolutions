@@ -41,6 +41,75 @@ param databaseSku string = 'Standard_B1ms'
 @description('PostgreSQL storage, GB. Can be grown later but never shrunk.')
 param databaseStorageGb int = 32
 
+// ---------------------------------------------------------------------------
+// What the application needs to run
+//
+// These are parameters rather than something set by hand in the portal,
+// because App Service replaces the *entire* app-settings collection on every
+// deployment. Anything typed into the portal is silently gone the next time
+// this template runs — which is a bad way to discover that your Stripe key has
+// vanished mid-order.
+//
+// So the parameters file is the source of truth. Keep `infra/main.parameters.json`
+// (git-ignored, copied from the example beside it), pass it on every deploy,
+// and redeploying becomes safe by construction.
+//
+// Every one of these may be left empty. The application treats an empty value
+// exactly as an unset one and degrades on purpose: no Stripe key means
+// checkout refuses in production, no Resend key means messages are recorded
+// but not sent, no CRON_SECRET means the scheduled endpoints answer 503. That
+// is what makes the first deploy — before you have a Stripe webhook secret to
+// give it — possible at all.
+// ---------------------------------------------------------------------------
+
+@description('Public URL of the store. Leave empty to use the App Service default hostname; set it when a custom domain is in front.')
+param appUrl string = ''
+
+@description('Addresses that may reach /admin, comma-separated. Empty means nobody.')
+param adminEmails string = ''
+
+@description('Shared secret for the scheduled endpoints. Generate with: openssl rand -hex 32')
+@secure()
+param cronSecret string = ''
+
+@description('Stripe secret key. Without it checkout refuses to run in production.')
+@secure()
+param stripeSecretKey string = ''
+
+@description('Stripe webhook signing secret. Empty on the first deploy — the endpoint has to exist before Stripe will give you one.')
+@secure()
+param stripeWebhookSecret string = ''
+
+@description('Resend API key. Without it no one-time code is delivered and no account can be verified.')
+@secure()
+param resendApiKey string = ''
+
+@description('Sender for all email, e.g. "Vertex Infosolutions <orders@example.com>".')
+param emailFrom string = ''
+
+@description('Header carrying the visitor country, set by a geo-IP rule at the edge.')
+param geoCountryHeader string = ''
+
+@description('Header carrying the caller IP, set by the edge. Without a trustworthy one the sign-in limits keyed on the caller can be evaded.')
+param clientIpHeader string = ''
+
+@description('WhatsApp Cloud API token. Optional; order updates only.')
+@secure()
+param whatsappToken string = ''
+
+@description('WhatsApp Cloud API phone number id.')
+param whatsappPhoneNumberId string = ''
+
+@description('Who the seller legally is. Blank fields are not rendered, and a tax invoice missing these says so on its face.')
+param companyLegalName string = ''
+param companyAddress string = ''
+param companyRegistrationNumber string = ''
+param companyTaxId string = ''
+param companySupportEmail string = ''
+param companySupportPhone string = ''
+param companyComplaintsName string = ''
+param companyComplaintsEmail string = ''
+
 var unique = uniqueString(resourceGroup().id)
 var registryName = '${namePrefix}acr${unique}'
 var databaseServerName = '${namePrefix}-pg-${unique}'
@@ -190,6 +259,86 @@ resource web 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: insights.properties.ConnectionString
+        }
+        {
+          // Stripe returns customers here and every email links here, so it is
+          // configuration rather than something derived from a request Host
+          // header — that header is attacker-controlled, and trusting it would
+          // let somebody redirect a completed payment to their own site.
+          name: 'APP_URL'
+          value: empty(appUrl) ? 'https://${webAppName}.azurewebsites.net' : appUrl
+        }
+        {
+          name: 'ADMIN_EMAILS'
+          value: adminEmails
+        }
+        {
+          name: 'CRON_SECRET'
+          value: cronSecret
+        }
+        {
+          name: 'STRIPE_SECRET_KEY'
+          value: stripeSecretKey
+        }
+        {
+          name: 'STRIPE_WEBHOOK_SECRET'
+          value: stripeWebhookSecret
+        }
+        {
+          name: 'RESEND_API_KEY'
+          value: resendApiKey
+        }
+        {
+          name: 'EMAIL_FROM'
+          value: emailFrom
+        }
+        {
+          name: 'GEO_COUNTRY_HEADER'
+          value: geoCountryHeader
+        }
+        {
+          name: 'CLIENT_IP_HEADER'
+          value: clientIpHeader
+        }
+        {
+          name: 'WHATSAPP_TOKEN'
+          value: whatsappToken
+        }
+        {
+          name: 'WHATSAPP_PHONE_NUMBER_ID'
+          value: whatsappPhoneNumberId
+        }
+        {
+          name: 'COMPANY_LEGAL_NAME'
+          value: companyLegalName
+        }
+        {
+          name: 'COMPANY_ADDRESS'
+          value: companyAddress
+        }
+        {
+          name: 'COMPANY_REGISTRATION_NUMBER'
+          value: companyRegistrationNumber
+        }
+        {
+          name: 'COMPANY_TAX_ID'
+          value: companyTaxId
+        }
+        {
+          name: 'COMPANY_SUPPORT_EMAIL'
+          value: companySupportEmail
+        }
+        {
+          name: 'COMPANY_SUPPORT_PHONE'
+          value: companySupportPhone
+        }
+        {
+          name: 'COMPANY_COMPLAINTS_OFFICER_NAME'
+          value: companyComplaintsName
+        }
+        {
+          name: 'COMPANY_COMPLAINTS_OFFICER_EMAIL'
+          value: companyComplaintsEmail
         }
       ]
     }

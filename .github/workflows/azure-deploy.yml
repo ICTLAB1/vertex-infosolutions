@@ -134,6 +134,15 @@ jobs:
           npm ci
           npx prisma migrate deploy
 
+      # Migrations create empty tables, so without this a brand-new environment
+      # comes up as a working store with nothing in it. The seed refuses to run
+      # against a database that already holds products or orders, so this is a
+      # no-op on every deploy after the first and cannot wipe a live catalogue.
+      - name: Seed the catalogue if the database is empty
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:seed
+
       - name: Point the Web App at the new image
         run: |
           az webapp config container set \

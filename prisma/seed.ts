@@ -951,7 +951,40 @@ const PRODUCTS: SeedProduct[] = [
 ];
 
 
+/**
+ * Whether it is safe to wipe what is there.
+ *
+ * This script deletes every order, basket and product before it writes, which
+ * is exactly right on an empty database and catastrophic on one with a
+ * customer's orders in it. Run against a populated database it stops and says
+ * so, so that pointing it at the wrong `DATABASE_URL` — the deployed one,
+ * say — costs nothing.
+ *
+ * `--force`, or SEED_FORCE=1, overrides it. Reseeding a development database
+ * is an ordinary thing to want.
+ */
+async function safeToSeed(): Promise<boolean> {
+  if (process.argv.includes("--force") || process.env.SEED_FORCE === "1") {
+    return true;
+  }
+
+  const [products, orders] = await Promise.all([
+    prisma.product.count(),
+    prisma.order.count(),
+  ]);
+  if (products === 0 && orders === 0) return true;
+
+  console.log(
+    `This database already holds ${products} products and ${orders} orders, so it has not been touched.\n` +
+      "Seeding deletes every order, basket and product before it writes.\n" +
+      "If that is genuinely what you want, run it again with --force.",
+  );
+  return false;
+}
+
 async function main() {
+  if (!(await safeToSeed())) return;
+
   console.log("Clearing existing catalogue…");
   await prisma.orderItem.deleteMany();
   await prisma.fulfilment.deleteMany();
@@ -1043,6 +1076,9 @@ async function main() {
     prices: await prisma.price.count(),
     reviews: await prisma.review.count(),
   });
+  console.log(
+    "\nThis is the sample catalogue. The prices are shaped like real ones and are not real ones — replace it with the real price book before taking an order.",
+  );
 }
 
 main()

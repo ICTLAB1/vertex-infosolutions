@@ -202,22 +202,49 @@ Nothing here uses Netlify, Vercel or Supabase. The estate is:
 
 ### First time
 
+The template owns the application's configuration as well as its
+infrastructure, because App Service replaces the **entire** app-settings
+collection on every deployment — anything typed into the portal is silently
+gone the next time the template runs. So the parameters file is the source of
+truth, and redeploying is safe by construction.
+
 ```bash
+cp infra/main.parameters.example.json infra/main.parameters.json
+# fill it in — it is git-ignored, and it holds real secrets
+
 az group create -n rg-vertex-prod -l centralindia
 az deployment group create -g rg-vertex-prod -f infra/main.bicep \
-  -p namePrefix=vertex dbAdminPassword='<a strong password>'
+  --parameters @infra/main.parameters.json
 ```
+
+**Pass that file on every deploy**, not just the first. Every value in it may
+be left empty to begin with: the application treats an empty setting exactly as
+an unset one and degrades deliberately — no Stripe key means checkout refuses
+in production, no Resend key means messages are recorded but not sent, no
+`CRON_SECRET` means the scheduled endpoints answer 503. That is what makes the
+first deploy possible before Stripe will give you a webhook secret, which it
+will not do until the endpoint exists.
 
 The template outputs the Web App name, its URL, and the registry login server.
 Put those into the repository's GitHub **variables** as `AZURE_WEBAPP_NAME`,
 `AZURE_RESOURCE_GROUP` and `AZURE_REGISTRY`.
 
+Then, in order: merge to `main` so the workflow builds and deploys the image;
+register `https://<host>/api/webhooks/stripe` in the Stripe dashboard; put the
+signing secret it gives you into the parameters file; and deploy the template
+again.
+
 ### Continuous deployment
 
 `.github/workflows/azure-deploy.yml` runs on every push to `main`: typecheck,
 lint and build; then build the image, push it to ACR, run
-`prisma migrate deploy`, point the Web App at the new tag, and poll
-`/api/health` until it returns 200.
+`prisma migrate deploy`, seed the catalogue **if the database is empty**, point
+the Web App at the new tag, and poll `/api/health` until it returns 200.
+
+The seed step is safe to run every time: `prisma/seed.ts` deletes everything
+before it writes, so it refuses outright on a database that already holds
+products or orders. Without it a brand-new environment comes up as a working
+store with an empty catalogue, which is not a useful thing to have deployed.
 
 Authentication is OIDC — there is no long-lived Azure credential in the
 repository. Required GitHub **secrets**: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
@@ -240,8 +267,11 @@ before writing to it, drop one a release later.
 - The Postgres firewall rule is `AllowAllAzureServices`, which is the loosest
   rule that works without a VNet. **Replace it with a private endpoint or VNet
   integration before launch.**
-- `DATABASE_URL` is written into App Service configuration by the Bicep
-  template. Move it to Key Vault with a reference before launch.
+- `DATABASE_URL` and the other secrets are written into App Service
+  configuration by the Bicep template, which means they are readable by anyone
+  with portal access to the resource. Move them to Key Vault references before
+  launch — `infra/main.bicep` is where that change goes, and the parameters
+  file then holds secret URIs rather than secrets.
 
 ## Before this takes a real order
 
@@ -323,8 +353,8 @@ before writing to it, drop one a release later.
 | `npm run typecheck` | `next typegen`, then `tsc --noEmit` — the route types (`PageProps`, `LayoutProps`) are generated, and a fresh checkout has none |
 | `npm run lint` | eslint |
 | `npm run db:migrate` | create and apply a migration |
-| `npm run db:seed` | reset and reseed the catalogue |
-| `npm run db:reset` | drop, re-migrate, reseed |
+| `npm run db:seed` | seed the sample catalogue — refuses if the database already holds products or orders; `-- --force` overrides |
+| `npm run db:reset` | drop and re-migrate (does not seed; run `db:seed` after) |
 
 ## Stack
 
