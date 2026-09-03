@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { addToCart, buyNow } from "@/app/actions";
-import { Glyph } from "@/components/glyph";
+import { ProductImage } from "@/components/product-image";
 import { TenantNotice } from "@/components/tenant-notice";
 import { deliveryHeadline, deliverySummary } from "@/lib/delivery";
 import { Stars } from "@/components/stars";
@@ -91,7 +91,13 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
       <div className="grid gap-5 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,310px)]">
         <div className="self-start rounded-lg border border-line bg-surface p-6">
           <div className="flex aspect-square items-center justify-center rounded bg-ground/60 text-nav-2">
-            <Glyph name={product.glyph} className="h-40 w-40" />
+            <ProductImage
+              logo={product.logo}
+              glyph={product.glyph}
+              name={product.name}
+              className="h-40 w-40"
+              sizes="160px"
+            />
           </div>
           <p className="mt-3 text-center text-[12px] text-faint">
             Supplied under {product.brand.name}&apos;s own end-user terms.

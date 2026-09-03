@@ -134,6 +134,13 @@ model Product {
   cspNewTenant Boolean @default(false)
 
   glyph    String  @default("licence")
+
+  /// Path under `public/` to the publisher's own product icon, when we hold a
+  /// licensed copy of it — "/logos/adobe/photoshop.svg". Null falls back to
+  /// `glyph`, the drawn placeholder, so a product without artwork still looks
+  /// deliberate rather than broken.
+  logo String?
+
   featured Boolean @default(false)
 
   createdAt DateTime @default(now())

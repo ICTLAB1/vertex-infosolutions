@@ -106,6 +106,7 @@ const PRODUCTS: SeedProduct[] = [
   // -------------------------------------------------------------------- Adobe
   {
     slug: "adobe-creative-cloud-all-apps-teams",
+    logo: "/logos/adobe/creative-cloud.png",
     name: "Adobe Creative Cloud for Teams — All Apps",
     brand: "Adobe",
     category: "creative",
@@ -139,6 +140,7 @@ const PRODUCTS: SeedProduct[] = [
   },
   {
     slug: "adobe-creative-cloud-single-app-teams",
+    logo: "/logos/adobe/creative-cloud.png",
     name: "Adobe Creative Cloud for Teams — Single App",
     brand: "Adobe",
     category: "creative",
@@ -164,6 +166,7 @@ const PRODUCTS: SeedProduct[] = [
   },
   {
     slug: "adobe-acrobat-pro-teams",
+    logo: "/logos/adobe/acrobat.svg",
     name: "Adobe Acrobat Pro for Teams",
     brand: "Adobe",
     category: "creative",
@@ -368,6 +371,7 @@ const PRODUCTS: SeedProduct[] = [
   // ------------------------------------------------------ Adobe (continued)
   {
     slug: "adobe-photoshop-teams",
+    logo: "/logos/adobe/photoshop.svg",
     name: "Adobe Photoshop for Teams",
     brand: "Adobe",
     category: "creative",
@@ -391,6 +395,7 @@ const PRODUCTS: SeedProduct[] = [
   },
   {
     slug: "adobe-illustrator-teams",
+    logo: "/logos/adobe/illustrator.svg",
     name: "Adobe Illustrator for Teams",
     brand: "Adobe",
     category: "creative",
@@ -413,6 +418,7 @@ const PRODUCTS: SeedProduct[] = [
   },
   {
     slug: "adobe-premiere-pro-teams",
+    logo: "/logos/adobe/premiere.svg",
     name: "Adobe Premiere Pro for Teams",
     brand: "Adobe",
     category: "creative",
@@ -435,6 +441,7 @@ const PRODUCTS: SeedProduct[] = [
   },
   {
     slug: "adobe-indesign-teams",
+    logo: "/logos/adobe/indesign.svg",
     name: "Adobe InDesign for Teams",
     brand: "Adobe",
     category: "creative",
@@ -457,6 +464,7 @@ const PRODUCTS: SeedProduct[] = [
   },
   {
     slug: "adobe-express-teams",
+    logo: "/logos/adobe/express.png",
     name: "Adobe Express for Teams",
     brand: "Adobe",
     category: "creative",
@@ -683,6 +691,7 @@ async function main() {
         term: product.term,
         glyph: "licence",
         featured: product.featured ?? false,
+        logo: product.logo ?? null,
         cspNewTenant: product.cspNewTenant ?? false,
         variants: {
           create: product.variants.map((variant) => ({

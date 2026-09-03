@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { getMarket } from "@/lib/cart";
@@ -151,6 +152,23 @@ export async function Footer() {
               terms — Vertex Infosolutions is an authorised reseller, not the
               licensor.
             </p>
+
+            {/* The badge is Adobe's, issued to certified resellers, and it is
+                a claim about this business rather than decoration: it stays
+                only while the certification does. */}
+            {/* On a light plate deliberately: the badge is transparent artwork
+                with black in it, which would half-disappear against this dark
+                footer. A partner badge that cannot be read is worse than none. */}
+            <div className="mt-4 inline-block rounded-md bg-white px-3 py-2">
+              <Image
+                src="/badges/adobe-certified-reseller.png"
+                alt="Adobe Certified Reseller"
+                width={1921}
+                height={895}
+                sizes="150px"
+                className="h-auto w-[150px]"
+              />
+            </div>
           </div>
         </div>
 

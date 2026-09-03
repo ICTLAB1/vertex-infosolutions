@@ -25,6 +25,7 @@ export function productSelect(currency: CurrencyCode) {
     gstRatePercent: true,
     term: true,
     glyph: true,
+    logo: true,
     featured: true,
     cspNewTenant: true,
     brand: { select: { name: true, slug: true } },

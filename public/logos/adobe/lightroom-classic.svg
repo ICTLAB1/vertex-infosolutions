@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 234 234">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #31a8ff;
+      }
+
+      .cls-2 {
+        fill: #001e36;
+      }
+    </style>
+  </defs>
+  <g id="Surfaces">
+    <g id="Photo_Surface" data-name="Photo Surface">
+      <g id="Outline_no_shadow" data-name="Outline no shadow">
+        <rect class="cls-2" width="234" height="234" rx="41.97" ry="41.97"/>
+      </g>
+    </g>
+  </g>
+  <g id="Outlined_Mnemonics_Logos" data-name="Outlined Mnemonics &amp;amp; Logos">
+    <g id="LrC_NEW_" data-name="LrC *NEW*">
+      <g>
+        <path class="cls-1" d="M16.94,62.03h28.5v81.95h42.02v25.92H16.94V62.03Z"/>
+        <path class="cls-1" d="M131.73,84.41c3.22,0,5.96.16,8.05.48v22.7c-1.29-.16-2.58-.16-4.19-.16-7.08.16-12.24.8-15.29,1.61v60.86h-26.08v-79.37c10.79-4.51,26.24-6.12,37.51-6.12Z"/>
+        <path class="cls-1" d="M219.47,64.12l-.16,26.89c-5.96-3.38-10.46-4.99-19.64-4.99-15.46,0-26.08,9.34-26.08,28.66,0,21.41,10.14,31.56,25.92,31.56,6.28,0,14.01-1.13,20.29-5.31l.32,26.24c-4.19,2.74-11.43,4.51-24.31,4.51-36.71.32-52.65-25.92-52.65-56.51s19.32-55.22,53.45-55.38c10.63-.16,18.03,1.45,22.86,4.35Z"/>
+      </g>
+    </g>
+  </g>
+</svg>

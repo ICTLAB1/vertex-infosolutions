@@ -38,6 +38,8 @@ export type SeedProduct = {
   bullets: string[];
   specs: Record<string, string>;
   featured?: boolean;
+  /** Path under `public/` to the publisher's own icon, when we hold one. */
+  logo?: string;
   /** Delivered into a newly created Microsoft tenant. See the schema. */
   cspNewTenant?: boolean;
   variants: SeedVariant[];

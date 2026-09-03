@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Glyph } from "@/components/glyph";
+import { ProductImage } from "@/components/product-image";
 import { Stars } from "@/components/stars";
 import {
   priceOf,
@@ -40,7 +40,13 @@ export function ProductCard({
         href={`/product/${product.slug}`}
         className="flex h-32 items-center justify-center rounded bg-ground/60 text-nav-2"
       >
-        <Glyph name={product.glyph} className="h-20 w-20" />
+        <ProductImage
+          logo={product.logo}
+          glyph={product.glyph}
+          name={product.name}
+          className="h-20 w-20"
+          sizes="80px"
+        />
       </Link>
 
       <div className="mt-3 flex flex-1 flex-col">

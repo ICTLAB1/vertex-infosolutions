@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 234 234">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #99f;
+      }
+
+      .cls-2 {
+        fill: #00005b;
+      }
+    </style>
+  </defs>
+  <g id="Surfaces">
+    <g id="DVA_Surface" data-name="DVA Surface">
+      <g id="Outline_no_shadow_copy_15" data-name="Outline no shadow copy 15">
+        <rect class="cls-2" width="234" height="234" rx="41.97" ry="41.97"/>
+      </g>
+    </g>
+  </g>
+  <g id="Outlined_Mnemonics_Logos" data-name="Outlined Mnemonics &amp;amp; Logos">
+    <g id="Au">
+      <g>
+        <path class="cls-1" d="M58.23,62.11h34.45l38.64,107.87h-31.55l-5.31-16.42h-40.41l-5.31,16.42h-30.27L58.23,62.11ZM86.08,127.96l-11.75-36.22-11.75,36.22h23.51Z"/>
+        <path class="cls-1" d="M134.24,137.62v-51.68h28.17v50.39c0,9.02,4.35,12.72,11.59,12.72,3.38,0,6.28-.16,8.69-1.13v-61.98h28.17v76.96c-10.79,5.47-22.38,8.85-37.03,8.85-27.53,0-39.6-10.95-39.6-34.13Z"/>
+      </g>
+    </g>
+  </g>
+</svg>
