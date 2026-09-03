@@ -253,9 +253,15 @@ resource web 'Microsoft.Web/sites@2023-12-01' = {
           value: 'https://${registry.properties.loginServer}'
         }
         {
-          // sslmode=require is not optional: Flexible Server refuses plaintext.
+          // TLS is not optional: Flexible Server refuses plaintext. `verify-full`
+          // rather than `require` because the two mean the same thing to `pg`
+          // today and will not in its next major version, where `require`
+          // relaxes to libpq semantics — encrypted, but with nobody checking
+          // whose certificate is on the other end. Naming the stronger mode
+          // keeps a routine dependency bump from silently opening the
+          // connection to interception.
           name: 'DATABASE_URL'
-          value: 'postgresql://${dbAdminUser}:${dbAdminPassword}@${postgres.properties.fullyQualifiedDomainName}:5432/${databaseName}?sslmode=require'
+          value: 'postgresql://${dbAdminUser}:${dbAdminPassword}@${postgres.properties.fullyQualifiedDomainName}:5432/${databaseName}?sslmode=verify-full'
         }
         {
           name: 'DATABASE_POOL_MAX'

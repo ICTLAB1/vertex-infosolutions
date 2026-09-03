@@ -18,8 +18,10 @@ import { PrismaClient } from "@/generated/prisma/client";
  * saves, so in development the instance is parked on `globalThis` and reused.
  *
  * On Azure this points at Azure Database for PostgreSQL Flexible Server, which
- * requires TLS. `sslmode=require` belongs in `DATABASE_URL` rather than being
- * forced here, so a local Postgres without certificates still works.
+ * requires TLS. The mode belongs in `DATABASE_URL` rather than being forced
+ * here, so a local Postgres without certificates still works; the deployed
+ * value asks for `verify-full`, which checks the server's certificate as well
+ * as encrypting.
  */
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
