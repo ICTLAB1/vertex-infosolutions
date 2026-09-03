@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+/**
+ * Vertex Infosolutions storefront.
+ *
+ * The layout conventions here are the ones every Indian shopper already knows
+ * from the big marketplaces — a dark utility header with the search bar as its
+ * centre of gravity, a category strip beneath it, dense white cards on a grey
+ * ground, and a warm-yellow primary action. Those are conventions, not
+ * borrowings: the palette, the wordmark and the type are Vertex's own.
+ *
+ * The store commits to a light theme. A retail storefront is a lit shelf, and
+ * every colour below is painted explicitly so it holds regardless of the
+ * viewer's system setting.
+ */
+
+@theme {
+  /* Structure */
+  --color-nav: #0c1d2e;
+  --color-nav-2: #16344f;
+  --color-ground: #e9edf1;
+  --color-surface: #ffffff;
+  --color-line: #d6dde4;
+  --color-line-soft: #e8edf1;
+
+  /* Text */
+  --color-ink: #0d1b24;
+  --color-muted: #556670;
+  --color-faint: #7b8a93;
+
+  /* Brand and action */
+  --color-brand: #0a6e78;
+  --color-link: #0a6e78;
+  --color-amber: #ffce4f;
+  --color-amber-edge: #e3b230;
+  --color-orange: #ff9b34;
+  --color-orange-edge: #e08326;
+
+  /* Meaning */
+  --color-deal: #c4123c;
+  --color-star: #f0a81e;
+  --color-ok: #1f7a45;
+  --color-warn: #9a6a0b;
+
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-ground);
+  color: var(--color-ink);
+}
+
+/* Keyboard focus has to be visible on both the dark header and the light body,
+   so it is drawn as a ring in the brand colour with a white halo behind it. */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.on-dark :focus-visible {
+  outline-color: var(--color-amber);
+}
+
+@layer components {
+  /* The two primary actions, styled as the pills shoppers expect. */
+  .btn-amber {
+    background: linear-gradient(180deg, #ffe08a 0%, var(--color-amber) 100%);
+    border: 1px solid var(--color-amber-edge);
+    color: var(--color-ink);
+  }
+  .btn-amber:hover {
+    background: linear-gradient(180deg, #ffd970 0%, #f5c33f 100%);
+  }
+
+  .btn-orange {
+    background: linear-gradient(180deg, #ffb463 0%, var(--color-orange) 100%);
+    border: 1px solid var(--color-orange-edge);
+    color: var(--color-ink);
+  }
+  .btn-orange:hover {
+    background: linear-gradient(180deg, #ffa74a 0%, #f28c20 100%);
+  }
+
+  .btn-amber:disabled,
+  .btn-orange:disabled {
+    background: #e4e8ec;
+    border-color: var(--color-line);
+    color: var(--color-faint);
+    cursor: not-allowed;
+  }
+
+  /* Shown only when scripting is off. Doing this in CSS rather than with
+     `<noscript>` is deliberate: React renders noscript children as markup on
+     the server, but a scripting-enabled browser exposes that content as a text
+     node rather than elements, so hydration mismatches and the page dies. CSS
+     has no such problem, and a browser too old for the `scripting` feature
+     simply keeps the button — which still works. */
+  @media (scripting: enabled) {
+    .no-js-only {
+      display: none;
+    }
+  }
+
+  /* The search field spans the header and owns its own focus treatment. */
+  .search-shell:focus-within {
+    box-shadow: 0 0 0 3px var(--color-amber);
+    border-color: var(--color-amber);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

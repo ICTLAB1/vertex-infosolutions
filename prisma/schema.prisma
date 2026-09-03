@@ -1,0 +1,576 @@
+// Vertex Infosolutions — storefront schema.
+//
+// The store sells software licences from Microsoft, Adobe and Autodesk. Nothing
+// physical: no stock, no carriage, no customs, no address.
+//
+// Two things drive the shape of this file.
+//
+// **The store sells into two markets at once.** A visitor in India sees INR and
+// a visitor anywhere else sees USD, and those are not the same number converted.
+// Publishers price India differently, and an FX-derived price both looks wrong
+// (₹12,347.83) and moves between the moment it is displayed and the moment it is
+// charged. So price is a row per currency in `Price`, entered deliberately.
+//
+// **Those two markets are taxed completely differently.** Selling a licence to a
+// customer in India is a domestic supply of services: 18% GST, charged on the
+// price, on a GST invoice carrying a SAC code. Selling the same licence abroad
+// is an export, zero-rated under LUT, with whatever the destination charges
+// being the buyer's own affair. `Order.taxMinor` is the GST collected on an INR
+// order and zero on a USD one, and that is not an accident of configuration —
+// it is the whole difference between the two.
+//
+// `Fulfilment` survives from the version of this store that also sold hardware.
+// Every order now has exactly one, of kind DIGITAL. It is kept because it costs
+// one join and it is the seam where physical goods would go back in.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProductKind {
+  /// Everything the store sells today.
+  LICENCE
+  /// Retained so the fulfilment split still type-checks if hardware returns.
+  PHYSICAL
+}
+
+enum FulfilmentKind {
+  DIGITAL
+  SHIPMENT
+}
+
+enum FulfilmentStatus {
+  PENDING
+  ISSUED
+  CANCELLED
+}
+
+/// How a licence is sold, which decides what the buyer is actually agreeing to.
+enum LicenceTerm {
+  /// Billed once a year, for a fixed seat count.
+  ANNUAL_SUBSCRIPTION
+  /// Billed monthly on an annual commitment.
+  MONTHLY_COMMITMENT
+  /// Bought outright, no renewal.
+  PERPETUAL
+}
+
+enum PaymentMethod {
+  CARD
+  PAYPAL
+  /// India only: UPI is the default way an Indian buyer pays.
+  UPI
+  NETBANKING
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  name     String
+  /// One line under the category heading on a browse page.
+  blurb    String?
+  position Int       @default(0)
+  products Product[]
+}
+
+/// Microsoft, Adobe, Autodesk. The store is an authorised reseller, not the
+/// licensor, and every page that mentions a publisher says so.
+model Brand {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  name     String
+  blurb    String?
+  products Product[]
+}
+
+model Product {
+  id         String      @id @default(cuid())
+  slug       String      @unique
+  name       String
+  kind       ProductKind @default(LICENCE)
+  brandId    String
+  categoryId String
+  summary    String
+  bullets    String[]    @default([])
+  /// Spec table rows, as {"Licence type": "…"}. Order is preserved on write.
+  specs      Json        @default("{}")
+
+  /// Services Accounting Code. A licence to use software is SAC 997331 in
+  /// India, and it has to be on the GST invoice for a domestic sale. Nothing
+  /// on a USD export invoice needs it, but the same product is sold into both
+  /// markets, so it lives on the product rather than on the order.
+  sacCode String? @default("997331")
+
+  /// GST charged on an Indian sale. 18% for a software licence. Applied only
+  /// to INR orders — an export carries none.
+  gstRatePercent Int @default(18)
+
+  /// What the buyer is committing to. Shown prominently, because "per year" and
+  /// "once, forever" are very different purchases at similar-looking prices.
+  term LicenceTerm @default(ANNUAL_SUBSCRIPTION)
+
+  glyph    String  @default("licence")
+  featured Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  brand    Brand     @relation(fields: [brandId], references: [id])
+  category Category  @relation(fields: [categoryId], references: [id])
+  variants Variant[]
+  reviews  Review[]
+
+  @@index([categoryId])
+  @@index([brandId])
+}
+
+model Variant {
+  id        String @id @default(cuid())
+  productId String
+  sku       String @unique
+  /// "1 user, 1 year", "5 seats, 1 year" — what distinguishes this from its
+  /// siblings. A product with one variant repeats the product name.
+  name      String
+  /// How many seats or users this SKU covers. Drives the per-seat figure shown
+  /// beside the total, which is how these products are actually compared.
+  seats     Int    @default(1)
+
+  product Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  prices  Price[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+}
+
+/// One row per currency the variant is sold in.
+///
+/// Deliberately not a base price plus an exchange rate. Publishers set regional
+/// prices that are not conversions of each other, and a rate that moves between
+/// page load and payment is a store that charges a different number from the one
+/// it displayed.
+model Price {
+  id        String @id @default(cuid())
+  variantId String
+  /// ISO 4217. "INR" or "USD" today.
+  currency  String @db.Char(3)
+
+  /// The publisher's list price, which exists to be struck through.
+  listMinor  Int
+  /// What is actually charged. For INR this is GST-inclusive, because an Indian
+  /// consumer price that excludes tax is a price that lies.
+  priceMinor Int
+
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, currency])
+  @@index([currency])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  author    String
+  /// Shown as "Reviewed in Germany". A buyer weighs a review from their own
+  /// market more heavily, and this store has two very different ones.
+  country   String?
+  rating    Int
+  title     String
+  body      String
+  /// Set when the reviewer's email matches a fulfilled order for this product.
+  /// A badge that is awarded rather than typed in is worth something.
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+/// A basket belonging to a browser, not to a person.
+model Cart {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  /// Set when the basket belongs to a signed-in customer. A guest basket has
+  /// none until they sign in, at which point it is merged into theirs.
+  userId    String?
+  /// The market this basket is priced in, fixed the moment the first item is
+  /// added. Letting it float would let a total change under the customer
+  /// between the cart and the payment page.
+  currency  String   @default("USD") @db.Char(3)
+  /// ISO 3166-1 alpha-2, when known. Decides GST and export eligibility.
+  country   String?  @db.Char(2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@index([userId])
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  cartId    String
+  variantId String
+  qty       Int    @default(1)
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, variantId])
+  @@index([cartId])
+}
+
+model Order {
+  id     String @id @default(cuid())
+  number String @unique
+
+  /// Every order belongs to an account. Licence keys are delivered into it,
+  /// so there is no guest checkout — there would be nowhere to deliver to.
+  userId String
+
+  /// Copied from the account at the time of sale. An order is a record of what
+  /// was agreed, and a customer who later changes their email has not changed
+  /// where this order was sent.
+  email String
+  phone String
+
+  /// What was charged, and in what. Stored on the order because the store's
+  /// prices can change afterwards and an order is a record, not a query.
+  currency String @db.Char(3)
+  /// Where the buyer said they are. Decides which tax treatment applied.
+  country  String @db.Char(2)
+
+  /// Billing details. There is no delivery address — nothing is delivered
+  /// anywhere but an inbox — but a GST invoice needs a name and a place, and a
+  /// card issuer needs a billing country.
+  billName    String
+  billCompany String?
+  billCity    String?
+  billRegion  String?
+  billPostcode String?
+  /// A registered Indian business buying on its own GSTIN can reclaim the GST,
+  /// so the invoice has to carry it. Ignored outside India.
+  gstin       String?
+
+  /// The order total, decomposed so the invoice can show its working.
+  ///
+  /// On an INR order `netMinor + taxMinor = totalMinor`, because the displayed
+  /// price is GST-inclusive and the tax is broken back out of it. On a USD
+  /// order `taxMinor` is zero and `netMinor` equals `totalMinor` — the supply
+  /// is an export, zero-rated, and whatever the destination charges is not
+  /// ours to collect.
+  netMinor   Int
+  taxMinor   Int @default(0)
+  totalMinor Int
+  /// Copied from the products at the time of sale, so a later rate change does
+  /// not rewrite a historic invoice.
+  taxRatePercent Int @default(0)
+  /// "GST" on a domestic sale, null on an export.
+  taxLabel   String?
+
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod
+  paidAt        DateTime?
+
+  /// Stripe's own identifiers, kept for reconciliation and refunds.
+  ///
+  /// `stripeSessionId` is unique because it is the idempotency key for
+  /// fulfilment: the browser returning from Checkout and the webhook both
+  /// report the same session, in no guaranteed order and possibly more than
+  /// once, and exactly one of those reports may issue the keys.
+  stripeSessionId       String?  @unique
+  stripePaymentIntentId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+  fulfilments Fulfilment[]
+
+  @@index([email])
+  @@index([userId])
+}
+
+model Fulfilment {
+  id      String         @id @default(cuid())
+  orderId String
+  kind    FulfilmentKind @default(DIGITAL)
+  status  FulfilmentStatus @default(PENDING)
+
+  completedAt DateTime?
+
+  order Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@unique([orderId, kind])
+  @@index([orderId])
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  fulfilmentId String
+  variantId    String?
+
+  /// The catalogue can be edited or a SKU withdrawn; an order is a record of
+  /// what was sold on the day, so the line copies what it needs.
+  sku            String
+  name           String
+  variantName    String
+  seats          Int    @default(1)
+  qty            Int
+  unitPriceMinor Int
+  sacCode        String?
+
+  /// A revealed key cannot be put back. The order page says so rather than
+  /// offering a button that would fail.
+  licenceKey String?
+
+  /// When this licence stops working, set at fulfilment from the product's
+  /// term. Null for a perpetual licence, which never expires.
+  ///
+  /// Stored on the line rather than derived on read, because the term can be
+  /// renegotiated and a historic purchase keeps the dates it was actually
+  /// sold under.
+  expiresAt DateTime?
+  /// Set when the renewal reminder goes out, so it goes out once. Nothing here
+  /// auto-renews; the reminder exists so an expiry is a decision rather than a
+  /// surprise.
+  renewalRemindedAt DateTime?
+
+  order      Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fulfilment Fulfilment @relation(fields: [fulfilmentId], references: [id], onDelete: Cascade)
+  variant    Variant?   @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([fulfilmentId])
+  /// Drives the reminder sweep: everything expiring in a window that has not
+  /// been reminded yet.
+  @@index([expiresAt, renewalRemindedAt])
+}
+
+
+// ---------------------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------------------
+
+/// A customer.
+///
+/// An account is not optional here. Licence keys are delivered into it and
+/// stay there for as long as the licence lives, which is the whole point: an
+/// email can be lost, a key in an account cannot.
+model User {
+  id    String @id @default(cuid())
+  /// Stored lowercased. Uniqueness is on that, so Ravi@x.com and ravi@x.com
+  /// cannot become two accounts holding half the licences each.
+  email String @unique
+  name  String
+
+  /// E.164, for WhatsApp and for the invoice. Optional, because a customer who
+  /// does not want WhatsApp should not be forced to hand over a number.
+  phone          String?
+  /// Explicit opt-in. A business-initiated WhatsApp message to somebody who
+  /// did not ask for one is spam, and gets the sender's number blocked.
+  whatsappOptIn  Boolean @default(false)
+
+  /// scrypt. Salt is per user and stored beside the hash; see src/lib/auth.ts.
+  passwordHash String
+  passwordSalt String
+
+  /// Null until an OTP has been confirmed. Nothing can be bought before it is
+  /// set — an unverified address is an address the keys would be lost to.
+  emailVerifiedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions      Session[]
+  otps          EmailOtp[]
+  orders        Order[]
+  carts         Cart[]
+  notifications Notification[]
+}
+
+/// A signed-in browser. The cookie holds the token and nothing else, so a
+/// session can be revoked server-side by deleting the row.
+model Session {
+  id        String   @id @default(cuid())
+  /// The lookup value is a hash of the cookie's token, not the token itself:
+  /// a leaked database backup should not be a set of live sessions.
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  /// Shown on the account's security page so a customer can recognise a
+  /// session they do not remember starting.
+  userAgent String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum OtpPurpose {
+  VERIFY_EMAIL
+  SIGN_IN
+  PASSWORD_RESET
+}
+
+/// A failed sign-in, kept just long enough to slow the next one down.
+///
+/// Only failures are recorded, and only for an hour — long enough to be useful
+/// against somebody working through a password list, short enough that this is
+/// not a log of who signed in from where. A success deletes the address's rows
+/// outright, so a customer who eventually remembers their password is not
+/// still being counted against.
+///
+/// The email is stored as submitted (lowercased) whether or not an account
+/// exists. If only real accounts were counted, "too many attempts" would
+/// answer the question the rest of the sign-in flow refuses to: whether that
+/// address has an account here.
+model SignInAttempt {
+  id String @id @default(cuid())
+
+  email String
+  /// The caller's address as the edge reported it, or "unknown" when nothing
+  /// trustworthy said. See `clientIp` for what that is worth.
+  ip    String
+
+  createdAt DateTime @default(now())
+
+  /// The three windows the limiter reads, each a different attack.
+  @@index([email, ip, createdAt])
+  @@index([ip, createdAt])
+  @@index([email, createdAt])
+}
+
+/// A one-time code sent by email.
+///
+/// The code is stored hashed, expires in ten minutes, and is consumed on first
+/// successful use. `attempts` is what stops a six-digit code being brute
+/// forced: a million guesses is minutes of scripting, five guesses is not.
+model EmailOtp {
+  id        String     @id @default(cuid())
+  userId    String
+  purpose   OtpPurpose
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int        @default(0)
+  consumedAt DateTime?
+  createdAt DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+enum NotificationChannel {
+  EMAIL
+  WHATSAPP
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  FAILED
+  /// The customer has not opted in, or has no number. Recorded rather than
+  /// silently dropped, so "why did they not get the WhatsApp" is answerable.
+  SKIPPED
+  /// Given up on: the provider refused it in a way retrying cannot fix, or the
+  /// attempts ran out. Distinct from FAILED so that "we will try again" and
+  /// "nobody will try again" are not the same row, and so the sweep does not
+  /// hammer an address that will never accept mail.
+  ABANDONED
+}
+
+/// Every message the store sends, written down before it is sent.
+///
+/// An outbox rather than a fire-and-forget call: a provider that is briefly
+/// down should delay a message, not lose it, and a customer asking "did you
+/// send it?" deserves an answer better than a shrug. It also means the whole
+/// notification path is testable without a provider configured.
+/// Every change an administrator made by hand.
+///
+/// The store is mostly automatic: Stripe reports a payment, keys are issued,
+/// emails go out. The exceptions are the interesting ones — a bank transfer
+/// marked received by a person, a key sent again, a price changed — and each
+/// of them is somebody deciding something. "Who marked this order paid, and
+/// when?" is a question that gets asked exactly once, in an argument, and
+/// having no answer is expensive.
+model AdminAction {
+  id String @id @default(cuid())
+
+  /// The administrator's address, copied rather than joined: the record has to
+  /// outlive the account, and it is evidence of who acted at the time.
+  actorEmail String
+
+  /// What was done — "order.mark-paid", "order.resend-keys", "price.update".
+  action String
+  /// What it was done to: an order number, a SKU.
+  subject String
+  /// The change in words, for somebody reading this in a year.
+  detail String
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([subject])
+}
+
+model Notification {
+  id      String              @id @default(cuid())
+  userId  String?
+  orderId String?
+  channel NotificationChannel
+  status  NotificationStatus  @default(QUEUED)
+
+  /// Email address or E.164 number, as sent.
+  destination String
+  /// Which message this is — "order.paid", "otp.verify". Also the WhatsApp
+  /// template name, which Meta requires be pre-approved.
+  template    String
+  subject     String?
+  body        String
+
+  /// The provider's message id, for tracing a complaint back to a delivery.
+  providerRef String?
+  error       String?
+
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+  /// When delivery was last tried. Drives the retry back-off, and lets the
+  /// sweep tell a message that is genuinely in flight from one whose process
+  /// died holding it.
+  lastAttemptAt DateTime?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  /// Drives the retry sweep: what failed, oldest attempt first.
+  @@index([status, lastAttemptAt])
+}

@@ -1,0 +1,171 @@
+# Build the storefront image, push it to Azure Container Registry, run the
+# database migrations, then point the Web App at the new tag.
+#
+# Authentication is OIDC — the workflow exchanges a GitHub token for an Azure
+# one at run time, so there is no long-lived credential in the repository.
+# Configure once:
+#
+#   az ad app create --display-name vertex-deploy
+#   az role assignment create --role Contributor --assignee <appId> \
+#     --scope /subscriptions/<sub>/resourceGroups/rg-vertex-prod
+#   # then add a federated credential for this repo's main branch
+#
+# Repository secrets required:
+#   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+# Repository variables required:
+#   AZURE_RESOURCE_GROUP, AZURE_REGISTRY, AZURE_WEBAPP_NAME
+#
+# The migration step needs DATABASE_URL as a secret, because a migration runs
+# from CI rather than from the container at boot — a container that migrates on
+# startup races itself the moment App Service runs two instances.
+
+name: Verify and deploy
+
+on:
+  push:
+    branches: [main]
+  # Without this a pull request gets no checks at all, and the suite only runs
+  # after a merge — which is exactly too late to be useful. `verify` runs on
+  # every PR; `deploy` is guarded below so it never fires from one.
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  IMAGE_NAME: vertex-storefront
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    # The suite includes tests that exercise the once-only fulfilment claim and
+    # the webhook signature against a real database, because those are the two
+    # places a mistake costs money. They skip without DATABASE_URL, so CI
+    # provides one rather than letting them quietly not run.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: vertex
+          POSTGRES_PASSWORD: vertex
+          POSTGRES_DB: vertex_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vertex -d vertex_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://vertex:vertex@localhost:5432/vertex_test?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # First, and it has to stay first: `typecheck` runs `next typegen`, which
+      # writes the generated route types (`PageProps`, `LayoutProps`) that the
+      # app's pages refer to. A fresh checkout has no `.next`, so without this
+      # every typed page fails to compile.
+      - run: npm run typecheck
+      - run: npm run lint
+      - name: Apply migrations to the test database
+        run: npx prisma migrate deploy
+      - run: npm test
+      # The build must pass without a database. Every route is dynamic, so it
+      # does; if that ever stops being true this step catches it here rather
+      # than in the image build.
+      - name: Build without a database
+        run: npm run build
+        env:
+          DATABASE_URL: ""
+
+  deploy:
+    needs: verify
+    # Never from a pull request: a fork PR must not be able to push an image or
+    # touch the production database, and even a trusted branch should deploy
+    # only once its changes are actually on main.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sign in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign in to the container registry
+        run: az acr login --name ${{ vars.AZURE_REGISTRY }}
+
+      - name: Build and push the image
+        run: |
+          REGISTRY="${{ vars.AZURE_REGISTRY }}.azurecr.io"
+          docker build \
+            -t "$REGISTRY/$IMAGE_NAME:${{ github.sha }}" \
+            -t "$REGISTRY/$IMAGE_NAME:latest" \
+            .
+          docker push "$REGISTRY/$IMAGE_NAME:${{ github.sha }}"
+          docker push "$REGISTRY/$IMAGE_NAME:latest"
+
+      # Migrations run before the new image is live, so the schema is always at
+      # least as new as the code reading it. Every migration therefore has to be
+      # backwards compatible with the version still serving traffic — add a
+      # column before writing to it, drop one a release later.
+      - name: Apply database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          npm ci
+          npx prisma migrate deploy
+
+      # Migrations create empty tables, so without this a brand-new environment
+      # comes up as a working store with nothing in it. The seed refuses to run
+      # against a database that already holds products or orders, so this is a
+      # no-op on every deploy after the first and cannot wipe a live catalogue.
+      - name: Seed the catalogue if the database is empty
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:seed
+
+      - name: Point the Web App at the new image
+        run: |
+          az webapp config container set \
+            --name ${{ vars.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --container-image-name "${{ vars.AZURE_REGISTRY }}.azurecr.io/$IMAGE_NAME:${{ github.sha }}" \
+            --container-registry-url "https://${{ vars.AZURE_REGISTRY }}.azurecr.io"
+
+      - name: Wait for the health check to pass
+        run: |
+          URL="https://$(az webapp show \
+            --name ${{ vars.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --query defaultHostName -o tsv)/api/health"
+          echo "Probing $URL"
+          for attempt in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$URL" || true)
+            if [ "$code" = "200" ]; then
+              echo "Healthy after $attempt attempts."
+              exit 0
+            fi
+            echo "  attempt $attempt: HTTP $code"
+            sleep 10
+          done
+          echo "Health check never returned 200 — the deploy is live but unhealthy."
+          exit 1

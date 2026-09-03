@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "namePrefix": { "value": "vertex" },
+    "dbAdminPassword": { "value": "REPLACE-with-a-strong-password" },
+
+    "adminEmails": { "value": "you@yourdomain.example" },
+    "cronSecret": { "value": "REPLACE-with: openssl rand -hex 32" },
+
+    "stripeSecretKey": { "value": "" },
+    "stripeWebhookSecret": { "value": "" },
+
+    "resendApiKey": { "value": "" },
+    "emailFrom": { "value": "Vertex Infosolutions <orders@example.com>" },
+
+    "geoCountryHeader": { "value": "" },
+    "clientIpHeader": { "value": "" },
+
+    "whatsappToken": { "value": "" },
+    "whatsappPhoneNumberId": { "value": "" },
+
+    "companyLegalName": { "value": "" },
+    "companyAddress": { "value": "" },
+    "companyRegistrationNumber": { "value": "" },
+    "companyTaxId": { "value": "" },
+    "companySupportEmail": { "value": "" },
+    "companySupportPhone": { "value": "" },
+    "companyComplaintsName": { "value": "" },
+    "companyComplaintsEmail": { "value": "" }
+  }
+}
