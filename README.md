@@ -88,7 +88,7 @@ event and asserting the keys are unchanged.
 
 ```
 prisma/schema.prisma     the data model, commented
-prisma/seed.ts           sample catalogue — replace before launch
+prisma/seed.ts           the catalogue, written idempotently over what is there
 src/lib/auth.ts          passwords (scrypt), sessions, one-time codes, reset
 src/lib/notify.ts        the outbox: email and WhatsApp, composed and recorded
 src/lib/orders.ts        fulfilOrder — the once-only claim
@@ -247,10 +247,14 @@ lint and build; then build the image, push it to ACR, run
 `prisma migrate deploy`, seed the catalogue **if the database is empty**, point
 the Web App at the new tag, and poll `/api/health` until it returns 200.
 
-The seed step is safe to run every time: `prisma/seed.ts` deletes everything
-before it writes, so it refuses outright on a database that already holds
-products or orders. Without it a brand-new environment comes up as a working
-store with an empty catalogue, which is not a useful thing to have deployed.
+The seed step is safe to run every time, and now safe to run deliberately:
+`prisma/seed.ts` upserts. It writes the catalogue this file describes and
+touches nothing a customer created — no order, basket, review or account —
+so refreshing prices after a new price book is a normal deploy rather than an
+operation to be frightened of. A listing that has left the price book is
+withdrawn, never deleted, because deleting would take its order lines with it.
+A withdrawal made by hand in the back office survives, because taking a
+listing down is a decision and a routine refresh must not undo it.
 
 Authentication is OIDC — there is no long-lived Azure credential in the
 repository. Required GitHub **secrets**: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
@@ -361,7 +365,7 @@ before writing to it, drop one a release later.
 | `npm run db:migrate` | create and apply a migration |
 | `python3 scripts/import-price-list.py <file.xlsx>` | refresh `prisma/data/microsoft-price-list.json` from a new distributor price list (needs `pip install openpyxl`) |
 | `npm run db:deploy` | apply pending migrations to the database **and** regenerate the client — run this before `db:seed` after any `git pull` |
-| `npm run db:seed` | seed the catalogue — refuses if the database already holds products or orders; `-- --force` overrides |
+| `npm run db:seed` | write the catalogue from `prisma/seed.ts` — upserts, and never touches orders, baskets, reviews or accounts; refuses on a non-empty catalogue unless given `-- --force` |
 | `npm run db:reset` | drop and re-migrate (does not seed; run `db:seed` after) |
 
 ## Stack

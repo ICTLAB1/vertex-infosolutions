@@ -28,7 +28,7 @@ import { inrShelfPrice, usdShelfPrice } from "./pricing";
 
 import priceList from "./data/microsoft-price-list.json";
 
-import type { SeedProduct, SeedReview } from "./catalogue-types";
+import type { SeedProduct } from "./catalogue-types";
 
 export { INR_PER_USD } from "./pricing";
 
@@ -111,7 +111,6 @@ const EDITORIAL: Record<
     bullets: string[];
     specs?: Record<string, string>;
     featured?: boolean;
-    reviews?: SeedReview[];
   }
 > = {
   "Microsoft 365 Business Basic": {
@@ -342,7 +341,6 @@ export const MICROSOFT_PRODUCTS: SeedProduct[] = (() => {
           inr: [inr, inr],
         },
       ],
-      reviews: editorial?.reviews,
     }];
   });
 })();

@@ -390,32 +390,33 @@ const PRODUCTS: SeedProduct[] = [
 
 
 /**
- * Whether it is safe to wipe what is there.
+ * Whether this run may go ahead.
  *
- * This script deletes every order, basket and product before it writes, which
- * is exactly right on an empty database and catastrophic on one with a
- * customer's orders in it. Run against a populated database it stops and says
- * so, so that pointing it at the wrong `DATABASE_URL` — the deployed one,
- * say — costs nothing.
+ * Seeding used to delete every order, basket and product before it wrote,
+ * which was right on an empty database and catastrophic on one with a
+ * customer's orders in it — and the refusal message told whoever hit it to run
+ * again with `--force`, which is exactly the wrong advice for the person it
+ * was protecting.
  *
- * `--force`, or SEED_FORCE=1, overrides it. Reseeding a development database
- * is an ordinary thing to want.
+ * It no longer deletes anything a customer created. What is left to guard
+ * against is pointing it at a database whose catalogue somebody has been
+ * editing by hand: this file is the source of truth for a listing's name, its
+ * copy and its price, so a run overwrites those. Orders, baskets, reviews and
+ * accounts are never touched, by this or by `--force`.
  */
 async function safeToSeed(): Promise<boolean> {
   if (process.argv.includes("--force") || process.env.SEED_FORCE === "1") {
     return true;
   }
 
-  const [products, orders] = await Promise.all([
-    prisma.product.count(),
-    prisma.order.count(),
-  ]);
-  if (products === 0 && orders === 0) return true;
+  const products = await prisma.product.count();
+  if (products === 0) return true;
 
   console.log(
-    `This database already holds ${products} products and ${orders} orders, so it has not been touched.\n` +
-      "Seeding deletes every order, basket and product before it writes.\n" +
-      "If that is genuinely what you want, run it again with --force.",
+    `This database already holds ${products} products, so it has not been touched.\n` +
+      "Seeding rewrites every listing's name, copy and price from this file.\n" +
+      "Orders, baskets, reviews and accounts are never touched.\n" +
+      "If that is what you want, run it again with --force.",
   );
   return false;
 }
@@ -423,101 +424,128 @@ async function safeToSeed(): Promise<boolean> {
 async function main() {
   if (!(await safeToSeed())) return;
 
-  console.log("Clearing existing catalogue…");
-  await prisma.orderItem.deleteMany();
-  await prisma.fulfilment.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.cartItem.deleteMany();
-  await prisma.cart.deleteMany();
-  await prisma.review.deleteMany();
-  await prisma.price.deleteMany();
-  await prisma.variant.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.brand.deleteMany();
-  await prisma.category.deleteMany();
-
-  console.log("Seeding categories and brands…");
+  console.log("Categories and brands…");
   const categories = new Map<string, string>();
   for (const category of CATEGORIES) {
-    const row = await prisma.category.create({ data: category });
+    const row = await prisma.category.upsert({
+      where: { slug: category.slug },
+      create: category,
+      update: category,
+    });
     categories.set(row.slug, row.id);
   }
 
   const brands = new Map<string, string>();
   for (const brand of BRANDS) {
-    const row = await prisma.brand.create({ data: brand });
+    const row = await prisma.brand.upsert({
+      where: { slug: brand.slug },
+      create: brand,
+      update: brand,
+    });
     brands.set(row.name, row.id);
   }
 
-  console.log(`Seeding ${PRODUCTS.length} products…`);
+  console.log(`${PRODUCTS.length} products…`);
   for (const product of PRODUCTS) {
     const categoryId = categories.get(product.category);
     const brandId = brands.get(product.brand);
     if (!categoryId) throw new Error(`Unknown category: ${product.category}`);
     if (!brandId) throw new Error(`Unknown brand: ${product.brand}`);
 
-    await prisma.product.create({
-      data: {
-        slug: product.slug,
-        name: product.name,
-        kind: "LICENCE",
-        brandId,
-        categoryId,
-        summary: product.summary,
-        bullets: product.bullets,
-        specs: product.specs,
-        sacCode: "997331",
-        gstRatePercent: 18,
-        term: product.term,
-        glyph: "licence",
-        featured: product.featured ?? false,
-        logo: product.logo ?? null,
-        cspNewTenant: product.cspNewTenant ?? false,
-        quoteOnly: product.quoteOnly ?? false,
-        variants: {
-          create: product.variants.map((variant) => ({
-            sku: variant.sku,
-            name: variant.name,
-            seats: variant.seats,
-            // A quote-only product gets no price row in either currency. The
-            // absence is the safety: there is no figure in the database for a
-            // page, an invoice or a checkout to pick up by mistake.
-            prices: {
-              create: [
-                ...(variant.usd
-                  ? [
-                      {
-                        currency: "USD",
-                        listMinor: variant.usd[0] * 100,
-                        priceMinor: variant.usd[1] * 100,
-                      },
-                    ]
-                  : []),
-                ...(variant.inr
-                  ? [
-                      {
-                        currency: "INR",
-                        listMinor: variant.inr[0] * 100,
-                        priceMinor: variant.inr[1] * 100,
-                      },
-                    ]
-                  : []),
-              ],
-            },
-          })),
-        },
-        reviews: {
-          create: (product.reviews ?? []).map((review) => ({
-            author: review.author,
-            country: review.country ?? null,
-            rating: review.rating,
-            title: review.title,
-            body: review.body,
-            verified: review.verified ?? false,
-          })),
+    // Everything this file is the source of truth for. `published` is not in
+    // the list: taking a listing down is a decision somebody made in the back
+    // office, and a routine catalogue refresh must not quietly undo it.
+    const fields = {
+      name: product.name,
+      kind: "LICENCE" as const,
+      brandId,
+      categoryId,
+      summary: product.summary,
+      bullets: product.bullets,
+      specs: product.specs,
+      sacCode: "997331",
+      gstRatePercent: 18,
+      term: product.term,
+      glyph: "licence",
+      featured: product.featured ?? false,
+      logo: product.logo ?? null,
+      cspNewTenant: product.cspNewTenant ?? false,
+      quoteOnly: product.quoteOnly ?? false,
+    };
+
+    const row = await prisma.product.upsert({
+      where: { slug: product.slug },
+      create: { slug: product.slug, ...fields },
+      update: fields,
+      select: { id: true },
+    });
+
+    for (const variant of product.variants) {
+      const shape = {
+        productId: row.id,
+        name: variant.name,
+        seats: variant.seats,
+      };
+      const saved = await prisma.variant.upsert({
+        where: { sku: variant.sku },
+        create: { sku: variant.sku, ...shape },
+        update: shape,
+        select: { id: true },
+      });
+
+      const money: [string, [number, number] | undefined][] = [
+        ["USD", variant.usd],
+        ["INR", variant.inr],
+      ];
+      for (const [currency, figures] of money) {
+        if (!figures) {
+          // No figure in this currency means no row, not a stale one. This is
+          // how a listing becomes quote-only on a database that already holds
+          // prices for it: the rows go, and there is nothing left to render.
+          // Deleting a price never touches an order — an order line copies the
+          // amount it was sold at.
+          await prisma.price.deleteMany({
+            where: { variantId: saved.id, currency },
+          });
+          continue;
+        }
+        const amounts = {
+          listMinor: figures[0] * 100,
+          priceMinor: figures[1] * 100,
+        };
+        await prisma.price.upsert({
+          where: { variantId_currency: { variantId: saved.id, currency } },
+          create: { variantId: saved.id, currency, ...amounts },
+          update: amounts,
+        });
+      }
+    }
+
+    // A SKU this file no longer lists stops being purchasable but keeps its
+    // row, because an order line points at it. With no price in either market
+    // it is simply not sold anywhere.
+    await prisma.price.deleteMany({
+      where: {
+        variant: {
+          productId: row.id,
+          sku: { notIn: product.variants.map((v) => v.sku) },
         },
       },
     });
+  }
+
+  // A listing that has left the price book is withdrawn rather than deleted:
+  // deleting would take its order lines with it and make an old invoice
+  // unexplainable. Withdrawn is exactly the state the back office already
+  // understands, and somebody can put it back.
+  const retired = await prisma.product.updateMany({
+    where: { slug: { notIn: PRODUCTS.map((p) => p.slug) }, published: true },
+    data: { published: false },
+  });
+  if (retired.count > 0) {
+    console.log(
+      `${retired.count} ${retired.count === 1 ? "listing is" : "listings are"} no longer in the price book and ${retired.count === 1 ? "has" : "have"} been withdrawn. ${retired.count === 1 ? "It keeps its orders and its history" : "They keep their orders and their history"}, and the back office can put ${retired.count === 1 ? "it" : "them"} back.`,
+    );
   }
 
   console.log("Done.", {

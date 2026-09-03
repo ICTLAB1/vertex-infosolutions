@@ -9,15 +9,6 @@
 
 export type Term = "ANNUAL_SUBSCRIPTION" | "MONTHLY_COMMITMENT" | "PERPETUAL";
 
-export type SeedReview = {
-  author: string;
-  country?: string;
-  rating: number;
-  title: string;
-  body: string;
-  verified?: boolean;
-};
-
 export type SeedVariant = {
   sku: string;
   name: string;
@@ -52,5 +43,4 @@ export type SeedProduct = {
    */
   quoteOnly?: boolean;
   variants: SeedVariant[];
-  reviews?: SeedReview[];
 };
