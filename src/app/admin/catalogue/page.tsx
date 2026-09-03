@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PriceForm } from "@/components/admin-forms";
+import { ActionForm, PriceForm } from "@/components/admin-forms";
 import { requireAdmin } from "@/lib/admin";
+import { setProductFeatured, setProductPublished } from "../admin-actions";
 import { TERM_LABELS } from "@/lib/catalogue";
 import { prisma } from "@/lib/db";
 import type { CurrencyCode } from "@/lib/market";
@@ -40,6 +41,8 @@ export default async function AdminCataloguePage() {
       name: true,
       slug: true,
       term: true,
+      featured: true,
+      published: true,
       brand: { select: { name: true } },
       category: { select: { name: true } },
       variants: {
@@ -106,6 +109,16 @@ export default async function AdminCataloguePage() {
                 <h2 className="text-[16px] font-bold text-ink">{product.name}</h2>
               </div>
               <div className="flex items-baseline gap-3 text-[13px]">
+                {!product.published ? (
+                  <span className="rounded bg-deal/10 px-2 py-0.5 font-semibold text-deal">
+                    Withdrawn
+                  </span>
+                ) : null}
+                {product.featured ? (
+                  <span className="rounded bg-ok/10 px-2 py-0.5 font-semibold text-ok">
+                    Featured
+                  </span>
+                ) : null}
                 <span className="text-muted">{TERM_LABELS[product.term]}</span>
                 <Link
                   href={`/product/${product.slug}`}
@@ -172,6 +185,31 @@ export default async function AdminCataloguePage() {
                 </li>
               ))}
             </ul>
+
+            {/* Withdrawing is not deleting. The listing keeps its slug, its
+                orders and its history and simply stops being offered — which
+                is the honest answer to a price that turned out to be wrong. */}
+            <div className="mt-3 flex flex-wrap gap-5 border-t border-line-soft pt-3">
+              <ActionForm
+                action={setProductPublished}
+                fields={{
+                  productId: product.id,
+                  published: product.published ? "false" : "true",
+                }}
+                label={product.published ? "Withdraw from sale" : "Put back on sale"}
+                busy={product.published ? "Withdrawing…" : "Restoring…"}
+                tone={product.published ? "loud" : "quiet"}
+              />
+              <ActionForm
+                action={setProductFeatured}
+                fields={{
+                  productId: product.id,
+                  featured: product.featured ? "false" : "true",
+                }}
+                label={product.featured ? "Remove from home page" : "Feature on home page"}
+                busy="Saving…"
+              />
+            </div>
           </section>
         ))}
       </div>

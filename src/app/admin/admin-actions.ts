@@ -202,3 +202,209 @@ export async function updatePrice(
     message: `Saved. ${existing.variant.sku} is now ${formatMoneyExact(price, currency)}.`,
   };
 }
+
+// ---------------------------------------------------------------------------
+// The catalogue
+// ---------------------------------------------------------------------------
+
+/**
+ * Take a listing down, or put it back.
+ *
+ * Not a delete. A withdrawn product keeps its slug, its orders and its order
+ * lines — an invoice from last month has to stay explainable — it simply stops
+ * being shown, searchable or in the sitemap. This is the honest answer to a
+ * price that turned out to be wrong: hide it until it is right, rather than
+ * sell at it or destroy the record.
+ */
+export async function setProductPublished(
+  _previous: AdminResult,
+  form: FormData,
+): Promise<AdminResult> {
+  const admin = await requireAdmin("/admin/catalogue");
+  const id = str(form, "productId");
+  const published = str(form, "published") === "true";
+
+  const product = await prisma.product.findUnique({
+    where: { id },
+    select: { name: true, slug: true, published: true },
+  });
+  if (!product) return { ok: false, message: "No such product." };
+  if (product.published === published) {
+    return { ok: true, message: "Nothing changed." };
+  }
+
+  await prisma.product.update({ where: { id }, data: { published } });
+  await recordAdminAction(admin, published ? "product.publish" : "product.withdraw", product.slug, `${product.name} is now ${published ? "on sale" : "withdrawn from the shop"}.`);
+
+  revalidatePath("/admin/catalogue");
+  revalidatePath(`/product/${product.slug}`);
+  revalidatePath("/", "layout");
+  return {
+    ok: true,
+    message: published
+      ? `${product.name} is back on sale.`
+      : `${product.name} is withdrawn. Existing orders are untouched.`,
+  };
+}
+
+/** Whether a product appears on the home page. */
+export async function setProductFeatured(
+  _previous: AdminResult,
+  form: FormData,
+): Promise<AdminResult> {
+  const admin = await requireAdmin("/admin/catalogue");
+  const id = str(form, "productId");
+  const featured = str(form, "featured") === "true";
+
+  const product = await prisma.product.findUnique({
+    where: { id },
+    select: { name: true, slug: true, featured: true },
+  });
+  if (!product) return { ok: false, message: "No such product." };
+  if (product.featured === featured) return { ok: true, message: "Nothing changed." };
+
+  await prisma.product.update({ where: { id }, data: { featured } });
+  await recordAdminAction(admin, featured ? "product.feature" : "product.unfeature", product.slug, `${product.name} ${featured ? "added to" : "removed from"} the home page.`);
+
+  revalidatePath("/admin/catalogue");
+  revalidatePath("/");
+  return { ok: true, message: featured ? "Featured." : "No longer featured." };
+}
+
+// ---------------------------------------------------------------------------
+// Customers
+// ---------------------------------------------------------------------------
+
+/**
+ * Confirm an address by hand.
+ *
+ * The escape hatch for the case the OTP cannot solve: a customer whose code
+ * will not arrive because their mail provider is refusing us, or a colleague
+ * set up before email worked at all. It is recorded loudly, because it is the
+ * one place a person overrides the check that stops licences being delivered
+ * to an address nobody reads.
+ */
+export async function verifyCustomerEmail(
+  _previous: AdminResult,
+  form: FormData,
+): Promise<AdminResult> {
+  const admin = await requireAdmin("/admin/customers");
+  const id = str(form, "userId");
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { email: true, emailVerifiedAt: true },
+  });
+  if (!user) return { ok: false, message: "No such customer." };
+  if (user.emailVerifiedAt) {
+    return { ok: true, message: "That address was already confirmed." };
+  }
+
+  await prisma.user.update({
+    where: { id },
+    data: { emailVerifiedAt: new Date() },
+  });
+  await recordAdminAction(admin, "customer.verify-email", user.email, "Address confirmed by an administrator rather than by a one-time code.");
+
+  revalidatePath(`/admin/customers/${id}`);
+  return { ok: true, message: `${user.email} can now buy.` };
+}
+
+/**
+ * End every session a customer has.
+ *
+ * For the call that starts "I think somebody else is in my account". Sessions
+ * are rows, so revoking them is a delete rather than a flag somebody has to
+ * remember to check — the next request from that browser is signed out.
+ */
+export async function signOutCustomer(
+  _previous: AdminResult,
+  form: FormData,
+): Promise<AdminResult> {
+  const admin = await requireAdmin("/admin/customers");
+  const id = str(form, "userId");
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { email: true },
+  });
+  if (!user) return { ok: false, message: "No such customer." };
+
+  const { count } = await prisma.session.deleteMany({ where: { userId: id } });
+  await recordAdminAction(admin, "customer.sign-out-all", user.email, `${count} session${count === 1 ? "" : "s"} ended by an administrator.`);
+
+  revalidatePath(`/admin/customers/${id}`);
+  return {
+    ok: true,
+    message:
+      count === 0
+        ? "They had no active sessions."
+        : `Ended ${count} session${count === 1 ? "" : "s"}. They will have to sign in again.`,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The outbox
+// ---------------------------------------------------------------------------
+
+/**
+ * Put an abandoned message back in the queue.
+ *
+ * The sweep gives up after six attempts, which is right for a mailbox that is
+ * full and wrong for a provider that was down for an afternoon. This resets
+ * the count so the next sweep tries again — it does not send anything itself,
+ * because sending from a click would bypass the back-off that stops us
+ * hammering an address that keeps refusing.
+ */
+export async function retryNotification(
+  _previous: AdminResult,
+  form: FormData,
+): Promise<AdminResult> {
+  const admin = await requireAdmin("/admin/messages");
+  const id = str(form, "notificationId");
+
+  const message = await prisma.notification.findUnique({
+    where: { id },
+    select: { destination: true, template: true, status: true },
+  });
+  if (!message) return { ok: false, message: "No such message." };
+  if (message.status === "SENT") {
+    return { ok: true, message: "That one already sent." };
+  }
+
+  await prisma.notification.update({
+    where: { id },
+    data: { status: "FAILED", attempts: 0, lastAttemptAt: null, error: null },
+  });
+  await recordAdminAction(admin, "message.retry", message.destination, `${message.template} queued again by an administrator.`);
+
+  revalidatePath("/admin/messages");
+  return {
+    ok: true,
+    message: "Queued. The next sweep will try it — within fifteen minutes.",
+  };
+}
+
+/** Stop trying. For an address that will never accept mail. */
+export async function abandonNotification(
+  _previous: AdminResult,
+  form: FormData,
+): Promise<AdminResult> {
+  const admin = await requireAdmin("/admin/messages");
+  const id = str(form, "notificationId");
+
+  const message = await prisma.notification.findUnique({
+    where: { id },
+    select: { destination: true, template: true },
+  });
+  if (!message) return { ok: false, message: "No such message." };
+
+  await prisma.notification.update({
+    where: { id },
+    data: { status: "ABANDONED" },
+  });
+  await recordAdminAction(admin, "message.abandon", message.destination, `${message.template} given up on by an administrator.`);
+
+  revalidatePath("/admin/messages");
+  return { ok: true, message: "Given up on. Nothing will try it again." };
+}

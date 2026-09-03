@@ -143,6 +143,13 @@ model Product {
 
   featured Boolean @default(false)
 
+  /// Whether the shop shows it. A listing an administrator has taken down —
+  /// a price that turned out to be wrong, a SKU the publisher withdrew —
+  /// disappears from the storefront, its search results and its sitemap, but
+  /// keeps its orders, its slug and its history. Deleting it would take the
+  /// order lines with it and make an old invoice unexplainable.
+  published Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

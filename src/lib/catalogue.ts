@@ -12,6 +12,16 @@ import type { CurrencyCode } from "@/lib/market";
  * back with an empty `prices` array and is treated as not sold there — which is
  * the truth, not an error.
  */
+/**
+ * What the shop is willing to show.
+ *
+ * A withdrawn product keeps its slug, its orders and its history and simply
+ * stops being offered. Every catalogue query composes this rather than
+ * repeating `published: true`, because the one query that forgot it would put
+ * a listing back on sale that somebody deliberately took down.
+ */
+export const ON_SALE = { published: true } as const;
+
 export function productSelect(currency: CurrencyCode) {
   return {
     id: true,
@@ -64,7 +74,7 @@ export function sellableVariants<T extends { prices: unknown[] }>(
 
 export async function getProduct(slug: string, currency: CurrencyCode) {
   return prisma.product.findUnique({
-    where: { slug },
+    where: { slug, ...ON_SALE },
     select: {
       ...productSelect(currency),
       reviews: {
@@ -92,14 +102,14 @@ export async function getCategories() {
 
 export async function getBrands() {
   return prisma.brand.findMany({
-    where: { products: { some: {} } },
+    where: { products: { some: ON_SALE } },
     orderBy: { name: "asc" },
   });
 }
 
 export async function getFeatured(currency: CurrencyCode) {
   return prisma.product.findMany({
-    where: { featured: true },
+    where: { featured: true, ...ON_SALE },
     select: productSelect(currency),
     orderBy: { createdAt: "asc" },
   });
@@ -107,7 +117,7 @@ export async function getFeatured(currency: CurrencyCode) {
 
 export async function getByBrand(slug: string, currency: CurrencyCode, take = 8) {
   return prisma.product.findMany({
-    where: { brand: { slug } },
+    where: { brand: { slug }, ...ON_SALE },
     select: productSelect(currency),
     take,
     orderBy: { createdAt: "asc" },
@@ -120,7 +130,7 @@ export async function getByCategory(
   take = 8,
 ) {
   return prisma.product.findMany({
-    where: { category: { slug } },
+    where: { category: { slug }, ...ON_SALE },
     select: productSelect(currency),
     take,
     orderBy: { createdAt: "asc" },
@@ -153,6 +163,7 @@ export async function browse(filters: BrowseFilters, currency: CurrencyCode) {
 
   const products = await prisma.product.findMany({
     where: {
+      ...ON_SALE,
       AND: [
         filters.category ? { category: { slug: filters.category } } : {},
         filters.brand ? { brand: { slug: filters.brand } } : {},

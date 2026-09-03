@@ -178,3 +178,38 @@ export function PriceForm({
     </form>
   );
 }
+
+/**
+ * A one-field action with a confirmation beneath it.
+ *
+ * Every remaining admin control is the same shape: a hidden identifier, a
+ * button, and a sentence saying what happened. Writing each one separately
+ * produced four copies of the same twenty lines, and the copies drifted.
+ */
+export function ActionForm({
+  action,
+  fields,
+  label,
+  busy,
+  tone = "quiet",
+  note,
+}: {
+  action: (previous: AdminResult, form: FormData) => Promise<AdminResult>;
+  fields: Record<string, string>;
+  label: string;
+  busy: string;
+  tone?: "quiet" | "loud";
+  note?: string;
+}) {
+  const [result, run] = useActionState<AdminResult, FormData>(action, null);
+  return (
+    <form action={run} className="space-y-2">
+      {Object.entries(fields).map(([name, value]) => (
+        <input key={name} type="hidden" name={name} value={value} />
+      ))}
+      <Go label={label} busy={busy} tone={tone} />
+      {note ? <p className="text-[12px] text-muted">{note}</p> : null}
+      <Outcome result={result} />
+    </form>
+  );
+}

@@ -29,6 +29,9 @@ const STATIC_PAGES: [path: string, priority: number][] = [
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, brands, categories] = await Promise.all([
     prisma.product.findMany({
+      // A withdrawn listing 404s, and a sitemap that points at a 404 is a
+      // signal of neglect rather than a helpful hint.
+      where: { published: true },
       select: { slug: true, updatedAt: true },
       orderBy: { slug: "asc" },
     }),
