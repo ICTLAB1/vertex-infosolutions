@@ -24,22 +24,13 @@
  */
 import { MAX_MINOR } from "../src/lib/money";
 
+import { inrShelfPrice, usdShelfPrice } from "./pricing";
+
 import priceList from "./data/microsoft-price-list.json";
 
 import type { SeedProduct, SeedReview } from "./catalogue-types";
 
-/** GST on a software licence in India. Matches `Product.gstRatePercent`. */
-const GST_PERCENT = 18;
-
-/**
- * Rupees to the dollar for the export price.
- *
- * One number, in one place, because it prices the entire Microsoft range.
- * Change it here and reseed; do not scatter it. It is a commercial decision as
- * much as an exchange rate — set it to the rate you actually want to sell at,
- * not to the mid-market rate on the day.
- */
-export const INR_PER_USD = 88;
+export { INR_PER_USD } from "./pricing";
 
 type PriceRow = (typeof priceList)[number];
 
@@ -103,24 +94,6 @@ function slugify(title: string): string {
   const cut = full.slice(0, 72);
   const boundary = cut.lastIndexOf("-");
   return (boundary > 40 ? cut.slice(0, boundary) : cut).replace(/-+$/g, "");
-}
-
-/** Rupees excluding GST, from the paise the price list carries. */
-function exGstRupees(row: PriceRow): number {
-  return row.listExGstMinor / 100;
-}
-
-/** What an Indian buyer pays, tax included. */
-function inrShelfPrice(row: PriceRow): number {
-  return Math.round(exGstRupees(row) * (1 + GST_PERCENT / 100));
-}
-
-/**
- * What an export buyer pays. No GST — the sale is zero-rated — and never less
- * than a dollar, because a rounded-down zero would be a free licence.
- */
-function usdShelfPrice(row: PriceRow): number {
-  return Math.max(1, Math.round(exGstRupees(row) / INR_PER_USD));
 }
 
 /**
@@ -309,8 +282,8 @@ export const MICROSOFT_PRODUCTS: SeedProduct[] = (() => {
   return priceList.flatMap((row): SeedProduct[] => {
     const editorial = EDITORIAL[row.title];
 
-    const inr = inrShelfPrice(row);
-    const usd = usdShelfPrice(row);
+    const inr = inrShelfPrice(row.listExGstMinor);
+    const usd = usdShelfPrice(row.listExGstMinor);
 
     // The seed writes these as paise and cents. Tested before the slug is
     // claimed, so a dropped SKU does not push a suffix onto the next one.

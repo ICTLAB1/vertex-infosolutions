@@ -22,6 +22,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 
 import type { SeedProduct } from "./catalogue-types";
+import { ADOBE_PRODUCTS } from "./adobe";
 import { MICROSOFT_PRODUCTS, MICROSOFT_TOO_LARGE } from "./microsoft";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -99,117 +100,12 @@ const BRANDS = [
 ];
 
 const PRODUCTS: SeedProduct[] = [
-  // The Microsoft range, from the price book rather than from imagination.
+  // Both ranges come from the real price books rather than from imagination.
   ...MICROSOFT_PRODUCTS,
+  ...ADOBE_PRODUCTS,
 
 
   // -------------------------------------------------------------------- Adobe
-  {
-    slug: "adobe-creative-cloud-all-apps-teams",
-    logo: "/logos/adobe/creative-cloud.png",
-    name: "Adobe Creative Cloud for Teams — All Apps",
-    brand: "Adobe",
-    category: "creative",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "Every Creative Cloud application, licensed per seat with an admin console.",
-    bullets: [
-      "All 20+ Creative Cloud desktop and mobile applications",
-      "1 TB of cloud storage per seat",
-      "Admin console for reassigning seats as staff change",
-      "Adobe Expert Services and 24/7 technical support",
-      "Adobe Stock available as an add-on",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per seat",
-      "Minimum term": "12 months",
-      Delivery: "Electronic — seat assigned within one business day",
-      Platform: "Windows, macOS",
-      Reassignable: "Yes, through the admin console",
-    },
-    featured: true,
-    variants: [
-      { sku: "ADB-CCT-ALL-1S", name: "1 seat, 1 year", seats: 1, usd: [900, 840], inr: [66000, 63000] },
-      { sku: "ADB-CCT-ALL-5S", name: "5 seats, 1 year", seats: 5, usd: [4500, 4020], inr: [330000, 299000] },
-      { sku: "ADB-CCT-ALL-10S", name: "10 seats, 1 year", seats: 10, usd: [9000, 7900], inr: [660000, 585000] },
-    ],
-  },
-  {
-    slug: "adobe-creative-cloud-single-app-teams",
-    logo: "/logos/adobe/creative-cloud.png",
-    name: "Adobe Creative Cloud for Teams — Single App",
-    brand: "Adobe",
-    category: "creative",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "One Creative Cloud application of your choice, per seat, with the team admin console.",
-    bullets: [
-      "Choose any one app — Photoshop, Illustrator, Premiere Pro, InDesign, After Effects",
-      "100 GB of cloud storage per seat",
-      "Admin console for reassigning seats",
-      "Tell us which application after checkout",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned within one business day",
-      Platform: "Windows, macOS",
-      Note: "The application is chosen at assignment, not at purchase",
-    },
-    variants: [
-      { sku: "ADB-CCT-SINGLE-1S", name: "1 seat, 1 year", seats: 1, usd: [440, 408], inr: [30500, 28800] },
-      { sku: "ADB-CCT-SINGLE-5S", name: "5 seats, 1 year", seats: 5, usd: [2200, 1950], inr: [152500, 137000] },
-    ],
-  },
-  {
-    slug: "adobe-acrobat-pro-teams",
-    logo: "/logos/adobe/acrobat.svg",
-    name: "Adobe Acrobat Pro for Teams",
-    brand: "Adobe",
-    category: "creative",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "Create, edit, sign and protect PDFs, with e-signature and the admin console.",
-    bullets: [
-      "Edit text and images directly in a PDF",
-      "Collect legally binding e-signatures",
-      "Redact and password-protect documents",
-      "Compare two versions of a document",
-      "Works on desktop, web and mobile",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned within one business day",
-      Platform: "Windows, macOS, web, iOS, Android",
-    },
-    featured: true,
-    variants: [
-      { sku: "ADB-ACRO-PRO-1S", name: "1 seat, 1 year", seats: 1, usd: [239, 215], inr: [18500, 17000] },
-      { sku: "ADB-ACRO-PRO-5S", name: "5 seats, 1 year", seats: 5, usd: [1195, 1040], inr: [92500, 82000] },
-    ],
-  },
-  {
-    slug: "adobe-substance-3d-collection",
-    name: "Adobe Substance 3D Collection",
-    brand: "Adobe",
-    category: "creative",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "The full Substance 3D toolset — Painter, Designer, Sampler, Stager and Modeler.",
-    bullets: [
-      "Substance 3D Painter, Designer, Sampler, Stager and Modeler",
-      "50 assets a month from the Substance 3D Assets library",
-      "100 GB of cloud storage",
-      "Commercial use included",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned within one business day",
-      Platform: "Windows, macOS",
-    },
-    variants: [
-      { sku: "ADB-SUB3D-1S", name: "1 seat, 1 year", seats: 1, usd: [1548, 1428], inr: [112000, 104000] },
-    ],
-  },
 
   // ----------------------------------------------------------------- Autodesk
   {
@@ -358,124 +254,6 @@ const PRODUCTS: SeedProduct[] = [
 
 
   // ------------------------------------------------------ Adobe (continued)
-  {
-    slug: "adobe-photoshop-teams",
-    logo: "/logos/adobe/photoshop.svg",
-    name: "Adobe Photoshop for Teams",
-    brand: "Adobe",
-    category: "creative",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary: "Photoshop on desktop, web and iPad, licensed per seat with the admin console.",
-    bullets: [
-      "Photoshop on desktop, web and iPad",
-      "Generative Fill and the Firefly generative credits",
-      "100 GB of cloud storage per seat",
-      "Admin console for reassigning seats",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned within one business day",
-      Platform: "Windows, macOS, iPadOS, web",
-    },
-    variants: [
-      { sku: "ADB-PS-1S", name: "1 seat, 1 year", seats: 1, usd: [440, 408], inr: [30500, 28800] },
-      { sku: "ADB-PS-5S", name: "5 seats, 1 year", seats: 5, usd: [2200, 1950], inr: [152500, 137000] },
-    ],
-  },
-  {
-    slug: "adobe-illustrator-teams",
-    logo: "/logos/adobe/illustrator.svg",
-    name: "Adobe Illustrator for Teams",
-    brand: "Adobe",
-    category: "creative",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary: "Vector drawing and illustration on desktop, web and iPad, per seat.",
-    bullets: [
-      "Illustrator on desktop, web and iPad",
-      "Generative vector tools",
-      "100 GB of cloud storage per seat",
-      "Admin console for reassigning seats",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned within one business day",
-      Platform: "Windows, macOS, iPadOS, web",
-    },
-    variants: [
-      { sku: "ADB-AI-1S", name: "1 seat, 1 year", seats: 1, usd: [440, 408], inr: [30500, 28800] },
-    ],
-  },
-  {
-    slug: "adobe-premiere-pro-teams",
-    logo: "/logos/adobe/premiere.svg",
-    name: "Adobe Premiere Pro for Teams",
-    brand: "Adobe",
-    category: "creative",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary: "Video editing with Frame.io review built in, licensed per seat.",
-    bullets: [
-      "Premiere Pro with the Frame.io V4 review workflow",
-      "Text-based editing and automatic transcription",
-      "100 GB of cloud storage per seat",
-      "Includes Adobe Media Encoder",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned within one business day",
-      Platform: "Windows, macOS",
-    },
-    variants: [
-      { sku: "ADB-PPRO-1S", name: "1 seat, 1 year", seats: 1, usd: [440, 408], inr: [30500, 28800] },
-    ],
-  },
-  {
-    slug: "adobe-indesign-teams",
-    logo: "/logos/adobe/indesign.svg",
-    name: "Adobe InDesign for Teams",
-    brand: "Adobe",
-    category: "creative",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary: "Page layout for print and digital publishing, licensed per seat.",
-    bullets: [
-      "Long-document layout, styles and master pages",
-      "Print-ready PDF export with preflight",
-      "Interactive and fixed-layout digital publishing",
-      "100 GB of cloud storage per seat",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned within one business day",
-      Platform: "Windows, macOS",
-    },
-    variants: [
-      { sku: "ADB-INDD-1S", name: "1 seat, 1 year", seats: 1, usd: [440, 408], inr: [30500, 28800] },
-    ],
-  },
-  {
-    slug: "adobe-express-teams",
-    logo: "/logos/adobe/express.png",
-    name: "Adobe Express for Teams",
-    brand: "Adobe",
-    category: "creative",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "Quick on-brand design for people who are not designers — templates, brand kits and scheduling.",
-    bullets: [
-      "Templates, brand kits and locked brand controls",
-      "Generative Fill and Text to Image, commercially safe",
-      "Schedule to social channels",
-      "Far cheaper than a Creative Cloud seat for occasional users",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned within one business day",
-      Platform: "Web, iOS, Android",
-    },
-    variants: [
-      { sku: "ADB-EXPR-1S", name: "1 seat, 1 year", seats: 1, usd: [120, 108], inr: [8400, 7700] },
-      { sku: "ADB-EXPR-10S", name: "10 seats, 1 year", seats: 10, usd: [1200, 1020], inr: [84000, 72500] },
-    ],
-  },
 
   // --------------------------------------------------- Autodesk (continued)
   {
@@ -733,7 +511,8 @@ async function main() {
 
   console.log(
     "\nMicrosoft prices come from the September 2026 India price book: list price plus 18% GST for India, and the same figure before GST converted at the rate in microsoft.ts for export.\n" +
-      "Adobe and Autodesk are still sample prices — shaped like real ones, and not real ones. Replace them before taking an order for either.",
+      "Adobe prices come from the VIP channel list dated 6 September 2026, on the same basis, and are the 1-9 seat band.\n" +
+      "Autodesk is still sample prices — shaped like real ones, and not real ones. Replace them before taking an order.",
   );
 }
 

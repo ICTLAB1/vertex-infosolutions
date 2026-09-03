@@ -1,0 +1,512 @@
+[
+  {
+    "partNumber": "30011860CA01A12",
+    "family": "2,000 Monthly Generative Credits for Enterprise",
+    "productType": "Enterprise Hosted Subscription New",
+    "listExGstMinor": 969612
+  },
+  {
+    "partNumber": "30010658CA01A12",
+    "family": "2,000 Monthly Generative Credits for Teams",
+    "productType": "Hosted Subscription",
+    "listExGstMinor": 964614
+  },
+  {
+    "partNumber": "30011902CA01A12",
+    "family": "50,000 Monthly Generative Credits for Enterprise",
+    "productType": "Enterprise Hosted Subscription New",
+    "listExGstMinor": 19399224
+  },
+  {
+    "partNumber": "30011465CA01A12",
+    "family": "50,000 Monthly Generative Credits for Teams",
+    "productType": "Hosted Subscription",
+    "listExGstMinor": 19299228
+  },
+  {
+    "partNumber": "30011881CA01A12",
+    "family": "7,000 Monthly Generative Credits for Enterprise",
+    "productType": "Enterprise Hosted Subscription New",
+    "listExGstMinor": 2908836
+  },
+  {
+    "partNumber": "30010679CA01A12",
+    "family": "7,000 Monthly Generative Credits for Teams",
+    "productType": "Hosted Subscription",
+    "listExGstMinor": 2893842
+  },
+  {
+    "partNumber": "30006210CA01A12",
+    "family": "Acrobat Pro 2024 for Enterprise",
+    "productType": "Term License",
+    "listExGstMinor": 1047600
+  },
+  {
+    "partNumber": "30006344CA01A12",
+    "family": "Acrobat Pro 2024 for teams",
+    "productType": "Term License",
+    "listExGstMinor": 1042200
+  },
+  {
+    "partNumber": "65322650CA01A12",
+    "family": "Acrobat Pro for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 3258036
+  },
+  {
+    "partNumber": "65304470CA01A12",
+    "family": "Acrobat Pro for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 2778042
+  },
+  {
+    "partNumber": "65305595CA01A12",
+    "family": "Acrobat Sign for small business",
+    "productType": "Subscription New",
+    "listExGstMinor": 2430642
+  },
+  {
+    "partNumber": "65322609CA01A12",
+    "family": "Acrobat Sign Solutions for business",
+    "productType": "Subscription New",
+    "listExGstMinor": 4632000
+  },
+  {
+    "partNumber": "65322546CA01A12",
+    "family": "Acrobat Sign Solutions for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6052800
+  },
+  {
+    "partNumber": "65322606CA01A12",
+    "family": "Acrobat Standard for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 2210436
+  },
+  {
+    "partNumber": "65304883CA01A12",
+    "family": "Acrobat Standard for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 1967442
+  },
+  {
+    "partNumber": "30013554CA01A12",
+    "family": "Acrobat Studio for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 4074000
+  },
+  {
+    "partNumber": "30013360CA01A12",
+    "family": "Acrobat Studio for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 3472842
+  },
+  {
+    "partNumber": "65323480CA01A12",
+    "family": "Adobe Express for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 1744836
+  },
+  {
+    "partNumber": "65318385CA01A12",
+    "family": "Adobe Express for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 771228
+  },
+  {
+    "partNumber": "30016962CA01A12",
+    "family": "Adobe Firefly Premium for Teams (50k credits)",
+    "productType": "Hosted Subscription",
+    "listExGstMinor": 19299228
+  },
+  {
+    "partNumber": "30016948CA01A12",
+    "family": "Adobe Firefly Pro for Teams (4k credits)",
+    "productType": "Hosted Subscription",
+    "listExGstMinor": 1929228
+  },
+  {
+    "partNumber": "30016955CA01A12",
+    "family": "Adobe Firefly Pro Plus for Teams (10k credits)",
+    "productType": "Hosted Subscription",
+    "listExGstMinor": 4824228
+  },
+  {
+    "partNumber": "65305241CA01A12",
+    "family": "Adobe Stock for teams (Large)",
+    "productType": "Subscription New",
+    "listExGstMinor": 23158842
+  },
+  {
+    "partNumber": "65305281CA01A12",
+    "family": "Adobe Stock for teams (Other)",
+    "productType": "Subscription New",
+    "listExGstMinor": 9262842
+  },
+  {
+    "partNumber": "65305249CA01A12",
+    "family": "Adobe Stock for teams (Small)",
+    "productType": "Subscription New",
+    "listExGstMinor": 3472842
+  },
+  {
+    "partNumber": "65324837CA01A12",
+    "family": "Adobe XD - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 4538436
+  },
+  {
+    "partNumber": "65305161CA01A12",
+    "family": "Adobe XD for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 2662242
+  },
+  {
+    "partNumber": "65324781CA01A12",
+    "family": "Adobe XD for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 3357042
+  },
+  {
+    "partNumber": "65324818CA01A12",
+    "family": "After Effects - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6168036
+  },
+  {
+    "partNumber": "65304602CA01A12",
+    "family": "After Effects for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 4167642
+  },
+  {
+    "partNumber": "65324932CA01A12",
+    "family": "After Effects for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 4862442
+  },
+  {
+    "partNumber": "30005892CA01A12",
+    "family": "AI Assistant for Acrobat for enterprise",
+    "productType": "Enterprise Hosted Subscription New",
+    "listExGstMinor": 580836
+  },
+  {
+    "partNumber": "30005937CA01A12",
+    "family": "AI Assistant for Acrobat for teams",
+    "productType": "Hosted Subscription",
+    "listExGstMinor": 577842
+  },
+  {
+    "partNumber": "65324917CA01A12",
+    "family": "Animate - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6168036
+  },
+  {
+    "partNumber": "65305519CA01A12",
+    "family": "Animate / Flash Professional for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 4167642
+  },
+  {
+    "partNumber": "65324800CA01A12",
+    "family": "Animate for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 4862442
+  },
+  {
+    "partNumber": "65324892CA01A12",
+    "family": "Audition - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6168036
+  },
+  {
+    "partNumber": "65304480CA01A12",
+    "family": "Audition for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 4167642
+  },
+  {
+    "partNumber": "65324900CA01A12",
+    "family": "Audition for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 4862442
+  },
+  {
+    "partNumber": "65322709CA01A12",
+    "family": "Captivate for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 5865396
+  },
+  {
+    "partNumber": "65304752CA01A12",
+    "family": "Captivate for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 5325642
+  },
+  {
+    "partNumber": "30010417CA01A12",
+    "family": "ColdFusion Ent for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 29682000
+  },
+  {
+    "partNumber": "30010059CA01A12",
+    "family": "ColdFusion Standard for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 7372776
+  },
+  {
+    "partNumber": "65325060CA01A12",
+    "family": "Creative Cloud All Apps - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 15829236
+  },
+  {
+    "partNumber": "65304574CA01A12",
+    "family": "Creative Cloud Pro for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 11121432
+  },
+  {
+    "partNumber": "65304842CA01A12",
+    "family": "Creative Cloud Pro for teams with Adobe Stock",
+    "productType": "Subscription New",
+    "listExGstMinor": 15051684
+  },
+  {
+    "partNumber": "65325079CA01A12",
+    "family": "Creative Cloud Pro Plus for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 12447342
+  },
+  {
+    "partNumber": "65324951CA01A12",
+    "family": "Dimension - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6168036
+  },
+  {
+    "partNumber": "65305445CA01A12",
+    "family": "Dimension for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 4167642
+  },
+  {
+    "partNumber": "65324847CA01A12",
+    "family": "Dimension for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 4862442
+  },
+  {
+    "partNumber": "65324842CA01A12",
+    "family": "Dreamweaver - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6168036
+  },
+  {
+    "partNumber": "65304920CA01A12",
+    "family": "Dreamweaver for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 4167642
+  },
+  {
+    "partNumber": "65324885CA01A12",
+    "family": "Dreamweaver for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 4862442
+  },
+  {
+    "partNumber": "65322702CA01A12",
+    "family": "FrameMaker for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 5818836
+  },
+  {
+    "partNumber": "65305344CA01A12",
+    "family": "FrameMaker for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 5209842
+  },
+  {
+    "partNumber": "65322492CA01A12",
+    "family": "FrameMaker Pub Servr for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 73681200
+  },
+  {
+    "partNumber": "65322520CA01A12",
+    "family": "Fresco for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 3490836
+  },
+  {
+    "partNumber": "65305061CA01A12",
+    "family": "Fresco for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 2314842
+  },
+  {
+    "partNumber": "65324825CA01A12",
+    "family": "Illustrator - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6168036
+  },
+  {
+    "partNumber": "65305188CA01A12",
+    "family": "Illustrator for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 4167642
+  },
+  {
+    "partNumber": "65324914CA01A12",
+    "family": "Illustrator for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 4862442
+  },
+  {
+    "partNumber": "65330678CA01A12",
+    "family": "InCopy - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 1455000
+  },
+  {
+    "partNumber": "65304715CA01A12",
+    "family": "InCopy for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 577842
+  },
+  {
+    "partNumber": "65324908CA01A12",
+    "family": "InCopy for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 1272642
+  },
+  {
+    "partNumber": "65324927CA01A12",
+    "family": "InDesign - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6168036
+  },
+  {
+    "partNumber": "65305415CA01A12",
+    "family": "InDesign for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 4167642
+  },
+  {
+    "partNumber": "65324939CA01A12",
+    "family": "InDesign for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 4862442
+  },
+  {
+    "partNumber": "65324870CA01A12",
+    "family": "Lightroom - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6168036
+  },
+  {
+    "partNumber": "65324816CA01A12",
+    "family": "Lightroom for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 4862442
+  },
+  {
+    "partNumber": "65305307CA01A12",
+    "family": "Lightroom w Classic for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 4167642
+  },
+  {
+    "partNumber": "65324856CA01A12",
+    "family": "Photoshop - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6168036
+  },
+  {
+    "partNumber": "30017519CA01A12",
+    "family": "Photoshop Elements for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 494700
+  },
+  {
+    "partNumber": "65305155CA01A12",
+    "family": "Photoshop for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 4167642
+  },
+  {
+    "partNumber": "65324862CA01A12",
+    "family": "Photoshop for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 4862442
+  },
+  {
+    "partNumber": "65324943CA01A12",
+    "family": "Premiere - Edition 4 for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 6168036
+  },
+  {
+    "partNumber": "30017540CA01A12",
+    "family": "Premiere Elements for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 494700
+  },
+  {
+    "partNumber": "65305364CA01A12",
+    "family": "Premiere for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 4167642
+  },
+  {
+    "partNumber": "65324794CA01A12",
+    "family": "Premiere for teams with Adobe Stock standard assets",
+    "productType": "Subscription New",
+    "listExGstMinor": 4862442
+  },
+  {
+    "partNumber": "65322697CA01A12",
+    "family": "RoboHelp Office for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 5818836
+  },
+  {
+    "partNumber": "65315885CA01A12",
+    "family": "RoboHelp Office for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 5209842
+  },
+  {
+    "partNumber": "65322439CA01A12",
+    "family": "RoboHelp Server for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 46560000
+  },
+  {
+    "partNumber": "65323049CA01A12",
+    "family": "Substance 3D Collection for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 29098836
+  },
+  {
+    "partNumber": "65317572CA01A12",
+    "family": "Substance 3D Collection for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 11578842
+  },
+  {
+    "partNumber": "65322720CA01A12",
+    "family": "Technical Suite for enterprise",
+    "productType": "Subscription New",
+    "listExGstMinor": 10009236
+  },
+  {
+    "partNumber": "65304767CA01A12",
+    "family": "Technical Suite for teams",
+    "productType": "Subscription New",
+    "listExGstMinor": 9262842
+  }
+]
