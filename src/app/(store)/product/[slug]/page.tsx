@@ -8,6 +8,7 @@ import { Assurance } from "@/components/assurance";
 import { BulkQuoteLine } from "@/components/bulk-quote";
 import { TenantNotice } from "@/components/tenant-notice";
 import { deliveryHeadline, deliverySummary } from "@/lib/delivery";
+import { absolute, jsonLd, OG_IMAGE } from "@/lib/seo";
 import { Stars } from "@/components/stars";
 import { getMarket, MAX_QTY } from "@/lib/cart";
 import {
@@ -28,7 +29,36 @@ export async function generateMetadata(
   const market = await getMarket();
   const product = await getProduct(slug, market.currency);
   if (!product) return { title: "Product not found" };
-  return { title: product.name, description: product.summary };
+
+  const price = product.variants.find((v) => v.prices.length > 0)?.prices[0];
+  const priced = price
+    ? ` ${formatMoney(price.priceMinor, market.currency)}${market.domestic ? " incl. GST" : ""}.`
+    : "";
+
+  return {
+    title: product.name,
+    description: `${product.summary}${priced} Genuine licence from an authorised reseller.`,
+    // One canonical per product, without the ?sku= that variant links add —
+    // otherwise every variant is a duplicate of the same page competing with
+    // it. The path carries no currency either: the same product at two prices
+    // is one product.
+    alternates: { canonical: `/product/${slug}` },
+    openGraph: {
+      type: "website",
+      title: product.name,
+      description: product.summary,
+      url: `/product/${slug}`,
+      // Most product logos are SVG, and no social platform renders an SVG
+      // preview — the card comes out blank. Only a raster logo is used; the
+      // rest fall back to the wordmark, which is a picture that actually
+      // appears when somebody pastes a link into WhatsApp or LinkedIn.
+      images: [
+        product.logo && /\.(png|jpe?g|webp)$/i.test(product.logo)
+          ? { url: product.logo, alt: `${product.name} logo` }
+          : OG_IMAGE,
+      ],
+    },
+  };
 }
 
 export default async function ProductPage(props: PageProps<"/product/[slug]">) {
@@ -89,6 +119,35 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
         <span className="px-1.5">›</span>
         <span className="text-ink">{product.name}</span>
       </nav>
+
+      {/* What this page is, for a search engine: a product, its publisher,
+          its SKU, and the one price actually on offer in this market. The
+          price has to be the displayed one — structured data that disagrees
+          with the page is worse than none, and Google checks. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: product.name,
+            description: product.summary,
+            sku: variant.sku,
+            brand: { "@type": "Brand", name: product.brand.name },
+            category: product.category.name,
+            ...(product.logo ? { image: absolute(product.logo) } : {}),
+            offers: {
+              "@type": "Offer",
+              url: absolute(`/product/${product.slug}`),
+              priceCurrency: currency,
+              price: (price.priceMinor / 100).toFixed(2),
+              availability: "https://schema.org/InStock",
+              itemCondition: "https://schema.org/NewCondition",
+              seller: { "@type": "Organization", name: "Vertex Infosolutions" },
+            },
+          }),
+        }}
+      />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,310px)]">
         <div className="self-start rounded-lg border border-line bg-surface p-6">

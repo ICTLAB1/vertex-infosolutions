@@ -86,8 +86,17 @@ function isEnterprise(family: string): boolean {
   return /for enterprise/i.test(family);
 }
 
+/**
+ * Eleven families in the price list already start with "Adobe" — "Adobe
+ * Express for teams", "Adobe Firefly Pro for Teams" — so prefixing blindly
+ * produced "Adobe Adobe Express for teams" and a slug to match.
+ */
+function displayName(family: string): string {
+  return /^adobe\b/i.test(family) ? family : `Adobe ${family}`;
+}
+
 function slugify(family: string): string {
-  const full = `adobe ${family}`
+  const full = displayName(family)
     .toLowerCase()
     .replace(/[’'"]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
@@ -137,7 +146,7 @@ export const ADOBE_PRODUCTS: SeedProduct[] = (() => {
 
     return {
       slug,
-      name: `Adobe ${row.family}`,
+      name: displayName(row.family),
       brand: "Adobe",
       category: categoryFor(row.family),
       term: "ANNUAL_SUBSCRIPTION",

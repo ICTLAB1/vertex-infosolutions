@@ -58,6 +58,17 @@ describe("the Adobe price book", () => {
     }
   });
 
+  it("never says Adobe twice", () => {
+    // Eleven families in the price list already begin with "Adobe" — Express,
+    // Firefly, Stock — and prefixing blindly produced "Adobe Adobe Express for
+    // teams", in the name, the slug and the page title.
+    for (const product of ADOBE_PRODUCTS) {
+      expect(product.name).not.toMatch(/adobe\s+adobe/i);
+      expect(product.slug).not.toMatch(/adobe-adobe/i);
+      expect(product.name).toMatch(/^Adobe /);
+    }
+  });
+
   it("gives every product a distinct slug and every variant a distinct SKU", () => {
     const slugs = ADOBE_PRODUCTS.map((p) => p.slug);
     const skus = ADOBE_PRODUCTS.flatMap((p) => p.variants.map((v) => v.sku));
