@@ -31,6 +31,12 @@ const BADGES: readonly {
     width: 1814,
     height: 788,
   },
+  {
+    src: "/badges/autodesk-reseller.png",
+    alt: "Autodesk Reseller",
+    width: 845,
+    height: 215,
+  },
 ];
 
 export function PartnerBadges({
