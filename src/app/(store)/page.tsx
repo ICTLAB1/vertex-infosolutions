@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+import {
+  BuyWithConfidence,
+  HowItWorks,
+  PaymentMethods,
+  TrustAndSecurity,
+} from "@/components/home-sections";
 import { ProductCard } from "@/components/product-card";
 import { getMarket } from "@/lib/cart";
 import { getBrands, getByBrand, getCategories, getFeatured } from "@/lib/catalogue";
@@ -141,6 +147,11 @@ export default async function HomePage() {
           currency={currency}
           domestic={market.domestic}
         />
+
+        <HowItWorks />
+        <BuyWithConfidence />
+        <TrustAndSecurity />
+        <PaymentMethods currency={currency} />
 
         <section className="mt-6 rounded-lg border border-line bg-surface p-5">
           <h2 className="text-[16px] font-bold text-ink">
