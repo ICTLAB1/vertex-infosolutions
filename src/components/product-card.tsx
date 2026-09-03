@@ -9,6 +9,7 @@ import {
   TERM_LABELS,
   type ListedProduct,
 } from "@/lib/catalogue";
+import { deliveryShort } from "@/lib/delivery";
 import type { CurrencyCode } from "@/lib/market";
 import { discountPercent, formatMoney } from "@/lib/money";
 
@@ -100,9 +101,8 @@ export function ProductCard({
         ) : null}
 
         <div className="mt-auto pt-2 text-[12px]">
-          <p className="text-ok">
-            <span className="font-semibold">Delivered by email</span> — issued on
-            payment
+          <p className="font-semibold text-ok">
+            {deliveryShort(product.cspNewTenant)}
           </p>
         </div>
       </div>

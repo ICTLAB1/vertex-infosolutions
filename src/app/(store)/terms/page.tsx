@@ -95,10 +95,11 @@ export default function TermsPage() {
 
       <H2>4. Delivery</H2>
       <p>
-        Everything is delivered electronically, to the email address you give at
-        checkout, as soon as payment clears. Nothing is shipped, so there is no
-        delivery address, no carrier and no customs. Bank transfer orders are
-        fulfilled once the funds actually clear. Detail in{" "}
+        Everything is delivered electronically, to your account and to the email
+        address you give at checkout, within one business day of payment
+        clearing. Nothing is shipped, so there is no delivery address, no
+        carrier and no customs. Bank transfer orders are fulfilled once the
+        funds actually clear. Detail in{" "}
         <Link href="/delivery" className="text-link underline">
           how delivery works
         </Link>

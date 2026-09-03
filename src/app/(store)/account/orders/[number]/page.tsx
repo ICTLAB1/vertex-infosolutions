@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { Glyph } from "@/components/glyph";
+import { DELIVERY_WINDOW } from "@/lib/delivery";
 import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { countryName, type CurrencyCode } from "@/lib/market";
@@ -83,9 +84,7 @@ export default async function OrderPage(
           className="mt-5 rounded-lg border border-line bg-surface p-4"
         >
           <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line-soft pb-3">
-            <h2 className="text-[16px] font-bold text-ink">
-              Delivered by email
-            </h2>
+            <h2 className="text-[16px] font-bold text-ink">Delivery</h2>
             <span className="rounded-full bg-ground px-3 py-1 text-[13px] font-semibold text-ink">
               {STATUS_LABELS[fulfilment.status] ?? fulfilment.status}
             </span>
@@ -93,8 +92,8 @@ export default async function OrderPage(
 
           <p className="mt-3 text-[14px] text-muted">
             {fulfilment.status === "ISSUED"
-              ? "Your keys are below and have also been emailed to you. Keep them somewhere safe — they are the licence."
-              : "Keys are issued once payment clears."}
+              ? "Your licence details are below and have also been emailed to you. Keep them somewhere safe — they are the licence."
+              : `Issued ${DELIVERY_WINDOW} of payment clearing.`}
           </p>
 
           <ul className="mt-3 divide-y divide-line-soft">

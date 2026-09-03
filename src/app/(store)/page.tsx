@@ -57,8 +57,8 @@ export default async function HomePage() {
           <ul className="grid content-start gap-3 text-sm">
             {[
               {
-                title: "Keys issued on payment",
-                body: "Usually within a minute. No shipment, no waiting on a working day.",
+                title: "Licences within one business day",
+                body: "Posted to your account and emailed to you. Nothing is shipped, so no carrier and no customs.",
               },
               {
                 title: market.domestic

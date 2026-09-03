@@ -122,7 +122,7 @@ const PRODUCTS: SeedProduct[] = [
     specs: {
       "Licence type": "Annual subscription, per seat",
       "Minimum term": "12 months",
-      Delivery: "Electronic — seat assigned on payment",
+      Delivery: "Electronic — seat assigned within one business day",
       Platform: "Windows, macOS",
       Reassignable: "Yes, through the admin console",
     },
@@ -153,7 +153,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned on payment",
+      Delivery: "Electronic — seat assigned within one business day",
       Platform: "Windows, macOS",
       Note: "The application is chosen at assignment, not at purchase",
     },
@@ -179,7 +179,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned on payment",
+      Delivery: "Electronic — seat assigned within one business day",
       Platform: "Windows, macOS, web, iOS, Android",
     },
     featured: true,
@@ -207,7 +207,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned on payment",
+      Delivery: "Electronic — seat assigned within one business day",
       Platform: "Windows, macOS",
     },
     variants: [
@@ -232,7 +232,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows, macOS, web, mobile",
       Reassignable: "Yes, through the Autodesk account portal",
     },
@@ -262,7 +262,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows, macOS, web, mobile",
     },
     variants: [
@@ -285,7 +285,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
     featured: true,
@@ -309,7 +309,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows, macOS",
     },
     variants: [
@@ -333,7 +333,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows, macOS, Linux",
     },
     variants: [
@@ -356,7 +356,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
     variants: [
@@ -381,7 +381,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned on payment",
+      Delivery: "Electronic — seat assigned within one business day",
       Platform: "Windows, macOS, iPadOS, web",
     },
     variants: [
@@ -404,7 +404,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned on payment",
+      Delivery: "Electronic — seat assigned within one business day",
       Platform: "Windows, macOS, iPadOS, web",
     },
     variants: [
@@ -426,7 +426,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned on payment",
+      Delivery: "Electronic — seat assigned within one business day",
       Platform: "Windows, macOS",
     },
     variants: [
@@ -448,7 +448,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned on payment",
+      Delivery: "Electronic — seat assigned within one business day",
       Platform: "Windows, macOS",
     },
     variants: [
@@ -471,7 +471,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, per seat",
-      Delivery: "Electronic — seat assigned on payment",
+      Delivery: "Electronic — seat assigned within one business day",
       Platform: "Web, iOS, Android",
     },
     variants: [
@@ -496,7 +496,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
     variants: [
@@ -518,7 +518,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
     variants: [
@@ -540,7 +540,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
     variants: [
@@ -563,7 +563,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
     featured: true,
@@ -591,7 +591,7 @@ const PRODUCTS: SeedProduct[] = [
     ],
     specs: {
       "Licence type": "Annual subscription, named user",
-      Delivery: "Electronic — assigned on payment",
+      Delivery: "Electronic — assigned within one business day",
       Platform: "Windows",
     },
     variants: [

@@ -371,7 +371,7 @@ export const MICROSOFT_PRODUCTS: SeedProduct[] = (() => {
         Term: "12 months",
         Billing:
           row.billing === "OneTime" ? "Once, for the year" : "Annual, paid up front",
-        Delivery: "Electronic — issued on payment",
+        Delivery: "Electronic — within one business day",
         "Microsoft tenant": "A new tenant is created for this order",
         "Microsoft product ID": row.productId,
         "Microsoft SKU ID": row.skuId,

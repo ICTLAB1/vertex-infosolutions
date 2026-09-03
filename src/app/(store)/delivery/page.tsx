@@ -21,14 +21,23 @@ export default function DeliveryPage() {
 
       <H2>What arrives, and when</H2>
       <p>
-        As soon as the payment confirms, usually within a minute. Two things
-        happen at once: the keys appear on your order page, and the same
-        details are emailed to the address you gave at checkout.
+        Within one business day of the payment confirming. Two things happen
+        together: the details appear on your order page, and the same details
+        are emailed to the address you gave at checkout. An order placed at
+        night or over a weekend is set up on the next working day.
       </p>
       <Ul>
         <li>
-          <strong className="text-ink">Microsoft</strong> — a product key you
-          redeem, or seats added to your Microsoft 365 tenant.
+          <strong className="text-ink">Microsoft subscriptions</strong> — not a
+          product key. We provision a{" "}
+          <strong className="text-ink">new Microsoft tenant</strong> for your
+          order and send you its tenant ID and the global administrator
+          sign-in, which you use to assign the seats. It cannot be added to a
+          Microsoft tenant you already have; see{" "}
+          <Link href="/licensing" className="text-link underline">
+            how licensing works
+          </Link>
+          .
         </li>
         <li>
           <strong className="text-ink">Adobe</strong> — seats assigned to your
@@ -42,8 +51,7 @@ export default function DeliveryPage() {
       <p>
         For Adobe and Autodesk we need the email address of your existing admin
         account, or we create one. If you have not told us at checkout we will
-        ask before assigning — which is the only case where delivery takes
-        longer than a minute.
+        ask before assigning, and the clock starts again from your reply.
       </p>
 
       <H2>If the email has not arrived</H2>

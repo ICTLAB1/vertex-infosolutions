@@ -5,6 +5,7 @@ import { removeFromCart, setQty } from "@/app/actions";
 import { Glyph } from "@/components/glyph";
 import { QtyInput } from "@/components/qty-input";
 import { TenantNotice } from "@/components/tenant-notice";
+import { deliveryShort } from "@/lib/delivery";
 import {
   getCart,
   getMarket,
@@ -202,7 +203,7 @@ function CartRow({
 
         {price ? (
           <p className="mt-1 text-[13px] text-ok">
-            Key emailed on payment
+            {deliveryShort(product.cspNewTenant)}
             {domestic ? " · GST invoice included" : ""}
           </p>
         ) : (

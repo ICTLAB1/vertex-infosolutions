@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { addToCart, buyNow } from "@/app/actions";
 import { Glyph } from "@/components/glyph";
 import { TenantNotice } from "@/components/tenant-notice";
+import { deliveryHeadline, deliverySummary } from "@/lib/delivery";
 import { Stars } from "@/components/stars";
 import { getMarket, MAX_QTY } from "@/lib/cart";
 import {
@@ -290,9 +291,10 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             </p>
 
             <p className="mt-2 text-[13px] text-muted">
-              <span className="font-semibold text-ok">Delivered by email</span>{" "}
-              — the key is issued to your inbox as soon as payment clears,
-              usually within a minute.
+              <span className="font-semibold text-ok">
+                {deliveryHeadline(product.cspNewTenant)}
+              </span>{" "}
+              — {deliverySummary(product.cspNewTenant)}
             </p>
 
             {product.cspNewTenant && <TenantNotice />}
