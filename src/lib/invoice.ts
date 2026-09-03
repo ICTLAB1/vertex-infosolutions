@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/db";
 import type { CurrencyCode } from "@/lib/market";
 import { countryName } from "@/lib/market";
 import {
@@ -8,7 +9,7 @@ import {
   type PdfOp,
   type PdfPage,
 } from "@/lib/pdf";
-import type { SiteConfig } from "@/lib/site";
+import { getSiteConfig, type SiteConfig } from "@/lib/site";
 
 /**
  * The invoice.
@@ -535,3 +536,54 @@ export function invoiceFilename(invoice: Invoice): string {
 
 /** The page frame, exported so the layout tests can check nothing escapes it. */
 export const INVOICE_FRAME = { MARGIN, RIGHT, FLOOR: A4.height - 24 };
+
+// ---------------------------------------------------------------------------
+// Loading one
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the invoice for an order id.
+ *
+ * The single place an order is read for billing, so the confirmation email's
+ * attachment and the customer's download are the same document rather than two
+ * that drifted. Ownership is **not** checked here — the caller does that, and
+ * the download route does it before calling this.
+ */
+export async function invoiceById(orderId: string): Promise<Invoice | null> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: {
+        select: {
+          name: true,
+          variantName: true,
+          sacCode: true,
+          qty: true,
+          seats: true,
+          unitPriceMinor: true,
+        },
+      },
+    },
+  });
+  if (!order) return null;
+  return invoiceFor(order, getSiteConfig());
+}
+
+/**
+ * The invoice as a file to hang on an email.
+ *
+ * Rendered on demand rather than stored, which is what lets a retry days later
+ * send the same document without the outbox carrying a copy of every PDF it
+ * ever sent.
+ */
+export async function invoiceAttachment(
+  orderId: string,
+): Promise<{ filename: string; content: string } | null> {
+  const invoice = await invoiceById(orderId);
+  if (!invoice) return null;
+  return {
+    filename: invoiceFilename(invoice),
+    // Base64: what every mail API takes for an inline attachment.
+    content: Buffer.from(renderInvoice(invoice)).toString("base64"),
+  };
+}

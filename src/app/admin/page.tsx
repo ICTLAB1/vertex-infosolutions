@@ -29,7 +29,10 @@ export default async function AdminHomePage() {
     await Promise.all([
       prisma.order.count({ where: { paymentStatus: "PENDING" } }),
       prisma.order.count({ where: { paidAt: { gte: dayAgo } } }),
-      prisma.notification.count({ where: { status: "FAILED" } }),
+      // Abandoned, not failed: a failed message is one the sweep will try
+      // again. An abandoned one is where retrying stopped, and a person has to
+      // decide what happens next.
+      prisma.notification.count({ where: { status: "ABANDONED" } }),
       prisma.orderItem.count({
         where: {
           licenceKey: { not: null },
@@ -70,9 +73,9 @@ export default async function AdminHomePage() {
         />
         <Count
           href="/admin/activity"
-          label="Messages that failed"
+          label="Messages given up on"
           value={failedMessages}
-          note="Nothing retries these yet."
+          note="Retried until it stopped being worth it. These need a person."
           urgent={failedMessages > 0}
         />
         <Count

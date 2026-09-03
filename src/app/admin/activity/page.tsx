@@ -18,11 +18,16 @@ export const metadata: Metadata = { title: "Activity" };
 export default async function AdminActivityPage() {
   await requireAdmin("/admin/activity");
 
-  const [failed, actions, skipped] = await Promise.all([
+  const [abandoned, retrying, actions, skipped] = await Promise.all([
     prisma.notification.findMany({
-      where: { status: "FAILED" },
+      where: { status: "ABANDONED" },
       orderBy: { createdAt: "desc" },
       take: 50,
+    }),
+    prisma.notification.findMany({
+      where: { status: { in: ["FAILED", "QUEUED"] } },
+      orderBy: { lastAttemptAt: "desc" },
+      take: 20,
     }),
     prisma.adminAction.findMany({ orderBy: { createdAt: "desc" }, take: 50 }),
     prisma.notification.count({ where: { status: "SKIPPED" } }),
@@ -33,19 +38,21 @@ export default async function AdminActivityPage() {
       <h1 className="text-2xl font-bold text-ink">Activity</h1>
 
       <section className="mt-5 rounded-lg border border-line bg-surface p-4">
-        <h2 className="text-[16px] font-bold text-ink">Messages that failed</h2>
+        <h2 className="text-[16px] font-bold text-ink">Messages given up on</h2>
         <p className="mt-1 text-[13px] text-muted">
-          Nothing retries these. A failed licence-key email means a customer has
-          paid and has nothing — the fastest fix is the order page, which can
-          send the keys again.
+          The sweep tried these and stopped — either the provider refused the
+          address outright, or the attempts ran out. Nothing will try again on
+          its own. An abandoned licence-key email means a customer has paid and
+          has nothing: open the order and send the keys again, to a corrected
+          address if that was the problem.
         </p>
-        {failed.length === 0 ? (
+        {abandoned.length === 0 ? (
           <p className="mt-3 text-[14px] text-ok">
-            Nothing has failed. {skipped > 0 ? `${skipped} WhatsApp messages were skipped for want of an opt-in, which is not a failure.` : ""}
+            Nothing has been given up on. {skipped > 0 ? `${skipped} WhatsApp messages were skipped for want of an opt-in, which is not a failure.` : ""}
           </p>
         ) : (
           <ul className="mt-3 divide-y divide-line-soft text-[13px]">
-            {failed.map((message) => (
+            {abandoned.map((message) => (
               <li key={message.id} className="py-2">
                 <div className="flex flex-wrap items-baseline gap-x-3">
                   <span className="font-mono text-[12px] text-faint tabular-nums">
@@ -70,6 +77,37 @@ export default async function AdminActivityPage() {
           </ul>
         )}
       </section>
+
+      {retrying.length > 0 ? (
+        <section className="mt-4 rounded-lg border border-line bg-surface p-4">
+          <h2 className="text-[16px] font-bold text-ink">Still being retried</h2>
+          <p className="mt-1 text-[13px] text-muted">
+            These failed and are waiting their turn. Each attempt waits longer
+            than the last, so nothing here needs doing unless it is still here
+            tomorrow.
+          </p>
+          <ul className="mt-3 divide-y divide-line-soft text-[13px]">
+            {retrying.map((message) => (
+              <li key={message.id} className="flex flex-wrap items-baseline gap-x-3 py-2">
+                <span className="font-mono text-[12px] text-faint tabular-nums">
+                  {(message.lastAttemptAt ?? message.createdAt)
+                    .toISOString()
+                    .slice(0, 16)
+                    .replace("T", " ")}
+                </span>
+                <span className="font-semibold text-ink">{message.template}</span>
+                <span className="text-muted">
+                  {message.channel.toLowerCase()} → {message.destination}
+                </span>
+                <span className="text-warn">
+                  attempt {message.attempts}
+                  {message.error ? `: ${message.error}` : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="mt-4 rounded-lg border border-line bg-surface p-4">
         <h2 className="text-[16px] font-bold text-ink">Changed by hand</h2>

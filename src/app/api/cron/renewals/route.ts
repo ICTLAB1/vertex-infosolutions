@@ -1,7 +1,6 @@
-import { createHash, timingSafeEqual } from "node:crypto";
-
 import { NextResponse } from "next/server";
 
+import { cronGuard } from "@/lib/cron";
 import { sendRenewalReminders } from "@/lib/renewals";
 
 /**
@@ -26,31 +25,9 @@ import { sendRenewalReminders } from "@/lib/renewals";
  */
 export const dynamic = "force-dynamic";
 
-function authorised(request: Request): boolean {
-  const expected = process.env.CRON_SECRET;
-  if (!expected) return false;
-
-  const header =
-    request.headers.get("x-vertex-cron-key") ??
-    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
-    "";
-
-  // Digests rather than the raw values, so the comparison is constant-time and
-  // constant-length — a length mismatch would otherwise leak through
-  // timingSafeEqual, which throws on unequal buffers.
-  const a = createHash("sha256").update(header).digest();
-  const b = createHash("sha256").update(expected).digest();
-  return timingSafeEqual(a, b);
-}
-
 export async function POST(request: Request) {
-  if (!process.env.CRON_SECRET) {
-    console.error("[renewals] CRON_SECRET is not set; the sweep cannot run");
-    return NextResponse.json({ error: "Not configured" }, { status: 503 });
-  }
-  if (!authorised(request)) {
-    return NextResponse.json({ error: "Not authorised" }, { status: 401 });
-  }
+  const refused = cronGuard(request);
+  if (refused) return refused;
 
   try {
     const result = await sendRenewalReminders();

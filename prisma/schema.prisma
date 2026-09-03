@@ -470,6 +470,11 @@ enum NotificationStatus {
   /// The customer has not opted in, or has no number. Recorded rather than
   /// silently dropped, so "why did they not get the WhatsApp" is answerable.
   SKIPPED
+  /// Given up on: the provider refused it in a way retrying cannot fix, or the
+  /// attempts ran out. Distinct from FAILED so that "we will try again" and
+  /// "nobody will try again" are not the same row, and so the sweep does not
+  /// hammer an address that will never accept mail.
+  ABANDONED
 }
 
 /// Every message the store sends, written down before it is sent.
@@ -528,10 +533,16 @@ model Notification {
   attempts  Int       @default(0)
   createdAt DateTime  @default(now())
   sentAt    DateTime?
+  /// When delivery was last tried. Drives the retry back-off, and lets the
+  /// sweep tell a message that is genuinely in flight from one whose process
+  /// died holding it.
+  lastAttemptAt DateTime?
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([status])
   @@index([createdAt])
+  /// Drives the retry sweep: what failed, oldest attempt first.
+  @@index([status, lastAttemptAt])
 }

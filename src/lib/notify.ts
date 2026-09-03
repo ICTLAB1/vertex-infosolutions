@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db";
+import { invoiceAttachment } from "@/lib/invoice";
 import { getSiteConfig } from "@/lib/site";
 
 /**
@@ -60,10 +61,13 @@ function whatsappConfigured(): boolean {
  * manage from a container that may be scaled to zero. Swapping it for SES or
  * SMTP means changing this function and nothing else.
  */
+export type MailAttachment = { filename: string; content: string };
+
 async function sendEmail(
   to: string,
   subject: string,
   body: string,
+  attachments: MailAttachment[] = [],
 ): Promise<{ ok: true; ref: string | null } | { ok: false; error: string }> {
   if (!emailConfigured()) {
     return { ok: false, error: "Email provider not configured" };
@@ -81,6 +85,9 @@ async function sendEmail(
         to: [to],
         subject,
         text: body,
+        // Base64, which is what the API takes. Omitted entirely when there is
+        // nothing to attach rather than sent as an empty array.
+        ...(attachments.length > 0 ? { attachments } : {}),
       }),
     });
 
@@ -286,7 +293,7 @@ export function compose(
           "",
           `Your licence keys are in your account now: ${data.orderUrl}`,
           "",
-          `Your ${data.invoiceKind} is here, as a PDF: ${data.invoiceUrl}`,
+          `Your ${data.invoiceKind} is attached to this email as a PDF, and is on the order page if you need it again: ${data.invoiceUrl}`,
           "",
           "Keep a copy. If a publisher ever needs to confirm the licence is yours, the invoice is what proves it.",
           "",
@@ -396,6 +403,10 @@ export async function notify(
       template,
       subject: message.subject,
       body: message.body,
+      // Stamped at creation, before the send is even attempted, so a process
+      // that dies mid-flight leaves a row the retry sweep can recognise as
+      // stale rather than one it must guess about.
+      lastAttemptAt: new Date(),
     },
   });
 
@@ -403,6 +414,7 @@ export async function notify(
     recipient.email,
     message.subject,
     message.body,
+    await attachmentsFor(template, recipient.orderId),
   );
   await prisma.notification.update({
     where: { id: emailRow.id },
@@ -444,6 +456,7 @@ export async function notify(
       destination: recipient.phone,
       template: message.whatsapp.template,
       body: message.whatsapp.variables.join(" | "),
+      lastAttemptAt: new Date(),
     },
   });
 
@@ -461,6 +474,44 @@ export async function notify(
 
   if (!waResult.ok) {
     console.warn(`[notify] whatsapp ${template} not sent: ${waResult.error}`);
+  }
+}
+
+/**
+ * The raw senders, for the retry sweep.
+ *
+ * `notify` is the way to send something new: it composes the message and
+ * writes the outbox row. A retry has both of those already and needs only the
+ * provider call, so it reaches for these — and gets exactly the same code path
+ * the first attempt used, which is the point.
+ */
+export const deliver = { email: sendEmail, whatsapp: sendWhatsApp };
+
+/**
+ * The files a message carries, worked out from the message rather than stored.
+ *
+ * A confirmation email carries the invoice, because that is the document the
+ * customer's finance team files and an auditor asks for years later, and a
+ * link in an email is not a document — it is a link that needs an account, a
+ * password, and the store still being there.
+ *
+ * Derived on every send, never written to the outbox. That keeps a row small
+ * enough to be worth keeping forever, and it means a retry days later attaches
+ * the same document rather than a stale copy of one. A failure to render is
+ * swallowed: a confirmation that arrives without its invoice is worth far more
+ * than no confirmation at all.
+ */
+export async function attachmentsFor(
+  template: NotifyTemplate,
+  orderId: string | null | undefined,
+): Promise<MailAttachment[]> {
+  if (template !== "order.paid" || !orderId) return [];
+  try {
+    const invoice = await invoiceAttachment(orderId);
+    return invoice ? [invoice] : [];
+  } catch (error) {
+    console.error(`[notify] could not render the invoice for ${orderId}`, error);
+    return [];
   }
 }
 

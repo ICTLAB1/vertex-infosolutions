@@ -1,7 +1,6 @@
 import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { invoiceFilename, invoiceFor, renderInvoice } from "@/lib/invoice";
-import { getSiteConfig } from "@/lib/site";
+import { invoiceById, invoiceFilename, renderInvoice } from "@/lib/invoice";
 
 /**
  * The invoice, as a file.
@@ -30,24 +29,18 @@ export async function GET(
     return new Response("Sign in to download this invoice.", { status: 401 });
   }
 
+  // Ownership first, and on its own: the number alone is six digits, and this
+  // filter is the whole of what stops one customer reading another's invoice.
   const order = await prisma.order.findFirst({
     where: { number, userId: user.id },
-    include: {
-      items: {
-        select: {
-          name: true,
-          variantName: true,
-          sacCode: true,
-          qty: true,
-          seats: true,
-          unitPriceMinor: true,
-        },
-      },
-    },
+    select: { id: true },
   });
   if (!order) return new Response("Not found", { status: 404 });
 
-  const invoice = invoiceFor(order, getSiteConfig());
+  // The same builder the confirmation email attaches, so the document a
+  // customer downloads and the one they were sent cannot drift apart.
+  const invoice = await invoiceById(order.id);
+  if (!invoice) return new Response("Not found", { status: 404 });
   const pdf = renderInvoice(invoice);
 
   return new Response(pdf as BodyInit, {

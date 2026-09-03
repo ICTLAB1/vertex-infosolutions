@@ -94,6 +94,8 @@ src/lib/notify.ts        the outbox: email and WhatsApp, composed and recorded
 src/lib/orders.ts        fulfilOrder — the once-only claim
 src/lib/renewals.ts      licence expiry dates, and the reminder sweep
 src/lib/invoice.ts       the tax invoice and the commercial one
+src/lib/outbox.ts        sending again what failed to send
+src/lib/cron.ts          the shared secret the scheduled endpoints sit behind
 src/lib/pdf.ts           a small PDF writer — two built-in fonts, no library
 src/lib/stripe.ts        client, and the simulated-payment guard
 src/lib/market.ts        market resolution, restricted countries, GSTIN shape
@@ -154,6 +156,18 @@ infra/main.bicep         the whole Azure estate
 - **Anything a person changes by hand is written down.** Who marked an order
   paid, against which bank reference, and what a price was before it changed.
   That question gets asked once, in an argument.
+- **A failed message is retried, and then stopped.** Each attempt waits longer
+  than the last, and after six the message is abandoned rather than retried
+  forever — an address that keeps bouncing is how a sending domain's reputation
+  is destroyed, and that reputation is what gets the next customer's one-time
+  code out of their spam folder. A provider answering 4xx is refusing the
+  request, not having an outage, so that is abandoned at once. `FAILED` and
+  `ABANDONED` are different rows because "we will try again" and "nobody will
+  try again" are different facts.
+- **The invoice is attached, not linked.** A link needs an account, a password
+  and the store still existing in three years. The file is rendered at send
+  time from the order and never stored, so a retry days later attaches the same
+  document without the outbox carrying a copy of every PDF it ever sent.
 - **An invoice is a record, not a query.** Every figure on it is read from the
   order, so a later price change, tax-rate change or renamed product cannot
   rewrite a document already in somebody's files — and it is dated by the
@@ -245,17 +259,19 @@ before writing to it, drop one a release later.
 - [ ] **Get the three WhatsApp templates approved by Meta** before enabling
       WhatsApp — business-initiated messages must use a pre-approved template,
       and sending an unapproved one just fails.
-- [ ] **Set `CRON_SECRET` and schedule the renewal sweep.** Five pages promise
-      a reminder a month before a subscription expires; `POST /api/cron/renewals`
-      is what sends it, and nothing calls it on its own. A Logic App recurrence,
-      a Container Apps job or any daily `curl` with the secret in the
-      `x-vertex-cron-key` header will do. Without the schedule the promise is
-      copy, not behaviour.
+- [ ] **Set `CRON_SECRET` and schedule the two sweeps.** `POST /api/cron/renewals`
+      daily sends the reminder five pages promise a month before expiry;
+      `POST /api/cron/notifications` every fifteen minutes sends again what
+      failed to send. Nothing calls either on its own — a Logic App recurrence,
+      a Container Apps job or any `curl` with the secret in the
+      `x-vertex-cron-key` header will do. Without the schedules the reminder is
+      copy rather than behaviour, and a bounced licence-key email stays
+      bounced.
 - [ ] **Set `ADMIN_EMAILS`.** Nobody can reach `/admin` until you do, which
       means nobody can record a bank transfer or re-send a customer's keys.
-- [ ] Add a retry sweep over `Notification` rows left `FAILED`. They are
-      recorded and listed at `/admin/activity`, but nothing retries them — the
-      fix today is to open the order and send the keys again.
+- [ ] Let an administrator correct the address on an abandoned message and
+      send it there. Today a message given up on because the address was wrong
+      needs the customer to fix their account first.
 - [ ] Rate-limit sign-in by IP as well as by account.
 - [ ] **Confirm the GST treatment with your accountant.** The store charges
       18% GST on Indian sales and treats everything else as a zero-rated export
@@ -277,9 +293,9 @@ before writing to it, drop one a release later.
       nothing about a licence that has already expired — "expires in -3 days"
       is worse than silence — so a licence that slipped past while the schedule
       was down is visible in the account and nowhere else.
-- [ ] Attach the invoice PDF to the confirmation email. It is generated and
-      linked from the email and the order page; Resend takes attachments and
-      wiring one up is the remaining step.
+- [ ] Consider attaching the invoice to the bank-transfer confirmation too.
+      Today only the paid confirmation carries one, because an unpaid order has
+      nothing to prove.
 - [ ] Automate seat assignment with the publishers' partner APIs. Keys are
       currently generated locally as placeholders, not redeemed from
       Microsoft, Adobe or Autodesk.
