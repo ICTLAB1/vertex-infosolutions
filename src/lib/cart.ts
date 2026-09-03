@@ -196,8 +196,10 @@ export function totalsFor(lines: CartLine[], market: Market): CartTotals {
 }
 
 /**
- * A seat count is a commercial decision, not a shelf. Ten of a SKU is the cap
- * here; beyond that a buyer wants a volume agreement and a quotation, and the
- * cart says so rather than silently accepting forty.
+ * A ceiling rather than a shelf: nothing here is stock, so the only reason to
+ * cap a line at all is to keep a typo from becoming an order. Licences sell in
+ * seat counts — fifty of a Microsoft 365 SKU is an ordinary purchase, not an
+ * exception — so the cap sits far above any real order and the volume-quote
+ * offer stays as an invitation rather than a gate.
  */
-export const MAX_QTY = 10;
+export const MAX_QTY = 999;

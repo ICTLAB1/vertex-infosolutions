@@ -303,19 +303,22 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
                 >
                   Quantity
                 </label>
-                <select
+                <input
                   id="qty"
                   name="qty"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={MAX_QTY}
+                  step={1}
                   defaultValue="1"
-                  className="w-full rounded-md border border-line bg-ground/50 px-3 py-2 text-[14px]"
-                >
-                  {Array.from({ length: MAX_QTY }, (_, i) => i + 1).map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                      {variant.seats > 1 ? ` × ${variant.seats} seats` : ""}
-                    </option>
-                  ))}
-                </select>
+                  className="w-full rounded-md border border-line bg-ground/50 px-3 py-2 text-[14px] tabular-nums"
+                />
+                {variant.seats > 1 && (
+                  <p className="text-[12px] text-muted">
+                    Each licence covers {variant.seats} seats.
+                  </p>
+                )}
                 <button
                   type="submit"
                   className="btn-amber w-full rounded-full py-2.5 text-[15px] font-semibold"
@@ -337,11 +340,13 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             </div>
 
             <p className="mt-3 rounded-md border border-line bg-ground/50 p-2.5 text-[12px] text-muted">
-              Need more than {MAX_QTY} of this?{" "}
+              Buying for a whole team?{" "}
               <Link href="/contact" className="text-link underline">
                 Ask for a volume quote
               </Link>{" "}
-              — the price is better and the licensing is cleaner.
+              — on larger seat counts the price is better and the licensing is
+              cleaner. Orders of up to {MAX_QTY} go through the basket as they
+              are.
             </p>
 
             <dl className="mt-4 space-y-1.5 border-t border-line-soft pt-3 text-[13px]">

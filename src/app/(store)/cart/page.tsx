@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { removeFromCart, setQty } from "@/app/actions";
 import { Glyph } from "@/components/glyph";
-import { QtySelect } from "@/components/qty-select";
+import { QtyInput } from "@/components/qty-input";
 import {
   getCart,
   getMarket,
@@ -200,7 +200,7 @@ function CartRow({
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <form action={setQty} className="flex items-center gap-2">
             <input type="hidden" name="itemId" value={line.id} />
-            <QtySelect
+            <QtyInput
               id={`qty-${line.id}`}
               name="qty"
               defaultValue={line.qty}
