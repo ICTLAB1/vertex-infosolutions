@@ -6,6 +6,7 @@ import {
   PaymentMethods,
   TrustAndSecurity,
 } from "@/components/home-sections";
+import { BulkQuoteBanner } from "@/components/bulk-quote";
 import { ProductCard } from "@/components/product-card";
 import { getMarket } from "@/lib/cart";
 import { getBrands, getByBrand, getCategories, getFeatured } from "@/lib/catalogue";
@@ -147,6 +148,8 @@ export default async function HomePage() {
           currency={currency}
           domestic={market.domestic}
         />
+
+        <BulkQuoteBanner className="reveal mt-6" />
 
         <HowItWorks />
         <BuyWithConfidence />

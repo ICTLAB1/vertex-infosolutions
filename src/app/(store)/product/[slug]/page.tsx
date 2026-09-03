@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { addToCart, buyNow } from "@/app/actions";
 import { ProductImage } from "@/components/product-image";
 import { Assurance } from "@/components/assurance";
+import { BulkQuoteLine } from "@/components/bulk-quote";
 import { TenantNotice } from "@/components/tenant-notice";
 import { deliveryHeadline, deliverySummary } from "@/lib/delivery";
 import { Stars } from "@/components/stars";
@@ -362,15 +363,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               </form>
             </div>
 
-            <p className="mt-3 rounded-md border border-line bg-ground/50 p-2.5 text-[12px] text-muted">
-              Buying for a whole team?{" "}
-              <Link href="/contact" className="text-link underline">
-                Ask for a volume quote
-              </Link>{" "}
-              — on larger seat counts the price is better and the licensing is
-              cleaner. Orders of up to {MAX_QTY} go through the basket as they
-              are.
-            </p>
+            <BulkQuoteLine className="mt-3" />
 
             <dl className="mt-4 space-y-1.5 border-t border-line-soft pt-3 text-[13px]">
               <div className="flex gap-2">

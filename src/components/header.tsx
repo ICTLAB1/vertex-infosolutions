@@ -67,7 +67,7 @@ export async function Header() {
               so a total cannot change under the customer. */}
           <form
             action={setMarket}
-            className="hidden shrink-0 items-center gap-1.5 rounded px-2 py-1 lg:flex"
+            className="flex shrink-0 items-center gap-1.5 rounded px-1.5 py-1 sm:px-2"
           >
             <svg
               viewBox="0 0 20 20"
@@ -90,7 +90,9 @@ export async function Header() {
               />
             </svg>
             <span className="leading-tight">
-              <span className="block text-[11px] text-white/60">
+              {/* The caption is the first thing to go on a narrow screen; the
+                  value and the globe beside it carry the meaning on their own. */}
+              <span className="hidden text-[11px] text-white/60 sm:block">
                 {locked ? "Priced in" : "Prices in"}
               </span>
               {locked ? (
@@ -103,7 +105,7 @@ export async function Header() {
                 <CurrencySelect
                   id="header-currency"
                   value={market.currency}
-                  className="-ml-1 max-w-[12rem] bg-transparent text-[13px] font-semibold text-white outline-none [&>option]:text-ink"
+                  className="-ml-1 max-w-[7.5rem] bg-transparent text-[13px] font-semibold text-white outline-none sm:max-w-[12rem] [&>option]:text-ink"
                 />
               )}
             </span>

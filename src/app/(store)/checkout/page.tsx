@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { CheckoutForm } from "@/components/checkout-form";
 import { TenantNotice } from "@/components/tenant-notice";
+import { BulkQuoteLine } from "@/components/bulk-quote";
 import { getUser } from "@/lib/auth";
 import { getCart, getMarket, totalsFor } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
@@ -76,6 +77,8 @@ export default async function CheckoutPage() {
         {cart.items.some((line) => line.variant.product.cspNewTenant) && (
           <TenantNotice />
         )}
+
+        <BulkQuoteLine className="mt-3" />
 
         <dl className="mt-3 space-y-1 border-t border-line-soft pt-3 text-[14px]">
           {market.domestic ? (

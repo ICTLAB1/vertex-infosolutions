@@ -1,5 +1,6 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { PartnerStrip } from "@/components/partner-badges";
 
 /**
  * The storefront's own frame.
@@ -27,6 +28,7 @@ export default function StoreLayout({
       </a>
       <span id="top" />
       <Header />
+      <PartnerStrip />
       <main id="main" className="flex-1">
         {children}
       </main>

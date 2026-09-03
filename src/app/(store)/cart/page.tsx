@@ -5,6 +5,7 @@ import { removeFromCart, setQty } from "@/app/actions";
 import { Glyph } from "@/components/glyph";
 import { QtyInput } from "@/components/qty-input";
 import { TenantNotice } from "@/components/tenant-notice";
+import { BulkQuoteBanner } from "@/components/bulk-quote";
 import { deliveryShort } from "@/lib/delivery";
 import {
   getCart,
@@ -142,6 +143,8 @@ export default async function CartPage() {
                 Proceed to checkout
               </Link>
             )}
+
+            <BulkQuoteBanner className="mt-4" />
 
             <p className="mt-2 text-center text-[12px] text-faint">
               Card details are entered on the payment provider&apos;s own page.
