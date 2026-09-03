@@ -12,8 +12,20 @@ import Link from "next/link";
  * and on the home page rather than once in a policy.
  */
 
-const HREF = "/contact?about=bulk";
 const THRESHOLD = 10;
+
+/**
+ * Where the invitation leads.
+ *
+ * `about=bulk` opens the contact form already set to a volume quote, and the
+ * slug — when we know which product somebody was looking at — arrives with it,
+ * so the first reply can be a price rather than a question.
+ */
+function href(productSlug?: string): string {
+  return productSlug
+    ? `/contact?about=bulk&product=${encodeURIComponent(productSlug)}`
+    : "/contact?about=bulk";
+}
 
 /** Full-width panel, for the home page and the basket. */
 export function BulkQuoteBanner({ className = "" }: { className?: string }) {
@@ -32,7 +44,7 @@ export function BulkQuoteBanner({ className = "" }: { className?: string }) {
         </p>
       </div>
       <Link
-        href={HREF}
+        href={href()}
         className="btn-amber shrink-0 rounded-full px-4 py-2 text-[14px] font-semibold transition-transform hover:-translate-y-0.5"
       >
         Get a discounted quote
@@ -42,7 +54,13 @@ export function BulkQuoteBanner({ className = "" }: { className?: string }) {
 }
 
 /** One line, for a product page or a checkout summary. */
-export function BulkQuoteLine({ className = "" }: { className?: string }) {
+export function BulkQuoteLine({
+  className = "",
+  productSlug,
+}: {
+  className?: string;
+  productSlug?: string;
+}) {
   return (
     <p
       className={`rounded-md border border-line bg-ground/50 p-2.5 text-[12px] text-muted ${className}`}
@@ -50,7 +68,7 @@ export function BulkQuoteLine({ className = "" }: { className?: string }) {
       <span className="font-semibold text-ink">
         Need {THRESHOLD} or more?
       </span>{" "}
-      <Link href={HREF} className="text-link underline">
+      <Link href={href(productSlug)} className="text-link underline">
         Get a discounted quote
       </Link>{" "}
       — volume pricing is lower than the shelf price, and the licensing is

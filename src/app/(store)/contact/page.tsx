@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { pageMetadata } from "@/lib/seo";
+import { ContactForm } from "@/components/contact-form";
 import { H2, PolicyPage, Ul } from "@/components/policy";
 import { getSiteConfig } from "@/lib/site";
 
@@ -12,15 +13,54 @@ export const metadata: Metadata = pageMetadata({
   path: "/contact",
 });
 
-export default function ContactPage() {
+/**
+ * Which of the three enquiry kinds the form should open on.
+ *
+ * The shop invites a volume quote from four places, and all of them link here
+ * with `?about=bulk`. Arriving on a form already set to the thing you clicked
+ * is the difference between answering a question and filling in a form.
+ */
+function kindFrom(about: string | string[] | undefined): string {
+  const value = Array.isArray(about) ? about[0] : about;
+  switch (value) {
+    case "bulk":
+    case "quote":
+    case "volume":
+      return "VOLUME_QUOTE";
+    case "licensing":
+      return "LICENSING";
+    default:
+      return "GENERAL";
+  }
+}
+
+function first(value: string | string[] | undefined): string | undefined {
+  const found = Array.isArray(value) ? value[0] : value;
+  return found && found.length > 0 ? found : undefined;
+}
+
+export default async function ContactPage(props: PageProps<"/contact">) {
   const config = getSiteConfig();
+  const params = await props.searchParams;
+  const kind = kindFrom(params.about);
+  const productSlug = first(params.product);
 
   return (
-    <PolicyPage title="Contact & complaints" updated="2 September 2026">
+    <PolicyPage title="Contact & complaints" updated="3 September 2026">
       <p>
         A cross-border buyer cannot walk into the shop, so here is everything
         needed to reach a person, and what to expect when you do.
       </p>
+
+      <H2>
+        {kind === "VOLUME_QUOTE" ? "Ask for a volume quote" : "Send us a message"}
+      </H2>
+      <p>
+        {kind === "VOLUME_QUOTE"
+          ? "Tell us the product and how many seats. Volume pricing is lower than the price on the shelf, and we will come back with a figure rather than a brochure."
+          : "This reaches the same people as the email address below, and it is recorded here whether or not the email gets through. You will get an acknowledgement to the address you give."}
+      </p>
+      <ContactForm defaultKind={kind} productSlug={productSlug} />
 
       <H2>Who we are</H2>
       <div className="rounded-md border border-line bg-ground/50 p-4 text-ink">
@@ -42,7 +82,7 @@ export default function ContactPage() {
         </p>
       </div>
 
-      <H2>Getting in touch</H2>
+      <H2>Getting in touch another way</H2>
       <Ul>
         {config.supportEmail ? (
           <li>
@@ -53,7 +93,7 @@ export default function ContactPage() {
             >
               {config.supportEmail}
             </a>{" "}
-            — the fastest route, and the one that leaves a record.
+            — if you would rather keep the thread in your own mailbox.
           </li>
         ) : null}
         {config.supportPhone ? (
@@ -65,7 +105,7 @@ export default function ContactPage() {
       </Ul>
       <p>
         Hours are given in UTC as well as local time because most of our
-        customers are in another timezone. An email sent outside those hours is
+        customers are in another timezone. A message sent outside those hours is
         answered the next working morning, not days later.
       </p>
 
@@ -75,8 +115,8 @@ export default function ContactPage() {
         <li>The email address the order was placed with.</li>
         <li>What went wrong, and what you would like done about it.</li>
         <li>
-          Photographs, if something arrived damaged — of the packaging as well as
-          the item, because the carrier claim needs both.
+          For a quote: the product, the seat count, and the term you want it
+          for.
         </li>
       </Ul>
 
@@ -84,9 +124,9 @@ export default function ContactPage() {
       <Ul>
         <li>Acknowledgement within one business day.</li>
         <li>
-          A substantive answer within three business days. Where a claim depends
-          on a carrier investigation it takes longer, and we will tell you that
-          rather than go quiet.
+          A substantive answer within three business days. Where an answer
+          depends on the publisher — a licensing transfer, a volume band — it
+          takes longer, and we will tell you that rather than go quiet.
         </li>
         <li>Resolution of a complaint within 30 days.</li>
       </Ul>

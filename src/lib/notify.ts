@@ -31,7 +31,9 @@ export type NotifyTemplate =
   | "order.paid"
   | "order.keys"
   | "order.pending"
-  | "licence.expiring";
+  | "licence.expiring"
+  | "enquiry.received"
+  | "enquiry.acknowledged";
 
 type Recipient = {
   userId?: string | null;
@@ -353,6 +355,50 @@ export function compose(
         ].join("\n"),
         // Deliberately email-only. A key forwarded in a chat is somebody
         // else's licence.
+      };
+
+    // To us, not to the customer. The one message in this file whose reader is
+    // the shop rather than the person who wrote it.
+    case "enquiry.received":
+      return {
+        subject: `${data.kindLabel} from ${data.name}${data.company ? ` (${data.company})` : ""}`,
+        body: [
+          `${data.kindLabel} received.`,
+          "",
+          `From:    ${data.name} <${data.email}>`,
+          // Only the optional rows are dropped when empty. Filtering the whole
+          // list would take the blank separators with it and run the header
+          // into the message.
+          ...[
+            data.company ? `Company: ${data.company}` : "",
+            data.phone ? `Phone:   ${data.phone}` : "",
+            data.market ? `Market:  ${data.market}` : "",
+            data.productSlug ? `About:   ${data.productSlug}` : "",
+          ].filter(Boolean),
+          "",
+          data.message,
+          "",
+          `Reply to them directly at ${data.email}, and mark it dealt with at ${data.adminUrl}`,
+        ].join("\n"),
+      };
+
+    // To the customer, so a question does not vanish into silence.
+    case "enquiry.acknowledged":
+      return {
+        subject: `We have your ${data.kindLabel.toLowerCase()}`,
+        body: [
+          `Hello ${data.name},`,
+          "",
+          "Thank you — your message reached us and a person will read it. We answer within one business day.",
+          "",
+          "What you sent:",
+          "",
+          data.message,
+          "",
+          `If you need to add anything, reply to this email rather than sending it again — it comes to the same place.`,
+          "",
+          `— ${brand}`,
+        ].join("\n"),
       };
 
     case "licence.expiring":

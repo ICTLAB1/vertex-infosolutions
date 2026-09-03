@@ -408,3 +408,76 @@ export async function abandonNotification(
   revalidatePath("/admin/messages");
   return { ok: true, message: "Given up on. Nothing will try it again." };
 }
+
+/**
+ * Close an enquiry.
+ *
+ * The note is the point, not the flag. Six weeks later the question is never
+ * "was this handled?" — the timestamp answers that — it is "what did we tell
+ * them?", and the only place that answer exists is whatever the person who
+ * replied wrote here.
+ */
+export async function markEnquiryHandled(
+  _previous: AdminResult,
+  form: FormData,
+): Promise<AdminResult> {
+  const admin = await requireAdmin("/admin/enquiries");
+  const id = str(form, "enquiryId");
+  const note = str(form, "note");
+
+  const enquiry = await prisma.enquiry.findUnique({
+    where: { id },
+    select: { email: true, kind: true, handledAt: true },
+  });
+  if (!enquiry) return { ok: false, message: "No such enquiry." };
+  if (enquiry.handledAt) {
+    return { ok: true, message: "Somebody had already dealt with that one." };
+  }
+
+  await prisma.enquiry.update({
+    where: { id },
+    data: {
+      handledAt: new Date(),
+      handledBy: admin.email,
+      handledNote: note.slice(0, 2000) || null,
+    },
+  });
+  await recordAdminAction(
+    admin,
+    "enquiry.handled",
+    enquiry.email,
+    note ? `${enquiry.kind} closed: ${note}` : `${enquiry.kind} closed with no note.`,
+  );
+
+  revalidatePath("/admin/enquiries");
+  return { ok: true, message: "Closed." };
+}
+
+/** Put one back on the pile, for an answer that turned out not to be one. */
+export async function reopenEnquiry(
+  _previous: AdminResult,
+  form: FormData,
+): Promise<AdminResult> {
+  const admin = await requireAdmin("/admin/enquiries");
+  const id = str(form, "enquiryId");
+
+  const enquiry = await prisma.enquiry.findUnique({
+    where: { id },
+    select: { email: true },
+  });
+  if (!enquiry) return { ok: false, message: "No such enquiry." };
+
+  await prisma.enquiry.update({
+    where: { id },
+    data: { handledAt: null, handledBy: null, handledNote: null },
+  });
+  await recordAdminAction(
+    admin,
+    "enquiry.reopen",
+    enquiry.email,
+    "Reopened by an administrator.",
+  );
+
+  revalidatePath("/admin/enquiries");
+  return { ok: true, message: "Back on the open list." };
+}

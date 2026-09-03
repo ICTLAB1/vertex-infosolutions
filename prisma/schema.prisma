@@ -564,6 +564,61 @@ model AdminAction {
   @@index([subject])
 }
 
+/// What somebody asked before they bought anything.
+///
+/// The shop invites a quote on five surfaces — every product page, the basket,
+/// the checkout and the home page — and until now every one of those led to a
+/// `mailto:` link. That is an enquiry that exists only if the sender's mail
+/// client works, that nobody can search, and that has no answer to "did we
+/// reply to that?". This is the row behind those buttons.
+///
+/// Kept even after it is dealt with. A quote somebody asked for in March is
+/// what explains the price they were given in April.
+model Enquiry {
+  id String @id @default(cuid())
+
+  kind EnquiryKind @default(GENERAL)
+
+  name    String
+  email   String
+  company String?
+  phone   String?
+  message String
+
+  /// What they were looking at, when they asked from a product page.
+  productSlug String?
+
+  /// The market the enquiry came from, so a quote is written in the right
+  /// currency without having to ask.
+  currency String? @db.Char(3)
+  country  String? @db.Char(2)
+
+  /// The caller's address as the edge reported it. Held only to rate-limit the
+  /// form — a public form with no limit is somebody else's mailing list — and
+  /// never shown beside the enquiry, because it identifies a person who has
+  /// done nothing wrong.
+  ip String?
+
+  /// Set when somebody has dealt with it, and by whom.
+  handledAt    DateTime?
+  handledBy    String?
+  /// What was done about it. The answer to "did we reply to that?".
+  handledNote  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([handledAt, createdAt])
+  @@index([ip, createdAt])
+  @@index([email])
+}
+
+enum EnquiryKind {
+  GENERAL
+  /// Ten or more seats: the price is lower and the cart cannot yet charge it.
+  VOLUME_QUOTE
+  LICENSING
+}
+
 model Notification {
   id      String              @id @default(cuid())
   userId  String?

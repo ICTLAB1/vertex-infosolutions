@@ -452,7 +452,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               </form>
             </div>
 
-            <BulkQuoteLine className="mt-3" />
+            <BulkQuoteLine className="mt-3" productSlug={product.slug} />
 
             <dl className="mt-4 space-y-1.5 border-t border-line-soft pt-3 text-[13px]">
               <div className="flex gap-2">

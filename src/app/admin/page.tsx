@@ -25,36 +25,44 @@ export default async function AdminHomePage() {
   const renewBy = new Date();
   renewBy.setUTCDate(renewBy.getUTCDate() + REMIND_DAYS_AHEAD);
 
-  const [awaiting, paidToday, failedMessages, expiring, unverified, recent] =
-    await Promise.all([
-      prisma.order.count({ where: { paymentStatus: "PENDING" } }),
-      prisma.order.count({ where: { paidAt: { gte: dayAgo } } }),
-      // Abandoned, not failed: a failed message is one the sweep will try
-      // again. An abandoned one is where retrying stopped, and a person has to
-      // decide what happens next.
-      prisma.notification.count({ where: { status: "ABANDONED" } }),
-      prisma.orderItem.count({
-        where: {
-          licenceKey: { not: null },
-          expiresAt: { not: null, lte: renewBy },
-          renewalRemindedAt: null,
-        },
-      }),
-      prisma.user.count({ where: { emailVerifiedAt: null } }),
-      prisma.order.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 8,
-        select: {
-          number: true,
-          createdAt: true,
-          email: true,
-          currency: true,
-          totalMinor: true,
-          paymentStatus: true,
-          country: true,
-        },
-      }),
-    ]);
+  const [
+    awaiting,
+    paidToday,
+    failedMessages,
+    expiring,
+    unverified,
+    openEnquiries,
+    recent,
+  ] = await Promise.all([
+    prisma.order.count({ where: { paymentStatus: "PENDING" } }),
+    prisma.order.count({ where: { paidAt: { gte: dayAgo } } }),
+    // Abandoned, not failed: a failed message is one the sweep will try
+    // again. An abandoned one is where retrying stopped, and a person has to
+    // decide what happens next.
+    prisma.notification.count({ where: { status: "ABANDONED" } }),
+    prisma.orderItem.count({
+      where: {
+        licenceKey: { not: null },
+        expiresAt: { not: null, lte: renewBy },
+        renewalRemindedAt: null,
+      },
+    }),
+    prisma.user.count({ where: { emailVerifiedAt: null } }),
+    prisma.enquiry.count({ where: { handledAt: null } }),
+    prisma.order.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      select: {
+        number: true,
+        createdAt: true,
+        email: true,
+        currency: true,
+        totalMinor: true,
+        paymentStatus: true,
+        country: true,
+      },
+    }),
+  ]);
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-6">
@@ -63,7 +71,7 @@ export default async function AdminHomePage() {
         Everything below is something waiting on a person.
       </p>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Count
           href="/admin/orders?status=PENDING"
           label="Awaiting payment"
@@ -77,6 +85,13 @@ export default async function AdminHomePage() {
           value={failedMessages}
           note="Retried until it stopped being worth it. These need a person."
           urgent={failedMessages > 0}
+        />
+        <Count
+          href="/admin/enquiries"
+          label="Enquiries waiting"
+          value={openEnquiries}
+          note="Questions and quote requests nobody has answered."
+          urgent={openEnquiries > 0}
         />
         <Count
           href="/admin/orders?status=PAID"

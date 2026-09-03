@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
 import {
+  markEnquiryHandled,
   markPaymentReceived,
   resendKeys,
   resendPaymentInstructions,
@@ -209,6 +210,39 @@ export function ActionForm({
       ))}
       <Go label={label} busy={busy} tone={tone} />
       {note ? <p className="text-[12px] text-muted">{note}</p> : null}
+      <Outcome result={result} />
+    </form>
+  );
+}
+
+/**
+ * Closing an enquiry, with what was said about it.
+ *
+ * The note is optional in the action and prompted for here, because the
+ * cheapest moment to write down what you told somebody is the moment you told
+ * them. It is the only record of the answer — the reply itself went out of a
+ * mailbox this shop cannot see.
+ */
+export function HandleEnquiryForm({ enquiryId }: { enquiryId: string }) {
+  const [result, run] = useActionState<AdminResult, FormData>(
+    markEnquiryHandled,
+    null,
+  );
+
+  return (
+    <form action={run} className="mt-3 space-y-2">
+      <input type="hidden" name="enquiryId" value={enquiryId} />
+      <label className="block">
+        <span className="block text-[12px] font-semibold text-muted">
+          What did we tell them?
+        </span>
+        <input
+          name="note"
+          placeholder="Quoted 25 seats at $X, sent 3 Sept."
+          className="mt-1 w-full rounded-md border border-line bg-white px-3 py-1.5 text-[13px]"
+        />
+      </label>
+      <Go label="Mark handled" busy="Saving…" />
       <Outcome result={result} />
     </form>
   );

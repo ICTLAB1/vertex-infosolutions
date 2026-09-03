@@ -104,7 +104,9 @@ src/lib/cart.ts          basket, and the one function that computes what is owed
 src/lib/site.ts          who the seller legally is; warns when unconfigured
 src/lib/admin.ts         who may run the store, and the record of what they did
 src/lib/rate-limit.ts    slowing down somebody guessing passwords
+src/lib/enquiries.ts     questions from people who have not bought anything
 src/app/actions.ts       add to cart, switch market, place an order
+src/app/contact-actions.ts  the public contact form, honeypot and IP limit
 src/app/(store)/         everything a customer sees, inside the shop's frame
 src/app/admin/           the back office, deliberately outside it
 infra/main.bicep         the whole Azure estate
