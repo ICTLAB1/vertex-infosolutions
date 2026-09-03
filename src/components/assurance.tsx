@@ -83,8 +83,8 @@ export function Assurance({
           <Image
             src="/badges/adobe-certified-reseller.png"
             alt="Adobe Certified Reseller"
-            width={1921}
-            height={895}
+            width={1814}
+            height={788}
             sizes="140px"
             className="h-auto w-[140px]"
           />

@@ -28,33 +28,40 @@ const BADGES: readonly {
   {
     src: "/badges/adobe-certified-reseller.png",
     alt: "Adobe Certified Reseller",
-    width: 1921,
-    height: 895,
+    width: 1814,
+    height: 788,
   },
 ];
 
 export function PartnerBadges({
   className = "",
-  width = 130,
+  height = 26,
 }: {
   className?: string;
-  /** Rendered width in pixels of each badge. */
-  width?: number;
+  /** Rendered height in pixels. Sized by height, never by width. */
+  height?: number;
 }) {
-  if (BADGES.length === 0) return null;
-
   return (
     <ul className={`flex flex-wrap items-center gap-2 ${className}`}>
       {BADGES.map((badge) => (
-        <li key={badge.src} className="rounded-md bg-white px-2.5 py-1.5">
+        // Every badge is a different shape — Microsoft's is nearly four times
+        // as wide as it is tall, Adobe's a little over twice. Sizing by width
+        // therefore made them different heights and the row looked broken.
+        // Height is fixed and width follows, so the plates line up whatever
+        // artwork arrives next.
+        <li
+          key={badge.src}
+          className="flex items-center rounded-md bg-white px-2.5"
+          style={{ height: height + 14 }}
+        >
           <Image
             src={badge.src}
             alt={badge.alt}
             width={badge.width}
             height={badge.height}
-            sizes={`${width}px`}
-            className="h-auto"
-            style={{ width }}
+            sizes={`${Math.round((height * badge.width) / badge.height)}px`}
+            className="w-auto"
+            style={{ height }}
           />
         </li>
       ))}
@@ -76,7 +83,7 @@ export function PartnerStrip() {
         <p className="text-[12px] font-semibold uppercase tracking-wide text-faint">
           Authorised reseller
         </p>
-        <PartnerBadges width={112} />
+        <PartnerBadges height={22} />
         <p className="text-[12px] text-muted">
           Genuine licences, supplied under the publisher&apos;s own end-user
           terms.

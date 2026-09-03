@@ -153,7 +153,7 @@ export async function Footer() {
               terms — Vertex Infosolutions is an authorised reseller, not the
               licensor.
             </p>
-            <PartnerBadges className="mt-4" width={150} />
+            <PartnerBadges className="mt-4" height={30} />
           </div>
         </div>
 
