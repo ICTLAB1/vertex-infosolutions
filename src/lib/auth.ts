@@ -14,6 +14,7 @@ import { cookies, headers } from "next/headers";
 import type { OtpPurpose } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/db";
 import { notify } from "@/lib/notify";
+import { sweepSignInAttempts } from "@/lib/rate-limit";
 
 /**
  * `promisify` picks scrypt's three-argument overload, which cannot take the
@@ -173,6 +174,10 @@ export async function sweepExpired(): Promise<void> {
   const now = new Date();
   await prisma.session.deleteMany({ where: { expiresAt: { lt: now } } });
   await prisma.emailOtp.deleteMany({ where: { expiresAt: { lt: now } } });
+  // Failed sign-ins are kept for an hour and no longer: long enough to slow an
+  // attack down, short enough not to become a record of who signed in from
+  // where.
+  await sweepSignInAttempts(now);
 }
 
 // ---------------------------------------------------------------------------

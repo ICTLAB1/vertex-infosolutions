@@ -55,6 +55,16 @@ export default function PrivacyPage() {
           as tax law requires, because an invoice has to be reproducible years
           later.
         </li>
+        <li>
+          <strong className="text-ink">
+            Your IP address, but only when a sign-in fails.
+          </strong>{" "}
+          It is recorded with the address that was typed, and deleted an hour
+          later or the moment a sign-in succeeds — whichever comes first. It is
+          there to slow down somebody guessing passwords, and it is not kept
+          for successful sign-ins, so this is not a record of when or where you
+          logged in.
+        </li>
       </Ul>
 
       <H2>What we never collect</H2>

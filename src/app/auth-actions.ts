@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
@@ -19,6 +20,12 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { getCart } from "@/lib/cart";
+import {
+  clearSignInFailures,
+  clientIp,
+  recordSignInFailure,
+  signInLimit,
+} from "@/lib/rate-limit";
 import { prisma } from "@/lib/db";
 import { notify } from "@/lib/notify";
 import { appUrl } from "@/lib/stripe";
@@ -166,6 +173,18 @@ export async function signIn(
   const next = str(form, "next");
   const values = keep(form, "email");
 
+  const ip = clientIp(await headers());
+
+  // Checked before the password is looked at, so a caller being held off does
+  // not even get the timing signal of a hash being computed.
+  const limit = await signInLimit(email, ip);
+  if (limit.blocked) {
+    return {
+      message: `Too many sign-in attempts. Wait ${limit.retryAfterMinutes} minutes and try again, or reset your password.`,
+      values,
+    };
+  }
+
   const user = await prisma.user.findUnique({ where: { email } });
 
   // One message for both failures, and the password is still hashed when the
@@ -176,8 +195,16 @@ export async function signIn(
     : await verifyPassword(password, "0".repeat(128), "decoy");
 
   if (!user || !ok) {
+    // Recorded against the address as submitted, whether or not it exists. If
+    // only real accounts were counted, being told "too many attempts" would
+    // answer the very question the message above refuses to.
+    await recordSignInFailure(email, ip);
     return { message: "That email address and password do not match.", values };
   }
+
+  // Right password: the failures before it were somebody forgetting, not
+  // somebody guessing.
+  await clearSignInFailures(email);
 
   await createSession(user.id);
   await adoptCart(user.id);

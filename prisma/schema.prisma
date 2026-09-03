@@ -433,6 +433,34 @@ enum OtpPurpose {
   PASSWORD_RESET
 }
 
+/// A failed sign-in, kept just long enough to slow the next one down.
+///
+/// Only failures are recorded, and only for an hour — long enough to be useful
+/// against somebody working through a password list, short enough that this is
+/// not a log of who signed in from where. A success deletes the address's rows
+/// outright, so a customer who eventually remembers their password is not
+/// still being counted against.
+///
+/// The email is stored as submitted (lowercased) whether or not an account
+/// exists. If only real accounts were counted, "too many attempts" would
+/// answer the question the rest of the sign-in flow refuses to: whether that
+/// address has an account here.
+model SignInAttempt {
+  id String @id @default(cuid())
+
+  email String
+  /// The caller's address as the edge reported it, or "unknown" when nothing
+  /// trustworthy said. See `clientIp` for what that is worth.
+  ip    String
+
+  createdAt DateTime @default(now())
+
+  /// The three windows the limiter reads, each a different attack.
+  @@index([email, ip, createdAt])
+  @@index([ip, createdAt])
+  @@index([email, createdAt])
+}
+
 /// A one-time code sent by email.
 ///
 /// The code is stored hashed, expires in ten minutes, and is consumed on first

@@ -103,6 +103,7 @@ src/lib/money.ts         integer minor units, per currency; inclusive-tax split
 src/lib/cart.ts          basket, and the one function that computes what is owed
 src/lib/site.ts          who the seller legally is; warns when unconfigured
 src/lib/admin.ts         who may run the store, and the record of what they did
+src/lib/rate-limit.ts    slowing down somebody guessing passwords
 src/app/actions.ts       add to cart, switch market, place an order
 src/app/(store)/         everything a customer sees, inside the shop's frame
 src/app/admin/           the back office, deliberately outside it
@@ -156,6 +157,14 @@ infra/main.bicep         the whole Azure estate
 - **Anything a person changes by hand is written down.** Who marked an order
   paid, against which bank reference, and what a price was before it changed.
   That question gets asked once, in an argument.
+- **Guessing passwords is slowed on three counters, not one.** The tightest is
+  keyed on the caller *and* the address together, so a stranger cannot lock a
+  customer out of their own account by failing five times at it. A looser one
+  on the caller alone stops spraying many accounts; the loosest on the address
+  alone stops a distributed attack on one account, and is loose precisely
+  because it is the one that could be abused to lock somebody out. Failures are
+  recorded for addresses that have no account too — otherwise "too many
+  attempts" would answer the question the sign-in message refuses to.
 - **A failed message is retried, and then stopped.** Each attempt waits longer
   than the last, and after six the message is abandoned rather than retried
   forever — an address that keeps bouncing is how a sending domain's reputation
@@ -272,7 +281,9 @@ before writing to it, drop one a release later.
 - [ ] Let an administrator correct the address on an abandoned message and
       send it there. Today a message given up on because the address was wrong
       needs the customer to fix their account first.
-- [ ] Rate-limit sign-in by IP as well as by account.
+- [ ] Rate-limit the forgotten-password form by IP too. `issueOtp` already
+      caps codes per account per hour, but one caller can still walk an address
+      list and make the store send mail on each one.
 - [ ] **Confirm the GST treatment with your accountant.** The store charges
       18% GST on Indian sales and treats everything else as a zero-rated export
       of services — which requires an LUT, or paying IGST and claiming a refund.
