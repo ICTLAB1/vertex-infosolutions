@@ -1,16 +1,19 @@
 /**
- * Sample catalogue — Microsoft, Adobe and Autodesk licences.
+ * The catalogue.
  *
- * Prices are illustrative but shaped like real ones: the INR figure is not the
- * USD figure converted. Publishers price India separately and considerably
- * lower, and pretending otherwise would produce a catalogue that looks
- * plausible and prices nothing correctly.
+ * Microsoft comes from the real price book: `microsoft.ts` builds it from the
+ * distributor list in `data/`, so those prices are Microsoft's published India
+ * list price plus GST, not an invention.
+ *
+ * Adobe and Autodesk are still samples. Their prices are shaped like real ones
+ * and are not real ones — the INR figure is not the USD figure converted,
+ * because publishers price India as its own market and pretending otherwise
+ * produces a catalogue that looks plausible and prices nothing correctly.
+ * Replace them as each price book arrives.
  *
  * INR prices are GST-inclusive, because that is what an Indian buyer expects to
  * see and what the law requires be displayed. USD prices carry no Indian tax at
  * all — those sales are exports.
- *
- * Replace all of it with the real price book before launch.
  */
 import "dotenv/config";
 
@@ -18,41 +21,13 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../src/generated/prisma/client";
 
+import type { SeedProduct } from "./catalogue-types";
+import { MICROSOFT_PRODUCTS, MICROSOFT_TOO_LARGE } from "./microsoft";
+
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
-type Term = "ANNUAL_SUBSCRIPTION" | "MONTHLY_COMMITMENT" | "PERPETUAL";
 
-type SeedVariant = {
-  sku: string;
-  name: string;
-  seats: number;
-  /** [list, price] in whole dollars. */
-  usd: [number, number];
-  /** [list, price] in whole rupees, GST-inclusive. */
-  inr: [number, number];
-};
-
-type SeedProduct = {
-  slug: string;
-  name: string;
-  brand: string;
-  category: string;
-  term: Term;
-  summary: string;
-  bullets: string[];
-  specs: Record<string, string>;
-  featured?: boolean;
-  variants: SeedVariant[];
-  reviews?: {
-    author: string;
-    country?: string;
-    rating: number;
-    title: string;
-    body: string;
-    verified?: boolean;
-  }[];
-};
 
 const CATEGORIES = [
   {
@@ -85,6 +60,24 @@ const CATEGORIES = [
     blurb: "Reporting, diagramming and project management.",
     position: 5,
   },
+  {
+    slug: "business-apps",
+    name: "Business applications",
+    blurb: "Dynamics 365, Business Central and the Power Platform.",
+    position: 6,
+  },
+  {
+    slug: "security",
+    name: "Security & identity",
+    blurb: "Defender, Entra, Intune, Purview and compliance.",
+    position: 7,
+  },
+  {
+    slug: "cloud-desktop",
+    name: "Cloud PCs & virtual desktops",
+    blurb: "Windows 365 and Azure Virtual Desktop.",
+    position: 8,
+  },
 ];
 
 const BRANDS = [
@@ -106,214 +99,9 @@ const BRANDS = [
 ];
 
 const PRODUCTS: SeedProduct[] = [
-  // ---------------------------------------------------------------- Microsoft
-  {
-    slug: "microsoft-365-business-standard",
-    name: "Microsoft 365 Business Standard",
-    brand: "Microsoft",
-    category: "productivity",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "Desktop Office apps, business email on your own domain, and 1 TB of OneDrive per user.",
-    bullets: [
-      "Word, Excel, PowerPoint and Outlook installed on up to 5 devices per user",
-      "Business email on your own domain with a 50 GB mailbox",
-      "1 TB of OneDrive storage per user",
-      "Teams, SharePoint and Microsoft Bookings",
-      "Licence keys issued to your email the moment payment clears",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per user",
-      "Minimum term": "12 months",
-      Delivery: "Electronic — issued on payment",
-      Platform: "Windows, macOS, iOS, Android, web",
-      Support: "Microsoft standard support",
-    },
-    featured: true,
-    variants: [
-      { sku: "MS-365-BS-1U", name: "1 user, 1 year", seats: 1, usd: [165, 150], inr: [10100, 9200] },
-      { sku: "MS-365-BS-5U", name: "5 users, 1 year", seats: 5, usd: [825, 720], inr: [50500, 44000] },
-      { sku: "MS-365-BS-10U", name: "10 users, 1 year", seats: 10, usd: [1650, 1400], inr: [101000, 86000] },
-    ],
-    reviews: [
-      { author: "Deepa L.", country: "United States", rating: 5, title: "Keys arrived in under a minute", body: "Ordered ten seats at 9pm and the keys were in my inbox before I closed the laptop. Redemption was straightforward.", verified: true },
-      { author: "Ashok G.", country: "India", rating: 4, title: "Cheaper than going direct, GST invoice was clean", body: "About 12% under list, and the GST invoice had our GSTIN on it so accounts could claim the input credit. That mattered more than the discount.", verified: true },
-    ],
-  },
-  {
-    slug: "microsoft-365-business-premium",
-    name: "Microsoft 365 Business Premium",
-    brand: "Microsoft",
-    category: "productivity",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "Everything in Business Standard plus device management and advanced threat protection.",
-    bullets: [
-      "All of Business Standard, per user",
-      "Intune device management for company and personal devices",
-      "Microsoft Defender for Office 365 and Entra ID Plan 1",
-      "Conditional access and data loss prevention",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per user",
-      "Minimum term": "12 months",
-      Delivery: "Electronic — issued on payment",
-      "Seat cap": "300 users",
-    },
-    featured: true,
-    variants: [
-      { sku: "MS-365-BP-1U", name: "1 user, 1 year", seats: 1, usd: [288, 264], inr: [17700, 16400] },
-      { sku: "MS-365-BP-5U", name: "5 users, 1 year", seats: 5, usd: [1440, 1290], inr: [88500, 79500] },
-    ],
-    reviews: [
-      { author: "Priya N.", country: "India", rating: 5, title: "Intune alone justifies the step up", body: "We moved from Standard after a lost laptop. Being able to wipe it remotely was worth the difference on its own.", verified: true },
-    ],
-  },
-  {
-    slug: "microsoft-365-business-basic",
-    name: "Microsoft 365 Business Basic",
-    brand: "Microsoft",
-    category: "productivity",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "Business email, Teams and the web versions of the Office apps. No desktop installs.",
-    bullets: [
-      "Business email on your own domain, 50 GB mailbox",
-      "Web and mobile versions of Word, Excel, PowerPoint and Outlook",
-      "Teams, SharePoint and 1 TB of OneDrive per user",
-      "No desktop applications — see Business Standard for those",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per user",
-      Delivery: "Electronic — issued on payment",
-      Platform: "Web and mobile only",
-    },
-    variants: [
-      { sku: "MS-365-BB-1U", name: "1 user, 1 year", seats: 1, usd: [78, 72], inr: [4700, 4300] },
-      { sku: "MS-365-BB-10U", name: "10 users, 1 year", seats: 10, usd: [780, 660], inr: [47000, 40500] },
-    ],
-  },
-  {
-    slug: "windows-11-pro",
-    name: "Windows 11 Pro",
-    brand: "Microsoft",
-    category: "servers",
-    term: "PERPETUAL",
-    summary:
-      "The business edition of Windows, bought outright — BitLocker, domain join and Hyper-V.",
-    bullets: [
-      "BitLocker device encryption",
-      "Domain and Entra ID join, with Group Policy",
-      "Hyper-V and Windows Sandbox",
-      "Remote Desktop host",
-      "Perpetual — no renewal, tied to the device",
-    ],
-    specs: {
-      "Licence type": "Perpetual, single device",
-      Delivery: "Electronic — product key issued on payment",
-      Platform: "Windows",
-      Transferable: "No — tied to the device it activates",
-    },
-    variants: [
-      { sku: "MS-WIN11-PRO", name: "1 device, perpetual", seats: 1, usd: [219, 199], inr: [18000, 16500] },
-    ],
-    reviews: [
-      { author: "Karthik S.", country: "India", rating: 5, title: "Genuine key, activated first time", body: "Bought four for new builds. All activated online without a phone call, which is more than I can say for the marketplace sellers.", verified: true },
-    ],
-  },
-  {
-    slug: "windows-server-2022-standard",
-    name: "Windows Server 2022 Standard",
-    brand: "Microsoft",
-    category: "servers",
-    term: "PERPETUAL",
-    summary:
-      "16-core server licence with two virtual machine rights. CALs sold separately.",
-    bullets: [
-      "Covers 16 physical cores, expandable in 2-core packs",
-      "Two virtual machine licences included",
-      "Storage Replica, Storage Spaces Direct and shielded VMs",
-      "Client Access Licences are not included and are required",
-    ],
-    specs: {
-      "Licence type": "Perpetual, 16 cores",
-      Delivery: "Electronic — issued on payment",
-      "Also required": "One CAL per user or device accessing the server",
-    },
-    variants: [
-      { sku: "MS-WS2022-STD-16C", name: "16 cores, perpetual", seats: 1, usd: [1180, 1069], inr: [98000, 89000] },
-    ],
-  },
-  {
-    slug: "microsoft-power-bi-pro",
-    name: "Microsoft Power BI Pro",
-    brand: "Microsoft",
-    category: "analytics",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "Publish, share and collaborate on reports and dashboards, per user, per year.",
-    bullets: [
-      "Publish reports to shared workspaces",
-      "Collaborate on dashboards and paginated reports",
-      "Refresh datasets up to eight times a day",
-      "Row-level security",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per user",
-      Delivery: "Electronic — issued on payment",
-      Platform: "Windows, web, mobile",
-    },
-    variants: [
-      { sku: "MS-PBI-PRO-1U", name: "1 user, 1 year", seats: 1, usd: [180, 168], inr: [11400, 10500] },
-      { sku: "MS-PBI-PRO-5U", name: "5 users, 1 year", seats: 5, usd: [900, 810], inr: [57000, 51000] },
-    ],
-  },
-  {
-    slug: "microsoft-project-plan-3",
-    name: "Microsoft Project Plan 3",
-    brand: "Microsoft",
-    category: "analytics",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "Desktop and web project management with resource levelling and roadmaps.",
-    bullets: [
-      "Project desktop client plus the web app",
-      "Resource management and levelling",
-      "Roadmaps across multiple projects",
-      "Submit and track timesheets",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per user",
-      Delivery: "Electronic — issued on payment",
-      Platform: "Windows desktop and web",
-    },
-    variants: [
-      { sku: "MS-PROJ-P3-1U", name: "1 user, 1 year", seats: 1, usd: [396, 360], inr: [24500, 22500] },
-    ],
-  },
-  {
-    slug: "microsoft-visio-plan-2",
-    name: "Microsoft Visio Plan 2",
-    brand: "Microsoft",
-    category: "analytics",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "Diagramming with the Visio desktop app, data-linked shapes and web publishing.",
-    bullets: [
-      "Visio desktop app installed on up to 5 devices",
-      "Data-linked diagrams from Excel and Power BI",
-      "Publish and share diagrams on the web",
-      "2 GB of Visio-specific storage",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per user",
-      Delivery: "Electronic — issued on payment",
-      Platform: "Windows desktop and web",
-    },
-    variants: [
-      { sku: "MS-VISIO-P2-1U", name: "1 user, 1 year", seats: 1, usd: [198, 180], inr: [12300, 11300] },
-    ],
-  },
+  // The Microsoft range, from the price book rather than from imagination.
+  ...MICROSOFT_PRODUCTS,
+
 
   // -------------------------------------------------------------------- Adobe
   {
@@ -576,144 +364,6 @@ const PRODUCTS: SeedProduct[] = [
     ],
   },
 
-  // ------------------------------------------------- Microsoft (continued)
-  {
-    slug: "microsoft-365-apps-for-business",
-    name: "Microsoft 365 Apps for Business",
-    brand: "Microsoft",
-    category: "productivity",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "The desktop Office applications, without the hosted email. For teams that already have mail elsewhere.",
-    bullets: [
-      "Word, Excel, PowerPoint, Outlook and OneNote on up to 5 devices per user",
-      "1 TB of OneDrive storage per user",
-      "No hosted email — use your existing provider",
-      "No Teams; see Business Basic or Standard for that",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per user",
-      Delivery: "Electronic — issued on payment",
-      Platform: "Windows, macOS, iOS, Android",
-    },
-    variants: [
-      { sku: "MS-365-APPS-1U", name: "1 user, 1 year", seats: 1, usd: [110, 99], inr: [6800, 6100] },
-      { sku: "MS-365-APPS-5U", name: "5 users, 1 year", seats: 5, usd: [550, 470], inr: [34000, 29000] },
-    ],
-  },
-  {
-    slug: "microsoft-365-e3",
-    name: "Microsoft 365 E3",
-    brand: "Microsoft",
-    category: "productivity",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary:
-      "Enterprise licensing with no 300-seat cap, plus compliance, eDiscovery and Windows Enterprise rights.",
-    bullets: [
-      "No seat cap, unlike the Business plans",
-      "Windows 11 Enterprise E3 upgrade rights",
-      "Information protection, retention and eDiscovery (Standard)",
-      "100 GB mailbox and unlimited archive",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per user",
-      Delivery: "Electronic — issued on payment",
-      "Seat cap": "None",
-    },
-    variants: [
-      { sku: "MS-365-E3-1U", name: "1 user, 1 year", seats: 1, usd: [473, 432], inr: [29500, 27000] },
-      { sku: "MS-365-E3-10U", name: "10 users, 1 year", seats: 10, usd: [4730, 4180], inr: [295000, 261000] },
-    ],
-  },
-  {
-    slug: "microsoft-exchange-online-plan-1",
-    name: "Microsoft Exchange Online Plan 1",
-    brand: "Microsoft",
-    category: "productivity",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary: "Business email on your own domain, with a 50 GB mailbox, and nothing else.",
-    bullets: [
-      "50 GB mailbox on your own domain",
-      "Outlook on the web, plus any IMAP or ActiveSync client",
-      "Anti-spam and anti-malware filtering",
-      "No Office applications",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per mailbox",
-      Delivery: "Electronic — issued on payment",
-    },
-    variants: [
-      { sku: "MS-EXO-P1-1U", name: "1 mailbox, 1 year", seats: 1, usd: [48, 44], inr: [3000, 2750] },
-      { sku: "MS-EXO-P1-10U", name: "10 mailboxes, 1 year", seats: 10, usd: [480, 415], inr: [30000, 26000] },
-    ],
-  },
-  {
-    slug: "microsoft-windows-server-cal",
-    name: "Windows Server 2022 User CAL",
-    brand: "Microsoft",
-    category: "servers",
-    term: "PERPETUAL",
-    summary:
-      "The Client Access Licence every user needs to legally reach a Windows Server. Not included with the server.",
-    bullets: [
-      "One CAL per named user accessing the server",
-      "Required in addition to the server licence itself",
-      "Perpetual, tied to the server version",
-      "A device CAL is the alternative where many people share few machines",
-    ],
-    specs: {
-      "Licence type": "Perpetual, per user",
-      Delivery: "Electronic — issued on payment",
-      "Also required": "A Windows Server licence",
-    },
-    variants: [
-      { sku: "MS-WS2022-UCAL-1", name: "1 user CAL", seats: 1, usd: [45, 39], inr: [3700, 3250] },
-      { sku: "MS-WS2022-UCAL-5", name: "5 user CALs", seats: 5, usd: [225, 189], inr: [18500, 15800] },
-    ],
-  },
-  {
-    slug: "microsoft-sql-server-2022-standard",
-    name: "Microsoft SQL Server 2022 Standard",
-    brand: "Microsoft",
-    category: "servers",
-    term: "PERPETUAL",
-    summary: "Two-core pack for SQL Server Standard. Licensed per core, minimum four cores per instance.",
-    bullets: [
-      "Two-core pack — a minimum of four cores per instance applies",
-      "Always On basic availability groups",
-      "128 GB memory ceiling per instance",
-      "Perpetual; Software Assurance sold separately",
-    ],
-    specs: {
-      "Licence type": "Perpetual, 2-core pack",
-      Delivery: "Electronic — issued on payment",
-      Minimum: "4 cores per instance",
-    },
-    variants: [
-      { sku: "MS-SQL2022-STD-2C", name: "2-core pack, perpetual", seats: 1, usd: [4150, 3790], inr: [345000, 316000] },
-    ],
-  },
-  {
-    slug: "microsoft-power-automate-premium",
-    name: "Microsoft Power Automate Premium",
-    brand: "Microsoft",
-    category: "analytics",
-    term: "ANNUAL_SUBSCRIPTION",
-    summary: "Automate workflows across systems, with desktop RPA and premium connectors.",
-    bullets: [
-      "Cloud flows plus attended and unattended desktop RPA",
-      "Premium and on-premises connectors",
-      "Process mining",
-      "AI Builder credits included",
-    ],
-    specs: {
-      "Licence type": "Annual subscription, per user",
-      Delivery: "Electronic — issued on payment",
-    },
-    variants: [
-      { sku: "MS-PAUTO-PREM-1U", name: "1 user, 1 year", seats: 1, usd: [180, 165], inr: [11200, 10300] },
-    ],
-  },
 
   // ------------------------------------------------------ Adobe (continued)
   {
@@ -1076,8 +726,18 @@ async function main() {
     prices: await prisma.price.count(),
     reviews: await prisma.review.count(),
   });
+  if (MICROSOFT_TOO_LARGE.length > 0) {
+    console.log(
+      `\n${MICROSOFT_TOO_LARGE.length} Microsoft SKUs were left out: their price is more than the order tables can hold (the ceiling is about two crore rupees).`,
+    );
+    for (const sku of MICROSOFT_TOO_LARGE) {
+      console.log(`  - ${sku.title} (INR ${sku.inr.toLocaleString("en-IN")})`);
+    }
+  }
+
   console.log(
-    "\nThis is the sample catalogue. The prices are shaped like real ones and are not real ones — replace it with the real price book before taking an order.",
+    "\nMicrosoft prices come from the September 2026 India price book: list price plus 18% GST for India, and the same figure before GST converted at the rate in microsoft.ts for export.\n" +
+      "Adobe and Autodesk are still sample prices — shaped like real ones, and not real ones. Replace them before taking an order for either.",
   );
 }
 

@@ -52,3 +52,9 @@ next-env.d.ts
 
 # The deployment parameters hold live secrets. The example beside it does not.
 /infra/main.parameters.json
+
+# Distributor price lists carry our buy price beside the public one. Only the
+# extracted public columns belong in the repository — see
+# scripts/import-price-list.py.
+*.xlsx
+*.xls

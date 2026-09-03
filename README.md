@@ -10,7 +10,7 @@ npm install
 cp .env.example .env          # then fill in the company details
 docker compose up -d db       # Postgres 16 on :5432
 npm run db:migrate            # applies migrations
-npm run db:seed               # sample catalogue: 34 products, 52 SKUs, both currencies
+npm run db:seed               # catalogue: 423 products — Microsoft from the real price book, the rest samples
 npm run dev                   # http://localhost:3000
 ```
 
@@ -277,7 +277,8 @@ before writing to it, drop one a release later.
 
 - [ ] Fill in every field in `.env` — the footer and `/contact` render only
       what is configured, and development shows a banner listing what is missing.
-- [ ] Replace `prisma/seed.ts` with the real price book — **both currencies**.
+- [ ] Replace the Adobe and Autodesk sample prices with their real price books — **both currencies**.
+- [ ] Replace the derived USD prices with Microsoft's published USD list (see `INR_PER_USD` in `prisma/microsoft.ts`).
       A variant missing an INR row silently disappears from the Indian store.
 - [ ] Wire a real geo-IP source and set `GEO_COUNTRY_HEADER`. Without one the
       store falls back to `Accept-Language`, and an Indian visitor whose browser
@@ -353,7 +354,8 @@ before writing to it, drop one a release later.
 | `npm run typecheck` | `next typegen`, then `tsc --noEmit` — the route types (`PageProps`, `LayoutProps`) are generated, and a fresh checkout has none |
 | `npm run lint` | eslint |
 | `npm run db:migrate` | create and apply a migration |
-| `npm run db:seed` | seed the sample catalogue — refuses if the database already holds products or orders; `-- --force` overrides |
+| `python3 scripts/import-price-list.py <file.xlsx>` | refresh `prisma/data/microsoft-price-list.json` from a new distributor price list (needs `pip install openpyxl`) |
+| `npm run db:seed` | seed the catalogue — refuses if the database already holds products or orders; `-- --force` overrides |
 | `npm run db:reset` | drop and re-migrate (does not seed; run `db:seed` after) |
 
 ## Stack

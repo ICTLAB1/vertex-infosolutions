@@ -1,0 +1,3306 @@
+[
+  {
+    "productId": "CFQ7TTC0HL8Z",
+    "skuId": "1",
+    "title": "10-Year Audit Log Retention Add On",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0HL8Z",
+    "skuId": "5",
+    "title": "10-Year Audit Log Retention Add On for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 132000
+  },
+  {
+    "productId": "CFQ7TTC0HDK0",
+    "skuId": "1",
+    "title": "Advanced Communications",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1200000
+  },
+  {
+    "productId": "CFQ7TTC0RN26",
+    "skuId": "1",
+    "title": "Advanced Data Residency",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0LHQD",
+    "skuId": "1",
+    "title": "Advanced eDiscovery Storage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9984000
+  },
+  {
+    "productId": "CFQ7TTBZZR6G",
+    "skuId": "2",
+    "title": "Agent 365",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1500000
+  },
+  {
+    "productId": "DG7GMGF0GJC2",
+    "skuId": "3",
+    "title": "Azure SQL Edge - 1 year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 849600
+  },
+  {
+    "productId": "CFQ7TTBZV5R2",
+    "skuId": "3",
+    "title": "Azure Virtual Desktop Hybrid",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 972000
+  },
+  {
+    "productId": "CFQ7TTC0LGZM",
+    "skuId": "1",
+    "title": "Built-in security Exchange on-premises mailboxes add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 99840
+  },
+  {
+    "productId": "CFQ7TTC0N8SS",
+    "skuId": "8",
+    "title": "Clipchamp Editor Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 696000
+  },
+  {
+    "productId": "CFQ7TTC0N8SS",
+    "skuId": "9",
+    "title": "Clipchamp Editor Premium Add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0N8SS",
+    "skuId": "7",
+    "title": "Clipchamp Editor Standard",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0LHR4",
+    "skuId": "2",
+    "title": "Compliance Manager Premium Assessment Add-On",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC131Z8",
+    "skuId": "2",
+    "title": "Cross-Tenant Shared Data Migration",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0R2N9",
+    "skuId": "5",
+    "title": "Cross-tenant user data migration",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 126000
+  },
+  {
+    "productId": "CFQ7TTC0LHRL",
+    "skuId": "2",
+    "title": "Dataverse Database Capacity add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3996000
+  },
+  {
+    "productId": "CFQ7TTC0NCD7",
+    "skuId": "3",
+    "title": "Dataverse Database Capacity add-on Tier 2 (Min 1000GB)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2994000
+  },
+  {
+    "productId": "CFQ7TTC0LHQ3",
+    "skuId": "1",
+    "title": "Dataverse File Capacity add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0HBSL",
+    "skuId": "1",
+    "title": "Dataverse Log Capacity add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0LFLX",
+    "skuId": "009T",
+    "title": "Defender for Endpoint P2 Add On for Microsoft 365 E3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0LHXH",
+    "skuId": "002J",
+    "title": "Defender for Office 365 P2 Add On",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0LHWJ",
+    "skuId": "1",
+    "title": "Dynamics 365 Asset Management Addl Assets",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9984000
+  },
+  {
+    "productId": "CFQ7TTC0HD7P",
+    "skuId": "1",
+    "title": "Dynamics 365 Business Central Additional Environment Addon",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 29952000
+  },
+  {
+    "productId": "CFQ7TTC0HD3R",
+    "skuId": "1",
+    "title": "Dynamics 365 Business Central Database Capacity",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0HD3R",
+    "skuId": "2",
+    "title": "Dynamics 365 Business Central Database Capacity 100GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HD3R",
+    "skuId": "3",
+    "title": "Dynamics 365 Business Central Database Capacity Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0LH3F",
+    "skuId": "2",
+    "title": "Dynamics 365 Business Central Device",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4494000
+  },
+  {
+    "productId": "CFQ7TTC0LH3F",
+    "skuId": "8",
+    "title": "Dynamics 365 Business Central Device (100 seat min)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3492000
+  },
+  {
+    "productId": "CFQ7TTC0LH34",
+    "skuId": "1",
+    "title": "Dynamics 365 Business Central Essentials",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 7986000
+  },
+  {
+    "productId": "CFQ7TTC0N13N",
+    "skuId": "2",
+    "title": "Dynamics 365 Business Central Essentials Attach",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1998000
+  },
+  {
+    "productId": "CFQ7TTC0LH38",
+    "skuId": "1",
+    "title": "Dynamics 365 Business Central Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 10980000
+  },
+  {
+    "productId": "CFQ7TTC0LH39",
+    "skuId": "2",
+    "title": "Dynamics 365 Business Central Team Members",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 798000
+  },
+  {
+    "productId": "CFQ7TTC0J7C5",
+    "skuId": "1",
+    "title": "Dynamics 365 Call Intelligence Minutes Add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1500000
+  },
+  {
+    "productId": "CFQ7TTC0LH2Z",
+    "skuId": "2",
+    "title": "Dynamics 365 Commerce",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 20964000
+  },
+  {
+    "productId": "CFQ7TTC0LH2Z",
+    "skuId": "1",
+    "title": "Dynamics 365 Commerce Attach to Qualifying Dynamics 365 Base Offer",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2994000
+  },
+  {
+    "productId": "CFQ7TTC0LH2Z",
+    "skuId": "003J",
+    "title": "Dynamics 365 Commerce Headless Import",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 419304000
+  },
+  {
+    "productId": "CFQ7TTC0LH2Z",
+    "skuId": "39",
+    "title": "Dynamics 365 Commerce Headless Import Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 69882000
+  },
+  {
+    "productId": "CFQ7TTC0LH2Z",
+    "skuId": "43",
+    "title": "Dynamics 365 Commerce Headless Orchestration",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 898500000
+  },
+  {
+    "productId": "CFQ7TTC0LH2Z",
+    "skuId": "003V",
+    "title": "Dynamics 365 Commerce Headless Orchestration Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 149748000
+  },
+  {
+    "productId": "CFQ7TTC0HD42",
+    "skuId": "000B",
+    "title": "Dynamics 365 Commerce Scale Unit Basic - Cloud",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 551580000
+  },
+  {
+    "productId": "CFQ7TTC0HD42",
+    "skuId": "8",
+    "title": "Dynamics 365 Commerce Scale Unit Premium - Cloud",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4242930000
+  },
+  {
+    "productId": "CFQ7TTC0HD42",
+    "skuId": "9",
+    "title": "Dynamics 365 Commerce Scale Unit Standard - Cloud",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1909320000
+  },
+  {
+    "productId": "CFQ7TTC0TDLC",
+    "skuId": "6",
+    "title": "Dynamics 365 Contact Center",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 10980000
+  },
+  {
+    "productId": "CFQ7TTC0TDLC",
+    "skuId": "9",
+    "title": "Dynamics 365 Contact Center Add-on for Customer Service Enterprise",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 8988000
+  },
+  {
+    "productId": "CFQ7TTC0TDL0",
+    "skuId": "7",
+    "title": "Dynamics 365 Contact Center Digital",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9486000
+  },
+  {
+    "productId": "CFQ7TTC0TDL0",
+    "skuId": "9",
+    "title": "Dynamics 365 Contact Center Digital Add-on for Customer Service Enterprise",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 7488000
+  },
+  {
+    "productId": "CFQ7TTC0TDL7",
+    "skuId": "000B",
+    "title": "Dynamics 365 Contact Center Voice",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9486000
+  },
+  {
+    "productId": "CFQ7TTC0TDL7",
+    "skuId": "8",
+    "title": "Dynamics 365 Contact Center Voice Add-on for Customer Service Enterprise",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 7488000
+  },
+  {
+    "productId": "CFQ7TTC0N13S",
+    "skuId": "7",
+    "title": "Dynamics 365 Customer Insights",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 169716000
+  },
+  {
+    "productId": "CFQ7TTC0N13S",
+    "skuId": "000H",
+    "title": "Dynamics 365 Customer Insights Attach",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 99834000
+  },
+  {
+    "productId": "CFQ7TTC0N13S",
+    "skuId": "9",
+    "title": "Dynamics 365 Customer Insights Data T1 Unified People",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 199668000
+  },
+  {
+    "productId": "CFQ7TTC0N13S",
+    "skuId": "5",
+    "title": "Dynamics 365 Customer Insights Data T2 Unified People",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 149748000
+  },
+  {
+    "productId": "CFQ7TTC0N13S",
+    "skuId": "000G",
+    "title": "Dynamics 365 Customer Insights Data T3 Unified People",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 99834000
+  },
+  {
+    "productId": "CFQ7TTC0N13S",
+    "skuId": "3",
+    "title": "Dynamics 365 Customer Insights Journeys T1 Interacted People",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 24960000
+  },
+  {
+    "productId": "CFQ7TTC0N13S",
+    "skuId": "4",
+    "title": "Dynamics 365 Customer Insights Journeys T2 Interacted People",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 29952000
+  },
+  {
+    "productId": "CFQ7TTC0N13S",
+    "skuId": "6",
+    "title": "Dynamics 365 Customer Insights Journeys T3 Interacted People",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0LFDZ",
+    "skuId": "1",
+    "title": "Dynamics 365 Customer Service Enterprise",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 10482000
+  },
+  {
+    "productId": "CFQ7TTC0LFDZ",
+    "skuId": "3",
+    "title": "Dynamics 365 Customer Service Enterprise Attach to Qualifying Dynamics 365 Base Offer",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1998000
+  },
+  {
+    "productId": "CFQ7TTC0LFDZ",
+    "skuId": "6",
+    "title": "Dynamics 365 Customer Service Enterprise Device",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 15972000
+  },
+  {
+    "productId": "CFQ7TTC0TDKX",
+    "skuId": "5",
+    "title": "Dynamics 365 Customer Service Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 19470000
+  },
+  {
+    "productId": "CFQ7TTC0LFNK",
+    "skuId": "1",
+    "title": "Dynamics 365 Customer Service Professional",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4992000
+  },
+  {
+    "productId": "CFQ7TTC0LFNK",
+    "skuId": "3",
+    "title": "Dynamics 365 Customer Service Professional Attach to Qualifying Dynamics 365 Base Offer",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1998000
+  },
+  {
+    "productId": "CFQ7TTC0HKJ7",
+    "skuId": "1",
+    "title": "Dynamics 365 Customer Voice",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 19968000
+  },
+  {
+    "productId": "CFQ7TTC0HKJ6",
+    "skuId": "1",
+    "title": "Dynamics 365 Customer Voice Additional Responses",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9984000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "1",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 399336000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000B",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 1 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "2",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 399336000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "16",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 2 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "7",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 399336000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "15",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 3 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000C",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 4",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 399336000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "14",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 4 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "13",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 5",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 399336000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "12",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 5 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "11",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 6",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 399336000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "10",
+    "title": "Dynamics 365 e-Commerce Tier 1 Band 6 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000Z",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1447590000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000X",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 1 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000W",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1447590000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000V",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 2 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000T",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1447590000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000S",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 3 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000R",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 4",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1447590000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000Q",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 4 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000P",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 5",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1447590000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000N",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 5 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000M",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 6",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1447590000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000L",
+    "title": "Dynamics 365 e-Commerce Tier 2 Band 6 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000K",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3094842000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000J",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 1 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000H",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3094842000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000G",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 2 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000F",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3094842000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "000D",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 3 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "5",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 4",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3094842000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "3",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 4 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "6",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 5",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3094842000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "4",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 5 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "9",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 6",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3094842000
+  },
+  {
+    "productId": "CFQ7TTC0HM0T",
+    "skuId": "8",
+    "title": "Dynamics 365 e-Commerce Tier 3 Band 6 Overage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0LFNL",
+    "skuId": "1",
+    "title": "Dynamics 365 Field Service",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 10482000
+  },
+  {
+    "productId": "CFQ7TTC0LFDN",
+    "skuId": "1",
+    "title": "Dynamics 365 Field Service - Resource Scheduling Optimization",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2994000
+  },
+  {
+    "productId": "CFQ7TTC0LFNL",
+    "skuId": "6",
+    "title": "Dynamics 365 Field Service Attach to Qualifying Dynamics 365 Base Offer",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1998000
+  },
+  {
+    "productId": "CFQ7TTC0LFNL",
+    "skuId": "7",
+    "title": "Dynamics 365 Field Service Device",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 15972000
+  },
+  {
+    "productId": "CFQ7TTC0LGV4",
+    "skuId": "1",
+    "title": "Dynamics 365 Finance",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 20964000
+  },
+  {
+    "productId": "CFQ7TTC0LGV4",
+    "skuId": "2",
+    "title": "Dynamics 365 Finance Attach to Qualifying Dynamics 365 Base Offer",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2994000
+  },
+  {
+    "productId": "CFQ7TTC0NL21",
+    "skuId": "2",
+    "title": "Dynamics 365 Finance Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 29952000
+  },
+  {
+    "productId": "CFQ7TTC0HD4G",
+    "skuId": "1",
+    "title": "Dynamics 365 Human Resources",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 13476000
+  },
+  {
+    "productId": "CFQ7TTC0HD4G",
+    "skuId": "3",
+    "title": "Dynamics 365 Human Resources Attach to Qualifying Dynamics 365 Base Offer",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2994000
+  },
+  {
+    "productId": "CFQ7TTC0HD4G",
+    "skuId": "4",
+    "title": "Dynamics 365 Human Resources Sandbox",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 139770000
+  },
+  {
+    "productId": "CFQ7TTC0HD4G",
+    "skuId": "2",
+    "title": "Dynamics 365 Human Resources Self Service",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0J1XF",
+    "skuId": "3",
+    "title": "Dynamics 365 Intelligent Order Management",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 29952000
+  },
+  {
+    "productId": "CFQ7TTC0J7M0",
+    "skuId": "1",
+    "title": "Dynamics 365 Intelligent Voicebot Minutes Add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 12480000
+  },
+  {
+    "productId": "CFQ7TTC0LHXQ",
+    "skuId": "1",
+    "title": "Dynamics 365 Operations - Database Capacity",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3996000
+  },
+  {
+    "productId": "CFQ7TTC0NC52",
+    "skuId": "3",
+    "title": "Dynamics 365 Operations - Database Capacity Tier 2 (Min 1000GB)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2994000
+  },
+  {
+    "productId": "CFQ7TTC0LHZ1",
+    "skuId": "1",
+    "title": "Dynamics 365 Operations - File Capacity",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0LHV9",
+    "skuId": "1",
+    "title": "Dynamics 365 Operations - Sandbox Tier 2:Standard Acceptance Testing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 134778000
+  },
+  {
+    "productId": "CFQ7TTC0LHVN",
+    "skuId": "1",
+    "title": "Dynamics 365 Operations - Sandbox Tier 3:Premier Acceptance Testing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 404328000
+  },
+  {
+    "productId": "CFQ7TTC0LHXZ",
+    "skuId": "1",
+    "title": "Dynamics 365 Operations - Sandbox Tier 4:Standard Performance Testing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 788688000
+  },
+  {
+    "productId": "CFQ7TTC0LHVG",
+    "skuId": "1",
+    "title": "Dynamics 365 Operations - Sandbox Tier 5:Premier Performance Testing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1198002000
+  },
+  {
+    "productId": "CFQ7TTC0LHX0",
+    "skuId": "1",
+    "title": "Dynamics 365 Operations – Activity",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4992000
+  },
+  {
+    "productId": "CFQ7TTC0LHVJ",
+    "skuId": "1",
+    "title": "Dynamics 365 Operations – Device",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 8484000
+  },
+  {
+    "productId": "CFQ7TTC0LHXR",
+    "skuId": "1",
+    "title": "Dynamics 365 Operations – Order Lines",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49914000
+  },
+  {
+    "productId": "CFQ7TTC0HD4D",
+    "skuId": "1",
+    "title": "Dynamics 365 Project Operations",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 13476000
+  },
+  {
+    "productId": "CFQ7TTC0HD4D",
+    "skuId": "2",
+    "title": "Dynamics 365 Project Operations Attach",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2994000
+  },
+  {
+    "productId": "CFQ7TTC0LFF1",
+    "skuId": "3",
+    "title": "Dynamics 365 Sales Enterprise Attach to Qualifying Dynamics 365 Base Offer",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1998000
+  },
+  {
+    "productId": "CFQ7TTC0LFF1",
+    "skuId": "1",
+    "title": "Dynamics 365 Sales Enterprise Edition",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 10482000
+  },
+  {
+    "productId": "CFQ7TTC0LFF1",
+    "skuId": "6",
+    "title": "Dynamics 365 Sales Enterprise Edition Device",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 15972000
+  },
+  {
+    "productId": "CFQ7TTC0LHZ3",
+    "skuId": "1",
+    "title": "Dynamics 365 Sales Insights",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4992000
+  },
+  {
+    "productId": "CFQ7TTC0HBSJ",
+    "skuId": "1",
+    "title": "Dynamics 365 Sales Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 14976000
+  },
+  {
+    "productId": "CFQ7TTC0LFN5",
+    "skuId": "2",
+    "title": "Dynamics 365 Sales Professional",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 6492000
+  },
+  {
+    "productId": "CFQ7TTC0LFN5",
+    "skuId": "4",
+    "title": "Dynamics 365 Sales Professional Attach to Qualifying Dynamics 365 Base Offer",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1998000
+  },
+  {
+    "productId": "CFQ7TTC0LH31",
+    "skuId": "1",
+    "title": "Dynamics 365 Supply Chain Management",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 20964000
+  },
+  {
+    "productId": "CFQ7TTC0LH31",
+    "skuId": "2",
+    "title": "Dynamics 365 Supply Chain Management Attach to Qualifying Dynamics 365 Base Offer",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2994000
+  },
+  {
+    "productId": "CFQ7TTC0P17W",
+    "skuId": "1",
+    "title": "Dynamics 365 Supply Chain Management Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 29952000
+  },
+  {
+    "productId": "CFQ7TTC0LFNJ",
+    "skuId": "1",
+    "title": "Dynamics 365 Team Members",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 798000
+  },
+  {
+    "productId": "CFQ7TTC0LFDZ",
+    "skuId": "7",
+    "title": "Dynamics 365 unified routing add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 79866000
+  },
+  {
+    "productId": "CFQ7TTC0JSQ1",
+    "skuId": "2",
+    "title": "eCDN",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 49920
+  },
+  {
+    "productId": "CFQ7TTC0HM43",
+    "skuId": "1",
+    "title": "Electronic Invoicing Add-on for Dynamics 365",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 29952000
+  },
+  {
+    "productId": "CFQ7TTC0LHT4",
+    "skuId": "1",
+    "title": "Enterprise Mobility + Security E3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1194000
+  },
+  {
+    "productId": "CFQ7TTC0LFJ1",
+    "skuId": "1",
+    "title": "Enterprise Mobility + Security E5",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1800000
+  },
+  {
+    "productId": "CFQ7TTC0LFLX",
+    "skuId": "009X",
+    "title": "Entra P2 Add On",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "DG7GMGF0HX95",
+    "skuId": "000G",
+    "title": "ESU for SQL 2014 EE 2 Core pack for 2nd year EOS (Coverage July 9 2025 - July 14 2026)",
+    "tags": "Software;Subscription",
+    "billing": "OneTime",
+    "listExGstMinor": 128480300
+  },
+  {
+    "productId": "DG7GMGF0HX95",
+    "skuId": "000M",
+    "title": "ESU for SQL 2014 EE Per Server for 2nd year EOS(Coverage July 9 2025 - July 14 2026)",
+    "tags": "Software;Subscription",
+    "billing": "OneTime",
+    "listExGstMinor": 80287800
+  },
+  {
+    "productId": "DG7GMGF0HX95",
+    "skuId": "000P",
+    "title": "ESU for SQL 2014 Std 2 Core pack for 2nd year EOS (Coverage July 9 2025 - July 14 2026)",
+    "tags": "Software;Subscription",
+    "billing": "OneTime",
+    "listExGstMinor": 33513600
+  },
+  {
+    "productId": "DG7GMGF0HX95",
+    "skuId": "000N",
+    "title": "ESU for SQL 2014 Std Per Server for 2nd year EOS (Coverage July 9 2025 - July 14 2026)",
+    "tags": "Software;Subscription",
+    "billing": "OneTime",
+    "listExGstMinor": 8378400
+  },
+  {
+    "productId": "CFQ7TTC0LH16",
+    "skuId": "1",
+    "title": "Exchange Online (Plan 1)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0LH1P",
+    "skuId": "1",
+    "title": "Exchange Online (Plan 2)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 798000
+  },
+  {
+    "productId": "CFQ7TTC0LH0J",
+    "skuId": "1",
+    "title": "Exchange Online Archiving for Exchange Online",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0LHQ5",
+    "skuId": "1",
+    "title": "Exchange Online Archiving for Exchange Server",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0LH0L",
+    "skuId": "1",
+    "title": "Exchange Online Kiosk",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0RWPR",
+    "skuId": "1",
+    "title": "Insider Risk Management Forensic Evidence 100GB Add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 7488000
+  },
+  {
+    "productId": "CFQ7TTC0QB4T",
+    "skuId": "1",
+    "title": "M365 F5 eDiscovery and Audit",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0QB3R",
+    "skuId": "1",
+    "title": "M365 F5 Information Protection and Governance",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0QB3G",
+    "skuId": "1",
+    "title": "M365 F5 Insider Risk Management",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0LH1G",
+    "skuId": "1",
+    "title": "Microsoft 365 Apps for business",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 906000
+  },
+  {
+    "productId": "CFQ7TTC0LGZT",
+    "skuId": "1",
+    "title": "Microsoft 365 Apps for enterprise",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1398000
+  },
+  {
+    "productId": "CFQ7TTC0LH18",
+    "skuId": "1",
+    "title": "Microsoft 365 Business Basic",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 204000
+  },
+  {
+    "productId": "CFQ7TTC0LH18",
+    "skuId": "000P",
+    "title": "Microsoft 365 Business Basic (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 156000
+  },
+  {
+    "productId": "CFQ7TTC0LH18",
+    "skuId": "001L",
+    "title": "Microsoft 365 Business Basic (No Teams) and Microsoft 365 Copilot Business",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2634000
+  },
+  {
+    "productId": "CFQ7TTC0LH18",
+    "skuId": "001K",
+    "title": "Microsoft 365 Business Basic and Microsoft 365 Copilot Business",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2796000
+  },
+  {
+    "productId": "CFQ7TTC0LCHC",
+    "skuId": "2",
+    "title": "Microsoft 365 Business Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2196000
+  },
+  {
+    "productId": "CFQ7TTC0LCHC",
+    "skuId": "000N",
+    "title": "Microsoft 365 Business Premium (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1878000
+  },
+  {
+    "productId": "CFQ7TTC0LCHC",
+    "skuId": "001Q",
+    "title": "Microsoft 365 Business Premium with Copilot",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3192000
+  },
+  {
+    "productId": "CFQ7TTC0LCHC",
+    "skuId": "001R",
+    "title": "Microsoft 365 Business Premium with Copilot (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2874000
+  },
+  {
+    "productId": "CFQ7TTC0LDPB",
+    "skuId": "1",
+    "title": "Microsoft 365 Business Standard",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1032000
+  },
+  {
+    "productId": "CFQ7TTC0LDPB",
+    "skuId": "11",
+    "title": "Microsoft 365 Business Standard (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 798000
+  },
+  {
+    "productId": "CFQ7TTC0LDPB",
+    "skuId": "001X",
+    "title": "Microsoft 365 Business Standard with Copilot",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2346000
+  },
+  {
+    "productId": "CFQ7TTC0LDPB",
+    "skuId": "001W",
+    "title": "Microsoft 365 Business Standard with Copilot (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2028000
+  },
+  {
+    "productId": "CFQ7TTC0MM8R",
+    "skuId": "2",
+    "title": "Microsoft 365 Copilot",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2994000
+  },
+  {
+    "productId": "CFQ7TTC0MM8R",
+    "skuId": "001P",
+    "title": "Microsoft 365 Copilot Business",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2094000
+  },
+  {
+    "productId": "CFQ7TTC0LFLX",
+    "skuId": "1",
+    "title": "Microsoft 365 E3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3894000
+  },
+  {
+    "productId": "CFQ7TTC0LFLX",
+    "skuId": "21",
+    "title": "Microsoft 365 E3 (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3042000
+  },
+  {
+    "productId": "CFQ7TTC0LFLX",
+    "skuId": "20",
+    "title": "Microsoft 365 E3 (no Teams) - Unattended License",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3042000
+  },
+  {
+    "productId": "CFQ7TTC0LFLX",
+    "skuId": "3",
+    "title": "Microsoft 365 E3 - Unattended License",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3894000
+  },
+  {
+    "productId": "CFQ7TTC0LFLZ",
+    "skuId": "001P",
+    "title": "Microsoft 365 E5 (no Teams) without Audio Conferencing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 5136000
+  },
+  {
+    "productId": "CFQ7TTC0HD6V",
+    "skuId": "1",
+    "title": "Microsoft 365 E5 eDiscovery and Audit",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 600000
+  },
+  {
+    "productId": "CFQ7TTC0HD6T",
+    "skuId": "1",
+    "title": "Microsoft 365 E5 Information Protection and Governance",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 696000
+  },
+  {
+    "productId": "CFQ7TTC0HD6S",
+    "skuId": "1",
+    "title": "Microsoft 365 E5 Insider Risk Management",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 600000
+  },
+  {
+    "productId": "CFQ7TTC0LFLZ",
+    "skuId": "3",
+    "title": "Microsoft 365 E5 without Audio Conferencing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 5988000
+  },
+  {
+    "productId": "CFQ7TTBZZR6H",
+    "skuId": "000S",
+    "title": "Microsoft 365 E7 (no Teams) without Audio Conferencing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9030000
+  },
+  {
+    "productId": "CFQ7TTBZZR6H",
+    "skuId": "000Z",
+    "title": "Microsoft 365 E7 without Audio Conferencing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9882000
+  },
+  {
+    "productId": "CFQ7TTC0MBMD",
+    "skuId": "2",
+    "title": "Microsoft 365 F1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0MBMD",
+    "skuId": "002T",
+    "title": "Microsoft 365 F1 (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 252000
+  },
+  {
+    "productId": "CFQ7TTC0LH05",
+    "skuId": "1",
+    "title": "Microsoft 365 F3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0LH05",
+    "skuId": "13",
+    "title": "Microsoft 365 F3 (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 894000
+  },
+  {
+    "productId": "CFQ7TTC0P4WT",
+    "skuId": "5",
+    "title": "Microsoft Cloud PKI",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0P4WT",
+    "skuId": "1",
+    "title": "Microsoft Cloud PKI for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 132000
+  },
+  {
+    "productId": "CFQ7TTC0LH1F",
+    "skuId": "000P",
+    "title": "Microsoft Copilot Studio",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 19968000
+  },
+  {
+    "productId": "CFQ7TTC0MBMD",
+    "skuId": "7",
+    "title": "Microsoft Defender + Purview Suite Add-on for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1296000
+  },
+  {
+    "productId": "CFQ7TTC10RSN",
+    "skuId": "3",
+    "title": "Microsoft Defender and Purview Suites for Microsoft 365 Business Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1500000
+  },
+  {
+    "productId": "CFQ7TTC0HX56",
+    "skuId": "2",
+    "title": "Microsoft Defender for Business",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0QKW2",
+    "skuId": "5",
+    "title": "Microsoft Defender for Business servers",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0LHRR",
+    "skuId": "1",
+    "title": "Microsoft Defender for Cloud Apps",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 348000
+  },
+  {
+    "productId": "CFQ7TTC0LHRR",
+    "skuId": "000P",
+    "title": "Microsoft Defender for Cloud Apps F1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 240000
+  },
+  {
+    "productId": "CFQ7TTC0J1GB",
+    "skuId": "5",
+    "title": "Microsoft Defender for Endpoint F1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0LGV0",
+    "skuId": "000V",
+    "title": "Microsoft Defender for Endpoint F2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 348000
+  },
+  {
+    "productId": "CFQ7TTC0J1GB",
+    "skuId": "3",
+    "title": "Microsoft Defender for Endpoint P1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0LGV0",
+    "skuId": "1",
+    "title": "Microsoft Defender for Endpoint P2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 522000
+  },
+  {
+    "productId": "CFQ7TTC0LGV0",
+    "skuId": "3",
+    "title": "Microsoft Defender for Endpoint Server",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 522000
+  },
+  {
+    "productId": "CFQ7TTC0LH0D",
+    "skuId": "1",
+    "title": "Microsoft Defender for Identity",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 552000
+  },
+  {
+    "productId": "CFQ7TTC0LH0D",
+    "skuId": "000M",
+    "title": "Microsoft Defender for Identity F1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 372000
+  },
+  {
+    "productId": "CFQ7TTC0MZH6",
+    "skuId": "2",
+    "title": "Microsoft Defender for IoT - EIoT Device License - add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 84864
+  },
+  {
+    "productId": "CFQ7TTC0LH04",
+    "skuId": "1",
+    "title": "Microsoft Defender for Office 365 (Plan 1)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0LHXH",
+    "skuId": "1",
+    "title": "Microsoft Defender for Office 365 (Plan 2)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0LH04",
+    "skuId": "000R",
+    "title": "Microsoft Defender for Office 365 F1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 132000
+  },
+  {
+    "productId": "CFQ7TTC0LHXH",
+    "skuId": "000M",
+    "title": "Microsoft Defender for Office 365 F2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 342000
+  },
+  {
+    "productId": "CFQ7TTC0LHQB",
+    "skuId": "1",
+    "title": "Microsoft Defender Suite",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1200000
+  },
+  {
+    "productId": "CFQ7TTC0MBMD",
+    "skuId": "6",
+    "title": "Microsoft Defender Suite Add-on FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 798000
+  },
+  {
+    "productId": "CFQ7TTC10RSN",
+    "skuId": "1",
+    "title": "Microsoft Defender Suite for Microsoft 365 Business Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0JPGV",
+    "skuId": "1",
+    "title": "Microsoft Defender Vulnerability Management",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0JPGV",
+    "skuId": "2",
+    "title": "Microsoft Defender Vulnerability Management Add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0JPGV",
+    "skuId": "5",
+    "title": "Microsoft Defender Vulnerability Management Add-On Server",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0JPGV",
+    "skuId": "16",
+    "title": "Microsoft Defender Vulnerability Management for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0LFK5",
+    "skuId": "17",
+    "title": "Microsoft Entra ID F2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 696000
+  },
+  {
+    "productId": "CFQ7TTC0MFT1",
+    "skuId": "1",
+    "title": "Microsoft Entra ID Governance",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 696000
+  },
+  {
+    "productId": "CFQ7TTC0MFT1",
+    "skuId": "000H",
+    "title": "Microsoft Entra ID Governance Add-on for Microsoft Entra ID F2 for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 270000
+  },
+  {
+    "productId": "CFQ7TTC0MFT1",
+    "skuId": "4",
+    "title": "Microsoft Entra ID Governance Add-on for Microsoft Entra ID P2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0MFT1",
+    "skuId": "000J",
+    "title": "Microsoft Entra ID Governance for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 468000
+  },
+  {
+    "productId": "CFQ7TTC0LFLS",
+    "skuId": "2",
+    "title": "Microsoft Entra ID P1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 696000
+  },
+  {
+    "productId": "CFQ7TTC0LFK5",
+    "skuId": "1",
+    "title": "Microsoft Entra ID P2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0PFZR",
+    "skuId": "6",
+    "title": "Microsoft Entra Internet Access",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0PFZR",
+    "skuId": "000Q",
+    "title": "Microsoft Entra Internet Access for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 336000
+  },
+  {
+    "productId": "CFQ7TTC0PFZR",
+    "skuId": "3",
+    "title": "Microsoft Entra Private Access",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0PFZR",
+    "skuId": "000N",
+    "title": "Microsoft Entra Private Access for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 336000
+  },
+  {
+    "productId": "CFQ7TTC0NZT8",
+    "skuId": "4",
+    "title": "Microsoft Entra Suite",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1200000
+  },
+  {
+    "productId": "CFQ7TTC0NZT8",
+    "skuId": "000C",
+    "title": "Microsoft Entra Suite Add-on for Microsoft Entra ID F2 for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 600000
+  },
+  {
+    "productId": "CFQ7TTC0NZT8",
+    "skuId": "000H",
+    "title": "Microsoft Entra Suite Add-on for Microsoft Entra ID P2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 900000
+  },
+  {
+    "productId": "CFQ7TTC0NZT8",
+    "skuId": "3",
+    "title": "Microsoft Entra Suite for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 804000
+  },
+  {
+    "productId": "CFQ7TTC0R9QB",
+    "skuId": "2",
+    "title": "Microsoft Entra Workload ID",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0NGGX",
+    "skuId": "4",
+    "title": "Microsoft Intune Advanced Analytics",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0NGGX",
+    "skuId": "2",
+    "title": "Microsoft Intune Advanced Analytics for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 336000
+  },
+  {
+    "productId": "CFQ7TTC0RP6S",
+    "skuId": "1",
+    "title": "Microsoft Intune Endpoint Privilege Management",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0RP6S",
+    "skuId": "000D",
+    "title": "Microsoft Intune Endpoint Privilege Management for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0N400",
+    "skuId": "1",
+    "title": "Microsoft Intune Enterprise Application Management",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0N400",
+    "skuId": "5",
+    "title": "Microsoft Intune Enterprise Application Management FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 132000
+  },
+  {
+    "productId": "CFQ7TTC0LCH4",
+    "skuId": "9",
+    "title": "Microsoft Intune Plan 1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 798000
+  },
+  {
+    "productId": "CFQ7TTC0LCH4",
+    "skuId": "4",
+    "title": "Microsoft Intune Plan 1 Device",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 264000
+  },
+  {
+    "productId": "CFQ7TTC0LCH4",
+    "skuId": "6",
+    "title": "Microsoft Intune Plan 1 Storage Add-On",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0RP76",
+    "skuId": "2",
+    "title": "Microsoft Intune Plan 2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0RP76",
+    "skuId": "000D",
+    "title": "Microsoft Intune Plan 2 for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 270000
+  },
+  {
+    "productId": "CFQ7TTC0Q17R",
+    "skuId": "1",
+    "title": "Microsoft Intune Remote Help",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 348000
+  },
+  {
+    "productId": "CFQ7TTC0RHGC",
+    "skuId": "1",
+    "title": "Microsoft Intune Remote Help for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 234000
+  },
+  {
+    "productId": "CFQ7TTC0RZFJ",
+    "skuId": "1",
+    "title": "Microsoft Intune Suite",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0RZFJ",
+    "skuId": "000D",
+    "title": "Microsoft Intune Suite for FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 678000
+  },
+  {
+    "productId": "CFQ7TTC0LHR4",
+    "skuId": "1",
+    "title": "Microsoft Purview Suite",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1200000
+  },
+  {
+    "productId": "CFQ7TTC0MBMD",
+    "skuId": "5",
+    "title": "Microsoft Purview Suite Add-on FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 798000
+  },
+  {
+    "productId": "CFQ7TTC10RSN",
+    "skuId": "2",
+    "title": "Microsoft Purview Suite for Microsoft 365 Business Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0Q171",
+    "skuId": "4",
+    "title": "Microsoft Sustainability Manager Essentials",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 399336000
+  },
+  {
+    "productId": "CFQ7TTC0N38H",
+    "skuId": "3",
+    "title": "Microsoft Sustainability Manager Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1198002000
+  },
+  {
+    "productId": "CFQ7TTC0MZJF",
+    "skuId": "9",
+    "title": "Microsoft Teams Enterprise",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 852000
+  },
+  {
+    "productId": "CFQ7TTC0MZJF",
+    "skuId": "000J",
+    "title": "Microsoft Teams Enterprise – Unattended License",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 852000
+  },
+  {
+    "productId": "CFQ7TTC0RC5R",
+    "skuId": "5",
+    "title": "Microsoft Teams Essential with Phone",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1200000
+  },
+  {
+    "productId": "CFQ7TTC0JN4R",
+    "skuId": "2",
+    "title": "Microsoft Teams Essentials",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 138000
+  },
+  {
+    "productId": "CFQ7TTC0LH0T",
+    "skuId": "1",
+    "title": "Microsoft Teams Phone Standard",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 738000
+  },
+  {
+    "productId": "CFQ7TTC0RM8K",
+    "skuId": "22",
+    "title": "Microsoft Teams Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0QW7C",
+    "skuId": "6",
+    "title": "Microsoft Teams Rooms Pro without Audio Conferencing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3996000
+  },
+  {
+    "productId": "CFQ7TTC0LH0V",
+    "skuId": "1",
+    "title": "Microsoft Teams Shared Space",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 798000
+  },
+  {
+    "productId": "CFQ7TTC0S1K7",
+    "skuId": "1",
+    "title": "Microsoft Viva Employee Communications and Communities",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0MN4B",
+    "skuId": "1",
+    "title": "Microsoft Viva Glint",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0LHWF",
+    "skuId": "1",
+    "title": "Microsoft Viva Insights",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0LHWF",
+    "skuId": "8",
+    "title": "Microsoft Viva Insights Capacity",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 499170000
+  },
+  {
+    "productId": "CFQ7TTC0HVZG",
+    "skuId": "1",
+    "title": "Microsoft Viva Learning",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0J7V7",
+    "skuId": "2",
+    "title": "Microsoft Viva Suite",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1200000
+  },
+  {
+    "productId": "CFQ7TTC0LHQG",
+    "skuId": "1",
+    "title": "Multi-Geo Capabilities in Office 365",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "CFQ7TTC0LHSW",
+    "skuId": "1",
+    "title": "Office 365 Data Loss Prevention",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0LF8Q",
+    "skuId": "1",
+    "title": "Office 365 E1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0LF8Q",
+    "skuId": "001S",
+    "title": "Office 365 E1 (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 678000
+  },
+  {
+    "productId": "CFQ7TTC0RP6W",
+    "skuId": "7",
+    "title": "Office 365 E1 Plus",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1998000
+  },
+  {
+    "productId": "CFQ7TTC0RP6W",
+    "skuId": "9",
+    "title": "Office 365 E1 Plus (No Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1674000
+  },
+  {
+    "productId": "CFQ7TTC0LF8R",
+    "skuId": "1",
+    "title": "Office 365 E3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2598000
+  },
+  {
+    "productId": "CFQ7TTC0LF8R",
+    "skuId": "20",
+    "title": "Office 365 E3 (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1740000
+  },
+  {
+    "productId": "CFQ7TTC0LF8S",
+    "skuId": "001G",
+    "title": "Office 365 E5 (no Teams) without Audio Conferencing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3240000
+  },
+  {
+    "productId": "CFQ7TTC0LF8S",
+    "skuId": "1",
+    "title": "Office 365 E5 without Audio Conferencing",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4092000
+  },
+  {
+    "productId": "CFQ7TTC0LHS9",
+    "skuId": "1",
+    "title": "Office 365 Extra File Storage",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 19920
+  },
+  {
+    "productId": "CFQ7TTC0LGZW",
+    "skuId": "1",
+    "title": "Office 365 F3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0LGZW",
+    "skuId": "001F",
+    "title": "Office 365 F3 (no Teams)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 348000
+  },
+  {
+    "productId": "CFQ7TTBZTMB1",
+    "skuId": "3",
+    "title": "OneDrive Extra Storage 100GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1998000
+  },
+  {
+    "productId": "CFQ7TTBZTMB1",
+    "skuId": "7",
+    "title": "OneDrive Extra Storage 1TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 19968000
+  },
+  {
+    "productId": "CFQ7TTBZTMB1",
+    "skuId": "8",
+    "title": "OneDrive Extra Storage 2TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 39936000
+  },
+  {
+    "productId": "CFQ7TTBZTMB1",
+    "skuId": "001C",
+    "title": "OneDrive Extra Storage 3TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 59898000
+  },
+  {
+    "productId": "CFQ7TTBZTMB1",
+    "skuId": "001G",
+    "title": "OneDrive Extra Storage 4TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 79866000
+  },
+  {
+    "productId": "CFQ7TTBZTMB1",
+    "skuId": "1",
+    "title": "OneDrive Extra Storage 500GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9984000
+  },
+  {
+    "productId": "CFQ7TTBZTMB1",
+    "skuId": "18",
+    "title": "OneDrive Extra Storage 5TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 99834000
+  },
+  {
+    "productId": "CFQ7TTBZTMB1",
+    "skuId": "14",
+    "title": "OneDrive Extra Storage 6TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 119802000
+  },
+  {
+    "productId": "CFQ7TTC0HDB0",
+    "skuId": "2",
+    "title": "Planner and Project Plan 3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2994000
+  },
+  {
+    "productId": "CFQ7TTC0HDB1",
+    "skuId": "2",
+    "title": "Planner Plan 1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0J4GS",
+    "skuId": "2",
+    "title": "Power Apps per app plan (1 app or website)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0LH2H",
+    "skuId": "2",
+    "title": "Power Apps Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2196000
+  },
+  {
+    "productId": "CFQ7TTC0LH2H",
+    "skuId": "000X",
+    "title": "Power Apps Premium (2000 seat min)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1398000
+  },
+  {
+    "productId": "CFQ7TTC0PV17",
+    "skuId": "3",
+    "title": "Power Automate Hosted Process",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 21462000
+  },
+  {
+    "productId": "CFQ7TTC0LH13",
+    "skuId": "1",
+    "title": "Power Automate per flow plan",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9984000
+  },
+  {
+    "productId": "CFQ7TTC0LH3L",
+    "skuId": "1",
+    "title": "Power Automate per user plan",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1500000
+  },
+  {
+    "productId": "CFQ7TTC0LSGZ",
+    "skuId": "1",
+    "title": "Power Automate Premium",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1500000
+  },
+  {
+    "productId": "CFQ7TTC0MFT9",
+    "skuId": "1",
+    "title": "Power Automate Process",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 14976000
+  },
+  {
+    "productId": "CFQ7TTC0S6D5",
+    "skuId": "3",
+    "title": "Power Automate Process Mining add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 499170000
+  },
+  {
+    "productId": "CFQ7TTC0LSH0",
+    "skuId": "1",
+    "title": "Power Automate unattended RPA add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 14976000
+  },
+  {
+    "productId": "CFQ7TTC0HL8W",
+    "skuId": "1",
+    "title": "Power BI Premium Per User",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2394000
+  },
+  {
+    "productId": "CFQ7TTC0HL8T",
+    "skuId": "1",
+    "title": "Power BI Premium Per User Add-On",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 996000
+  },
+  {
+    "productId": "CFQ7TTC0LHSF",
+    "skuId": "1",
+    "title": "Power BI Pro",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1398000
+  },
+  {
+    "productId": "CFQ7TTC0RJ8R",
+    "skuId": "2",
+    "title": "Power Pages anonymous users T1 500 users/per site/month capacity pack",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 7488000
+  },
+  {
+    "productId": "CFQ7TTC0RJ8R",
+    "skuId": "1",
+    "title": "Power Pages anonymous users T2 min 20 units - 500 users/per site/month capacity pack",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3744000
+  },
+  {
+    "productId": "CFQ7TTC0RJ8R",
+    "skuId": "3",
+    "title": "Power Pages anonymous users T3 min 200 units - 500 users/per site/month capacity pack",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2496000
+  },
+  {
+    "productId": "CFQ7TTC0RJ8N",
+    "skuId": "3",
+    "title": "Power Pages authenticated users T1 100 users/per site/month capacity pack",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 19968000
+  },
+  {
+    "productId": "CFQ7TTC0RJ8N",
+    "skuId": "1",
+    "title": "Power Pages authenticated users T2 min 100 units - 100 users/per site/month capacity pack",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 7488000
+  },
+  {
+    "productId": "CFQ7TTC0RJ8N",
+    "skuId": "2",
+    "title": "Power Pages authenticated users T3 min 1,000 units - 100 users/per site/month capacity pack",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4992000
+  },
+  {
+    "productId": "CFQ7TTC0LH1S",
+    "skuId": "1",
+    "title": "Power Platform Requests add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4992000
+  },
+  {
+    "productId": "CFQ7TTC0HVZW",
+    "skuId": "000D",
+    "title": "Priva Privacy Risk Management",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0LHVD",
+    "skuId": "1",
+    "title": "Pro Direct Support for Dynamics 365 Operations",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 900000
+  },
+  {
+    "productId": "CFQ7TTC0S3X1",
+    "skuId": "4",
+    "title": "Python in Excel add-on",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1998000
+  },
+  {
+    "productId": "CFQ7TTC0PFZR",
+    "skuId": "000Z",
+    "title": "Remote Network Bandwidth",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 7488000
+  },
+  {
+    "productId": "CFQ7TTC0HD4F",
+    "skuId": "2",
+    "title": "Sensor Data Intelligence Additional Machines Add-in for Dynamics 365 Supply Chain Management",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 24960000
+  },
+  {
+    "productId": "CFQ7TTC0HD4F",
+    "skuId": "1",
+    "title": "Sensor Data Intelligence Scenario Add-in for Dynamics 365 Supply Chain Management",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 149748000
+  },
+  {
+    "productId": "CFQ7TTC0R551",
+    "skuId": "1",
+    "title": "SharePoint advanced management plan 1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 300000
+  },
+  {
+    "productId": "CFQ7TTC0LHR5",
+    "skuId": "1",
+    "title": "Skype for Business Plus CAL",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 198000
+  },
+  {
+    "productId": "DG7GMGF0VNGX",
+    "skuId": "2",
+    "title": "SQL Server 2025 Enterprise - 2 core License Pack - 1 year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 60684100
+  },
+  {
+    "productId": "DG7GMGF0VNH2",
+    "skuId": "3",
+    "title": "SQL Server 2025 Standard - 2 core License Pack - 1 year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 15828400
+  },
+  {
+    "productId": "DG7GMGF0FKZX",
+    "skuId": "3",
+    "title": "SQL Server Big Data Node Cores - 1 Year Subscription",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 3177500
+  },
+  {
+    "productId": "DG7GMGF0PP48",
+    "skuId": "1",
+    "title": "System Center 2025 Datacenter - 2 Core License Pack 1 Year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 1327200
+  },
+  {
+    "productId": "DG7GMGF0PP47",
+    "skuId": "1",
+    "title": "System Center 2025 Standard - 2 Core License Pack 1 Year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 486800
+  },
+  {
+    "productId": "CFQ7TTC0PGPL",
+    "skuId": "1",
+    "title": "Teams Essentials and Teams Phone with domestic and international calling",
+    "tags": "License;IncludeOverage",
+    "billing": "Annual",
+    "listExGstMinor": 3594000
+  },
+  {
+    "productId": "CFQ7TTC0MJ3G",
+    "skuId": "1",
+    "title": "Teams Essentials and Teams Phone with domestic calling",
+    "tags": "License;IncludeOverage",
+    "billing": "Annual",
+    "listExGstMinor": 1998000
+  },
+  {
+    "productId": "CFQ7TTC0MJ2C",
+    "skuId": "1",
+    "title": "Teams Essentials and Teams Phone with pay-as-you-go calling (country zone 2)",
+    "tags": "License;IncludeOverage",
+    "billing": "Annual",
+    "listExGstMinor": 1500000
+  },
+  {
+    "productId": "CFQ7TTBZZJP0",
+    "skuId": "000H",
+    "title": "Teams Events Attendee Pack - 100k attendees",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2658072000
+  },
+  {
+    "productId": "CFQ7TTBZZJP0",
+    "skuId": "4",
+    "title": "Teams Events Attendee Pack - 10k attendees",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 354408000
+  },
+  {
+    "productId": "CFQ7TTBZZJP0",
+    "skuId": "001M",
+    "title": "Teams Events Attendee Pack - 20k attendees",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 531612000
+  },
+  {
+    "productId": "CFQ7TTBZZJP0",
+    "skuId": "001V",
+    "title": "Teams Events Attendee Pack - 35k attendees",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 974676000
+  },
+  {
+    "productId": "CFQ7TTBZZJP0",
+    "skuId": "000G",
+    "title": "Teams Events Attendee Pack - 50k attendees",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1417638000
+  },
+  {
+    "productId": "CFQ7TTBZZJP0",
+    "skuId": "8",
+    "title": "Teams Events Attendee Pack - 5k attendees",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 134778000
+  },
+  {
+    "productId": "CFQ7TTBZZJP0",
+    "skuId": "001J",
+    "title": "Teams Events Attendee Pack - 75k attendees",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2037906000
+  },
+  {
+    "productId": "CFQ7TTC0LH0T",
+    "skuId": "001D",
+    "title": "Teams Phone Standard FLW",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0PGMW",
+    "skuId": "1",
+    "title": "Teams Phone with domestic and international calling",
+    "tags": "License;IncludeOverage",
+    "billing": "Annual",
+    "listExGstMinor": 3396000
+  },
+  {
+    "productId": "CFQ7TTC0MJ20",
+    "skuId": "3",
+    "title": "Teams Phone with pay-as-you-go calling (country zone 2)",
+    "tags": "License;IncludeOverage",
+    "billing": "Annual",
+    "listExGstMinor": 1296000
+  },
+  {
+    "productId": "CFQ7TTC0HDJR",
+    "skuId": "2",
+    "title": "Universal Print",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 402000
+  },
+  {
+    "productId": "CFQ7TTC0HDJR",
+    "skuId": "000F",
+    "title": "Universal Print volume add-on (10k jobs)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 29952000
+  },
+  {
+    "productId": "CFQ7TTC0HDJR",
+    "skuId": "000G",
+    "title": "Universal Print volume add-on (500 jobs)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2496000
+  },
+  {
+    "productId": "CFQ7TTC0HD33",
+    "skuId": "3",
+    "title": "Visio Plan 1",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 498000
+  },
+  {
+    "productId": "CFQ7TTC0HD32",
+    "skuId": "2",
+    "title": "Visio Plan 2",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1500000
+  },
+  {
+    "productId": "DG7GMGF0HPVW",
+    "skuId": "000B",
+    "title": "Win Server DC Core Ext Security 2012 2 Core Y3 (October 2025-2026)",
+    "tags": "Software;Subscription",
+    "billing": "OneTime",
+    "listExGstMinor": 6533500
+  },
+  {
+    "productId": "DG7GMGF0HPVW",
+    "skuId": "1",
+    "title": "Win Server DC Core Ext Security 2012 8 Core Y3 (October 2025-2026)",
+    "tags": "Software;Subscription",
+    "billing": "OneTime",
+    "listExGstMinor": 26151200
+  },
+  {
+    "productId": "DG7GMGF0HPVV",
+    "skuId": "9",
+    "title": "Win Server Std Core Ext Security 2012 2 Core Y3 (October 2025-2026)",
+    "tags": "Software;Subscription",
+    "billing": "OneTime",
+    "listExGstMinor": 1138400
+  },
+  {
+    "productId": "DG7GMGF0HPVV",
+    "skuId": "000B",
+    "title": "Win Server Std Core Ext Security 2012 8 Core Y3 (October 2025-2026)",
+    "tags": "Software;Subscription",
+    "billing": "OneTime",
+    "listExGstMinor": 4536900
+  },
+  {
+    "productId": "CFQ7TTC0LGTX",
+    "skuId": "4",
+    "title": "Windows 10/11 Enterprise E3",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 762000
+  },
+  {
+    "productId": "CFQ7TTC0LGTX",
+    "skuId": "2",
+    "title": "Windows 10/11 Enterprise E3 (local only)",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 762000
+  },
+  {
+    "productId": "CFQ7TTC0LGTX",
+    "skuId": "1",
+    "title": "Windows 10/11 Enterprise E3 VDA",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1422000
+  },
+  {
+    "productId": "CFQ7TTC0LFNW",
+    "skuId": "2",
+    "title": "Windows 10/11 Enterprise E5",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 1278000
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "24",
+    "title": "Windows 365 Business 16 vCPU, 64 GB, 1 TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 24764400
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "25",
+    "title": "Windows 365 Business 16 vCPU, 64 GB, 512 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 21816000
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "000M",
+    "title": "Windows 365 Business 2 vCPU, 4 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2716200
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "000N",
+    "title": "Windows 365 Business 2 vCPU, 4 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3418200
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "000L",
+    "title": "Windows 365 Business 2 vCPU, 4 GB, 64 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2484000
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "000P",
+    "title": "Windows 365 Business 2 vCPU, 8 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3493800
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "000Q",
+    "title": "Windows 365 Business 2 vCPU, 8 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4190400
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "000R",
+    "title": "Windows 365 Business 4 vCPU, 16 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 5432400
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "000S",
+    "title": "Windows 365 Business 4 vCPU, 16 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 6134400
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "1",
+    "title": "Windows 365 Business 4 vCPU, 16 GB, 512 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 8148600
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "5",
+    "title": "Windows 365 Business 8 vCPU, 32 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9860400
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "4",
+    "title": "Windows 365 Business 8 vCPU, 32 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 10557000
+  },
+  {
+    "productId": "CFQ7TTC0J203",
+    "skuId": "2",
+    "title": "Windows 365 Business 8 vCPU, 32 GB, 512 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 12576600
+  },
+  {
+    "productId": "CFQ7TTC0SWNG",
+    "skuId": "1",
+    "title": "Windows 365 Cross Region Disaster Recovery Add-On",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 486000
+  },
+  {
+    "productId": "CFQ7TTC11SSF",
+    "skuId": "4",
+    "title": "Windows 365 Disaster Recovery Plus up to 16vCPU",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 17469000
+  },
+  {
+    "productId": "CFQ7TTC11SSF",
+    "skuId": "3",
+    "title": "Windows 365 Disaster Recovery Plus up to 4vCPU",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4368600
+  },
+  {
+    "productId": "CFQ7TTC11SSF",
+    "skuId": "2",
+    "title": "Windows 365 Disaster Recovery Plus up to 8vCPU",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 8731800
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "004H",
+    "title": "Windows 365 Enterprise 16 vCPU, 64 GB, 1 TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 30569400
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "48",
+    "title": "Windows 365 Enterprise 16 vCPU, 64 GB, 512 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 26881200
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "13",
+    "title": "Windows 365 Enterprise 2 vCPU, 4 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3007800
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "14",
+    "title": "Windows 365 Enterprise 2 vCPU, 4 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3882600
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "12",
+    "title": "Windows 365 Enterprise 2 vCPU, 4 GB, 64 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 2716200
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "15",
+    "title": "Windows 365 Enterprise 2 vCPU, 8 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 3979800
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "16",
+    "title": "Windows 365 Enterprise 2 vCPU, 8 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4854600
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "00J5",
+    "title": "Windows 365 Enterprise 32 vCPU, 128 GB, 1 TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 64530000
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "00J3",
+    "title": "Windows 365 Enterprise 32 vCPU, 128 GB, 2 TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 74233800
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "000Z",
+    "title": "Windows 365 Enterprise 4 vCPU, 16 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 6404400
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "000T",
+    "title": "Windows 365 Enterprise 4 vCPU, 16 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 7279200
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "000W",
+    "title": "Windows 365 Enterprise 4 vCPU, 16 GB, 512 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9801000
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "10",
+    "title": "Windows 365 Enterprise 8 vCPU, 32 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 11934000
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "000V",
+    "title": "Windows 365 Enterprise 8 vCPU, 32 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 12808800
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "000X",
+    "title": "Windows 365 Enterprise 8 vCPU, 32 GB, 512 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 15330600
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "004N",
+    "title": "Windows 365 Enterprise GPU Max",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 185733000
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "004Q",
+    "title": "Windows 365 Enterprise GPU Standard",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 52110000
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "004P",
+    "title": "Windows 365 Enterprise GPU Super",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 99851400
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "00LD",
+    "title": "Windows 365 Enterprise Select, 256GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 30083400
+  },
+  {
+    "productId": "CFQ7TTC0HHS9",
+    "skuId": "00HZ",
+    "title": "Windows 365 Enterprise Select, 512GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 32508000
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "11",
+    "title": "Windows 365 Frontline 16 vCPU, 64 GB, 1 TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 45900000
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "13",
+    "title": "Windows 365 Frontline 16 vCPU, 64 GB, 512 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 40370400
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000H",
+    "title": "Windows 365 Frontline 2 vCPU, 4 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4563000
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000F",
+    "title": "Windows 365 Frontline 2 vCPU, 4 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 5821200
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000D",
+    "title": "Windows 365 Frontline 2 vCPU, 4 GB, 64 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 4077000
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000G",
+    "title": "Windows 365 Frontline 2 vCPU, 8 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 6015600
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000J",
+    "title": "Windows 365 Frontline 2 vCPU, 8 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 7279200
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "80",
+    "title": "Windows 365 Frontline 32 vCPU, 128 GB, 1 TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 96795000
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "007X",
+    "title": "Windows 365 Frontline 32 vCPU, 128 GB, 2 TB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 111353400
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000Q",
+    "title": "Windows 365 Frontline 4 vCPU, 16 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 9606600
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000P",
+    "title": "Windows 365 Frontline 4 vCPU, 16 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 10967400
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000N",
+    "title": "Windows 365 Frontline 4 vCPU, 16 GB, 512 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 14747400
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000M",
+    "title": "Windows 365 Frontline 8 vCPU, 32 GB, 128 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 17949600
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000L",
+    "title": "Windows 365 Frontline 8 vCPU, 32 GB, 256 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 19213200
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "000K",
+    "title": "Windows 365 Frontline 8 vCPU, 32 GB, 512 GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 22998600
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "15",
+    "title": "Windows 365 Frontline GPU Max",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 278596800
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "17",
+    "title": "Windows 365 Frontline GPU Standard",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 78213600
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "16",
+    "title": "Windows 365 Frontline GPU Super",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 149828400
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "008M",
+    "title": "Windows 365 Frontline Select, 256GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 45122400
+  },
+  {
+    "productId": "CFQ7TTC0R595",
+    "skuId": "007S",
+    "title": "Windows 365 Frontline Select, 512GB",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 48762000
+  },
+  {
+    "productId": "CFQ7TTC13M6X",
+    "skuId": "1",
+    "title": "Windows 365 Reserve",
+    "tags": "License",
+    "billing": "Annual",
+    "listExGstMinor": 180000
+  },
+  {
+    "productId": "DG7GMGF0PWHT",
+    "skuId": "3",
+    "title": "Windows Server 2025 CAL - 1 Device CAL - 1 year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 102800
+  },
+  {
+    "productId": "DG7GMGF0PWHT",
+    "skuId": "4",
+    "title": "Windows Server 2025 CAL - 1 User CAL - 1 year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 121400
+  },
+  {
+    "productId": "DG7GMGF0PWHD",
+    "skuId": "2",
+    "title": "Windows Server 2025 Datacenter - 2 Core License Pack 1 Year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 4065100
+  },
+  {
+    "productId": "DG7GMGF0PWHD",
+    "skuId": "3",
+    "title": "Windows Server 2025 Datacenter - 8 Core License Pack 1 Year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 16260600
+  },
+  {
+    "productId": "DG7GMGF0PWHB",
+    "skuId": "2",
+    "title": "Windows Server 2025 Remote Desktop Services - 1 User CAL 1 Year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 770000
+  },
+  {
+    "productId": "DG7GMGF0PWHF",
+    "skuId": "1",
+    "title": "Windows Server 2025 RMS CAL - 1 Device CAL - 1 year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 177500
+  },
+  {
+    "productId": "DG7GMGF0PWHF",
+    "skuId": "3",
+    "title": "Windows Server 2025 RMS CAL - 1 User CAL - 1 year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 214900
+  },
+  {
+    "productId": "DG7GMGF0PWHC",
+    "skuId": "4",
+    "title": "Windows Server 2025 Standard - 2 Core License Pack 1 Year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 584100
+  },
+  {
+    "productId": "DG7GMGF0PWHC",
+    "skuId": "2",
+    "title": "Windows Server 2025 Standard - 8 Core License Pack 1 Year",
+    "tags": "Software;Subscription",
+    "billing": "Annual",
+    "listExGstMinor": 2336400
+  }
+]
