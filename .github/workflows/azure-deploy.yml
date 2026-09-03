@@ -143,13 +143,17 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run db:seed
 
+      # `az webapp config container set` tries to fetch registry admin
+      # credentials, which this registry deliberately does not have — the app
+      # pulls with its own managed identity. Setting the image directly avoids
+      # that lookup, and re-asserts identity-based pulling at the same time.
       - name: Point the Web App at the new image
         run: |
-          az webapp config container set \
+          az webapp config set \
             --name ${{ vars.AZURE_WEBAPP_NAME }} \
             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --container-image-name "${{ vars.AZURE_REGISTRY }}.azurecr.io/$IMAGE_NAME:${{ github.sha }}" \
-            --container-registry-url "https://${{ vars.AZURE_REGISTRY }}.azurecr.io"
+            --linux-fx-version "DOCKER|${{ vars.AZURE_REGISTRY }}.azurecr.io/$IMAGE_NAME:${{ github.sha }}" \
+            --generic-configurations '{"acrUseManagedIdentityCreds": true}'
 
       - name: Wait for the health check to pass
         run: |

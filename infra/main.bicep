@@ -41,6 +41,9 @@ param databaseSku string = 'Standard_B1ms'
 @description('PostgreSQL storage, GB. Can be grown later but never shrunk.')
 param databaseStorageGb int = 32
 
+@description('Image to run, as repository:tag inside the registry this template creates. It need not exist on the first deployment — App Service simply has nothing to serve until `az acr build` pushes it.')
+param containerImage string = 'vertex-storefront:v1'
+
 // ---------------------------------------------------------------------------
 // What the application needs to run
 //
@@ -225,9 +228,15 @@ resource web 'Microsoft.Web/sites@2023-12-01' = {
     serverFarmId: plan.id
     httpsOnly: true
     siteConfig: {
-      // Placeholder until the first image is pushed; the GitHub Action sets
-      // the real tag on every deploy.
-      linuxFxVersion: 'DOCKER|mcr.microsoft.com/appsvc/staticsite:latest'
+      // The image is named here rather than left to a later `az webapp config`
+      // call, because this template owns the whole site configuration: a
+      // redeploy rewrites it wholesale, and a placeholder here would take a
+      // running store offline every time somebody changed a Stripe key.
+      //
+      // Deploying after the GitHub Action has pushed a commit-tagged image
+      // pins the app back to `containerImage`, so set that parameter to the
+      // tag you want live if you use both paths.
+      linuxFxVersion: 'DOCKER|${registry.properties.loginServer}/${containerImage}'
       alwaysOn: appServiceSku != 'B1'
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'

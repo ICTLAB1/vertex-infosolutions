@@ -3,6 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "namePrefix": { "value": "vertex" },
+    "containerImage": { "value": "vertex-storefront:v1" },
     "dbAdminPassword": { "value": "REPLACE-with-a-strong-password" },
 
     "adminEmails": { "value": "you@yourdomain.example" },
