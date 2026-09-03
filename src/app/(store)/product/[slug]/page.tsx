@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { addToCart, buyNow } from "@/app/actions";
 import { Glyph } from "@/components/glyph";
+import { TenantNotice } from "@/components/tenant-notice";
 import { Stars } from "@/components/stars";
 import { getMarket, MAX_QTY } from "@/lib/cart";
 import {
@@ -293,6 +294,8 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               — the key is issued to your inbox as soon as payment clears,
               usually within a minute.
             </p>
+
+            {product.cspNewTenant && <TenantNotice />}
 
             <div className="mt-4 space-y-2">
               <form action={addToCart} className="space-y-2">

@@ -39,6 +39,27 @@ export default function LicensingPage() {
         it is, above the fold.
       </p>
 
+      <H2>Microsoft subscriptions arrive in a new tenant</H2>
+      <p>
+        Every Microsoft subscription sold here is a CSP subscription, bought in
+        the region we trade in. Microsoft will not attach one of those to a
+        tenant that already exists in a different region, so it provisions a{" "}
+        <strong className="text-ink">new tenant, with a new tenant ID</strong>,
+        for your order.
+      </p>
+      <p>
+        This matters more than it sounds. If you already run Microsoft 365, the
+        seats you buy here will not appear beside your existing users. They are
+        a separate directory: separate sign-ins, separate mailboxes, separate
+        SharePoint. Your current tenant is untouched — nothing is migrated,
+        merged or moved.
+      </p>
+      <p>
+        If what you want is more seats on the tenant you already have, tell us
+        before you order and we will say plainly whether we can do it. Buying
+        the wrong one is the expensive mistake this page exists to prevent.
+      </p>
+
       <H2>Named users, not devices</H2>
       <p>
         Adobe and Autodesk licence by named user. A seat belongs to one person,

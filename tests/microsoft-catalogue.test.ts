@@ -79,6 +79,16 @@ describe("the Microsoft price book", () => {
     );
   });
 
+  it("marks every CSP licence as arriving in a new tenant", () => {
+    // A buyer who assumes these seats join their existing Microsoft 365 has
+    // bought the wrong thing, so the flag that drives that warning is set on
+    // every one of them rather than on the ones somebody remembered.
+    for (const product of MICROSOFT_PRODUCTS) {
+      expect(product.cspNewTenant).toBe(true);
+      expect(product.specs["Microsoft tenant"]).toMatch(/new tenant/i);
+    }
+  });
+
   it("charges at least a dollar for the cheapest add-on", () => {
     for (const product of MICROSOFT_PRODUCTS) {
       for (const variant of product.variants) {

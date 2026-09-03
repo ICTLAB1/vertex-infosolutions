@@ -122,6 +122,17 @@ model Product {
   /// "once, forever" are very different purchases at similar-looking prices.
   term LicenceTerm @default(ANNUAL_SUBSCRIPTION)
 
+  /// Whether this licence arrives in a newly created Microsoft tenant.
+  ///
+  /// A CSP subscription is bought in the region the reseller trades in, and it
+  /// cannot be attached to a tenant that already exists in another one — so
+  /// Microsoft provisions a new tenant, with a new tenant ID, for the order.
+  /// That changes what the customer receives, not merely how it is delivered:
+  /// somebody expecting these seats to appear beside their existing users has
+  /// bought the wrong thing. It is therefore said on the product page, in the
+  /// basket and again at checkout, rather than in the terms.
+  cspNewTenant Boolean @default(false)
+
   glyph    String  @default("licence")
   featured Boolean @default(false)
 

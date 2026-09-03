@@ -72,6 +72,7 @@ export const cartInclude = {
               sacCode: true,
               gstRatePercent: true,
               term: true,
+              cspNewTenant: true,
               brand: { select: { name: true } },
             },
           },

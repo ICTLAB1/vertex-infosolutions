@@ -4,6 +4,7 @@ import Link from "next/link";
 import { removeFromCart, setQty } from "@/app/actions";
 import { Glyph } from "@/components/glyph";
 import { QtyInput } from "@/components/qty-input";
+import { TenantNotice } from "@/components/tenant-notice";
 import {
   getCart,
   getMarket,
@@ -197,6 +198,7 @@ function CartRow({
           {variant.name} · {TERM_LABELS[product.term]}
         </p>
         <p className="mt-0.5 font-mono text-[12px] text-faint">{variant.sku}</p>
+        {product.cspNewTenant && <TenantNotice tone="line" />}
 
         {price ? (
           <p className="mt-1 text-[13px] text-ok">

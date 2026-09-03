@@ -372,11 +372,15 @@ export const MICROSOFT_PRODUCTS: SeedProduct[] = (() => {
         Billing:
           row.billing === "OneTime" ? "Once, for the year" : "Annual, paid up front",
         Delivery: "Electronic — issued on payment",
+        "Microsoft tenant": "A new tenant is created for this order",
         "Microsoft product ID": row.productId,
         "Microsoft SKU ID": row.skuId,
         ...editorial?.specs,
       },
       featured: editorial?.featured ?? false,
+      // Every SKU in this price list is bought through CSP, so every one of
+      // them arrives in a tenant Microsoft creates for the order.
+      cspNewTenant: true,
       // One SKU, one line. Multiples are a quantity rather than a separate
       // product: the price list prices a single licence and the basket
       // multiplies it, so inventing a "5 seats" variant would only invent a

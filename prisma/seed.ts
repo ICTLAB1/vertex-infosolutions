@@ -683,6 +683,7 @@ async function main() {
         term: product.term,
         glyph: "licence",
         featured: product.featured ?? false,
+        cspNewTenant: product.cspNewTenant ?? false,
         variants: {
           create: product.variants.map((variant) => ({
             sku: variant.sku,

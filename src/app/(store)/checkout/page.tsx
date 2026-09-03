@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { CheckoutForm } from "@/components/checkout-form";
+import { TenantNotice } from "@/components/tenant-notice";
 import { getUser } from "@/lib/auth";
 import { getCart, getMarket, totalsFor } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
@@ -71,6 +72,10 @@ export default async function CheckoutPage() {
             );
           })}
         </ul>
+
+        {cart.items.some((line) => line.variant.product.cspNewTenant) && (
+          <TenantNotice />
+        )}
 
         <dl className="mt-3 space-y-1 border-t border-line-soft pt-3 text-[14px]">
           {market.domestic ? (

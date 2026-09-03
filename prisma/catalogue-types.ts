@@ -38,6 +38,8 @@ export type SeedProduct = {
   bullets: string[];
   specs: Record<string, string>;
   featured?: boolean;
+  /** Delivered into a newly created Microsoft tenant. See the schema. */
+  cspNewTenant?: boolean;
   variants: SeedVariant[];
   reviews?: SeedReview[];
 };

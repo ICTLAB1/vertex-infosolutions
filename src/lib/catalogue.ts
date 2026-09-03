@@ -26,6 +26,7 @@ export function productSelect(currency: CurrencyCode) {
     term: true,
     glyph: true,
     featured: true,
+    cspNewTenant: true,
     brand: { select: { name: true, slug: true } },
     category: { select: { name: true, slug: true } },
     variants: {
