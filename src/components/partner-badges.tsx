@@ -20,6 +20,12 @@ const BADGES: readonly {
   height: number;
 }[] = [
   {
+    src: "/badges/microsoft-solutions-partner.png",
+    alt: "Microsoft Solutions Partner",
+    width: 819,
+    height: 210,
+  },
+  {
     src: "/badges/adobe-certified-reseller.png",
     alt: "Adobe Certified Reseller",
     width: 1921,
