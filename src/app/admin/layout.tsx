@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { requireAdmin } from "@/lib/admin";
+import { channelStatus } from "@/lib/notify";
+import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s — Admin" },
@@ -25,6 +27,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const admin = await requireAdmin();
+  const outage = await mailOutage();
 
   return (
     <div className="flex min-h-full flex-col bg-nav/[0.03]">
@@ -65,9 +68,65 @@ export default async function AdminLayout({
           </Link>
         </div>
       </header>
+      {/*
+        The one outage nobody would otherwise notice.
+
+        With no mail provider configured, every account that registers is told
+        a code is on its way and never receives one — and since nothing can be
+        bought before an address is confirmed, the shop is refusing every new
+        customer without a single error appearing anywhere a person looks. It
+        happened. So the back office says so on every page until it is fixed,
+        and counts the messages that failed while it was true.
+      */}
+      {outage ? (
+        <div className="border-b border-deal/40 bg-deal/10">
+          <div className="mx-auto max-w-[1100px] px-4 py-3">
+            <p className="text-[14px] font-bold text-deal">
+              No email is being sent. Nobody can finish creating an account.
+            </p>
+            <p className="mt-1 text-[13px] text-deal/90">
+              {outage}{" "}
+              <Link href="/admin/messages" className="underline">
+                See what failed
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       <main id="main" className="flex-1">
         {children}
       </main>
     </div>
   );
+}
+
+/**
+ * A sentence about the mail provider, or nothing.
+ *
+ * Two different faults look identical to a customer — no provider configured,
+ * and a provider that is rejecting — so both are reported, and the count of
+ * recently failed messages is included because "it is broken" and "it has been
+ * broken for two hundred customers" are different sentences.
+ */
+async function mailOutage(): Promise<string | null> {
+  if (!channelStatus().email) {
+    const failed = await prisma.notification
+      .count({ where: { channel: "EMAIL", status: "FAILED" } })
+      .catch(() => 0);
+    return `The mail service is not configured on the server: ACS_CONNECTION_STRING and EMAIL_FROM are both needed, and one or both is missing.${
+      failed > 0
+        ? ` ${failed} ${failed === 1 ? "message has" : "messages have"} failed to send so far.`
+        : ""
+    }`;
+  }
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const failed = await prisma.notification
+    .count({ where: { channel: "EMAIL", status: "FAILED", createdAt: { gt: since } } })
+    .catch(() => 0);
+  if (failed === 0) return null;
+
+  return `${failed} ${failed === 1 ? "message" : "messages"} failed to send in the last day, although the mail service is configured.`;
 }

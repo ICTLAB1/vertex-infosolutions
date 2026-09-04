@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 import { NOINDEX } from "@/lib/seo";
 import { ResendForm, VerifyForm } from "@/components/auth-forms";
 import { getUser, OTP_TTL_TEXT } from "@/lib/auth";
-import { channelStatus } from "@/lib/notify";
+import { channelStatus, lastDeliveryFailed } from "@/lib/notify";
 import { prisma } from "@/lib/db";
+import { getSiteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Confirm your email",
@@ -18,6 +19,11 @@ export default async function VerifyPage() {
   if (user.emailVerifiedAt) redirect("/account");
 
   const channels = channelStatus();
+
+  // What actually happened to this person's code, not what should have. A
+  // failed send is the shop refusing a new customer without telling either of
+  // them, and it is what a deployment with no mail settings looks like.
+  const undelivered = await lastDeliveryFailed(user.id, "otp.verify");
 
   // In development there is usually no mail provider, so the code would be
   // unreachable and the whole flow untestable. Rather than weaken the check,
@@ -33,20 +39,47 @@ export default async function VerifyPage() {
     devCode = row?.body.match(/\b(\d{6})\b/)?.[1] ?? null;
   }
 
+  const support = (await getSiteConfig()).supportEmail ?? "info@vertexinfosolutions.com";
+
   return (
     <div className="mx-auto max-w-[460px] px-4 py-10">
       <div className="rounded-lg border border-line bg-surface p-6">
         <h1 className="text-2xl font-bold text-ink">Confirm your email</h1>
         <p className="mt-1 text-[14px] text-muted">
-          We sent a six-digit code to{" "}
-          <span className="font-semibold text-ink">{user.email}</span>. It
-          expires in {OTP_TTL_TEXT}.
+          {undelivered ? (
+            <>
+              A six-digit code was made for{" "}
+              <span className="font-semibold text-ink">{user.email}</span>, and
+              it expires in {OTP_TTL_TEXT}.
+            </>
+          ) : (
+            <>
+              We sent a six-digit code to{" "}
+              <span className="font-semibold text-ink">{user.email}</span>. It
+              expires in {OTP_TTL_TEXT}.
+            </>
+          )}
         </p>
         <p className="mt-2 mb-4 text-[13px] text-muted">
           This is the address your licence keys and invoices go to, so it has to
           be one you can actually read. Nothing can be bought until it is
           confirmed.
         </p>
+
+        {undelivered && !devCode ? (
+          <p className="mb-4 rounded-md border border-deal/40 bg-deal/5 px-3 py-2 text-[13px] text-deal">
+            <span className="font-semibold">
+              We could not send that email.
+            </span>{" "}
+            This is a fault at our end, not yours, and it is being recorded.
+            Write to{" "}
+            <a href={`mailto:${support}`} className="underline">
+              {support}
+            </a>{" "}
+            from this address and we will confirm your account by hand. Nothing
+            you have entered is lost.
+          </p>
+        ) : null}
 
         {devCode ? (
           <p className="mb-4 rounded-md border border-warn/40 bg-warn/5 px-3 py-2 text-[13px] text-warn">

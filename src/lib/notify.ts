@@ -620,3 +620,32 @@ export async function attachmentsFor(
 export function channelStatus(): { email: boolean; whatsapp: boolean } {
   return { email: emailConfigured(), whatsapp: whatsappConfigured() };
 }
+
+/**
+ * Whether the last message of this kind actually left the building.
+ *
+ * The verify page used to say "we sent a six-digit code to you" whatever
+ * happened, because it had no way of knowing. With no mail provider configured
+ * — which is exactly what a half-finished deployment looks like — that
+ * sentence is untrue, the customer waits for an email that was never sent, and
+ * nothing anywhere says so. They cannot buy anything until they are verified,
+ * so this is not a cosmetic failure: it is the shop quietly refusing every new
+ * customer.
+ *
+ * Read from the outbox rather than from the configuration, so it reports what
+ * happened to this person's message rather than what ought to happen in
+ * general. A provider that is configured and rejecting mail is the same
+ * problem to the customer and is caught the same way.
+ */
+export async function lastDeliveryFailed(
+  userId: string,
+  template: NotifyTemplate,
+): Promise<string | null> {
+  const row = await prisma.notification.findFirst({
+    where: { userId, template, channel: "EMAIL" },
+    orderBy: { createdAt: "desc" },
+    select: { status: true, error: true },
+  });
+  if (!row || row.status !== "FAILED") return null;
+  return row.error ?? "The message could not be sent.";
+}

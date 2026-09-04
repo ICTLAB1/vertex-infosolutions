@@ -126,6 +126,12 @@ export function configWarnings(config: SiteConfig): string[] {
   if (!config.registrationNumber) missing.push("COMPANY_REGISTRATION_NUMBER");
   if (!config.taxIdNumber) missing.push("COMPANY_TAX_ID");
   if (!config.supportEmail) missing.push("COMPANY_SUPPORT_EMAIL");
+  // Without these, nothing is delivered: no verification code, so no account
+  // can be finished, so nothing can be bought. It is the one missing setting
+  // that closes the shop rather than degrading it.
+  if (!process.env.ACS_CONNECTION_STRING || !process.env.EMAIL_FROM) {
+    missing.push("ACS_CONNECTION_STRING / EMAIL_FROM — no email is sent at all");
+  }
   // No phone number is deliberate, not an omission: this shop is contacted by
   // email. Every surface that would print one already hides it when unset, so
   // there is nothing to warn about — and a warning that is always on is a
