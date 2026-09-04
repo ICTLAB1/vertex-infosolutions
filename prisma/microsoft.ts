@@ -35,6 +35,27 @@ export { INR_PER_USD } from "./pricing";
 type PriceRow = (typeof priceList)[number];
 
 /**
+ * The Microsoft mark, on every Microsoft listing.
+ *
+ * One mark rather than an icon per product, and that is a decision rather than
+ * a shortcut. Microsoft's per-product icon pack we were given is a set of
+ * screen captures: the artwork is forty to eighty pixels across inside a large
+ * empty canvas, the product's name is baked into the picture, and several are
+ * clipped mid-letter. Blown up to the size a listing uses they are soft, they
+ * repeat a name the card already prints underneath, and they do not sit
+ * together as a set. Four hundred listings wearing the publisher's own mark
+ * read as one shop; the same listings wearing four hundred blurry screenshots
+ * read as a broken one.
+ *
+ * A drawing rather than a picture of one, so it is sharp at the size a search
+ * result uses and the larger size a product page uses, from a single file of
+ * under a kilobyte. Replacing this with real per-product artwork is a change
+ * to one line each in `LOGO_RULES`-style rules, the way `adobe.ts` does it —
+ * what is missing is the artwork, not the mechanism.
+ */
+const MICROSOFT_MARK = "/logos/microsoft/microsoft.svg";
+
+/**
  * Which shelf a SKU belongs on, first match winning.
  *
  * Order is doing real work: "Dynamics 365 Customer Insights" is a business
@@ -308,6 +329,7 @@ export const MICROSOFT_PRODUCTS: SeedProduct[] = (() => {
       brand: "Microsoft",
       category: categoryFor(row.title),
       term: "ANNUAL_SUBSCRIPTION",
+      logo: MICROSOFT_MARK,
       summary: editorial?.summary ?? generatedSummary(row),
       bullets: editorial?.bullets ?? generatedBullets(row),
       specs: {
