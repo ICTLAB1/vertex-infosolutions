@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { browse, isListable } from "@/lib/catalogue";
 import { prisma } from "@/lib/db";
@@ -72,21 +72,84 @@ describe("the Autodesk range in the seed", () => {
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
+/**
+ * Built here rather than read from the seeded catalogue.
+ *
+ * CI migrates its database and never seeds it, so a test that asked the
+ * catalogue for a quote-only product found none and failed — on the deploy
+ * gate, after the merge, which is the worst place to learn it. Owning the rows
+ * it asserts on also means this says something on any database, not only one
+ * that happens to have Autodesk in it.
+ */
 describe.skipIf(!hasDatabase)("quote-only products in the shop", () => {
+  const stamp = Date.now();
+  const brand = `qo-brand-${stamp}`;
+  const pricedSlug = `qo-priced-${stamp}`;
+  const quotedSlug = `qo-quoted-${stamp}`;
+
+  beforeAll(async () => {
+    const category = await prisma.category.create({
+      data: { slug: `qo-cat-${stamp}`, name: "Quote-only test" },
+    });
+    const brandRow = await prisma.brand.create({
+      data: { slug: brand, name: `Quote-only test ${stamp}` },
+    });
+    const shared = { brandId: brandRow.id, categoryId: category.id };
+
+    await prisma.product.create({
+      data: {
+        ...shared,
+        slug: pricedSlug,
+        name: "Priced licence",
+        summary: "Has a price in both markets.",
+        variants: {
+          create: {
+            sku: `QO-PRICED-${stamp}`,
+            name: "1 user, 1 year",
+            prices: {
+              create: [
+                { currency: "USD", listMinor: 1_000_00, priceMinor: 1_000_00 },
+                { currency: "INR", listMinor: 88_000_00, priceMinor: 88_000_00 },
+              ],
+            },
+          },
+        },
+      },
+    });
+
+    await prisma.product.create({
+      data: {
+        ...shared,
+        slug: quotedSlug,
+        name: "Quoted licence",
+        summary: "Sold, but not at a published price.",
+        quoteOnly: true,
+        // Deliberately no `prices`. That absence is the whole subject.
+        variants: { create: { sku: `QO-QUOTED-${stamp}`, name: "1 user, 1 year" } },
+      },
+    });
+  });
+
+  afterAll(async () => {
+    await prisma.product.deleteMany({
+      where: { slug: { in: [pricedSlug, quotedSlug] } },
+    });
+    await prisma.brand.deleteMany({ where: { slug: brand } });
+    await prisma.category.deleteMany({ where: { slug: `qo-cat-${stamp}` } });
+  });
+
   it("hold no price row in any currency", async () => {
     const withPrices = await prisma.product.count({
       where: { quoteOnly: true, variants: { some: { prices: { some: {} } } } },
     });
     expect(withPrices).toBe(0);
-
-    // And the flag is actually in use, so this is not passing on an empty set.
-    expect(await prisma.product.count({ where: { quoteOnly: true } })).toBeGreaterThan(0);
   });
 
   it("still appear when somebody browses the publisher", async () => {
-    const listed = await browse({ brand: "autodesk" }, "USD");
-    expect(listed.length).toBeGreaterThan(0);
-    expect(listed.every((product) => product.quoteOnly)).toBe(true);
+    // A priced product with no row in this currency would be hidden. This one
+    // has no row in any currency and must not be.
+    const listed = await browse({ brand }, "USD");
+    expect(listed.map((product) => product.slug)).toContain(quotedSlug);
   });
 
   it("sort last whichever way the price sort points", async () => {
@@ -94,17 +157,18 @@ describe.skipIf(!hasDatabase)("quote-only products in the shop", () => {
     // product treated as infinitely expensive tops "most expensive first",
     // which reads as a claim about its price.
     for (const sort of ["price-asc", "price-desc"] as const) {
-      const listed = await browse({ sort }, "USD");
-      const firstUnpriced = listed.findIndex((p) => p.quoteOnly);
-      const lastPriced = listed.map((p) => p.quoteOnly).lastIndexOf(false);
-      expect(firstUnpriced, sort).toBeGreaterThan(lastPriced);
+      const listed = await browse({ brand, sort }, "USD");
+      expect(listed.map((product) => product.slug), sort).toEqual([
+        pricedSlug,
+        quotedSlug,
+      ]);
     }
   });
 
   it("drop out when the shopper sets a price ceiling", async () => {
     // A maximum price is an explicit statement about price. We cannot say this
     // product costs less than the ceiling, so we do not imply it.
-    const listed = await browse({ brand: "autodesk", maxPrice: 100_000_00 }, "USD");
-    expect(listed).toHaveLength(0);
+    const listed = await browse({ brand, maxPrice: 100_000_00 }, "USD");
+    expect(listed.map((product) => product.slug)).toEqual([pricedSlug]);
   });
 });

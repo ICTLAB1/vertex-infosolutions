@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { ADOBE_PRODUCTS } from "../prisma/adobe";
 import { MICROSOFT_PRODUCTS } from "../prisma/microsoft";
@@ -90,15 +90,72 @@ describe("naming the number", () => {
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
+/**
+ * Built here rather than read from the seeded catalogue, for the same reason
+ * as the quote-only tests: CI migrates its database and never seeds it, so a
+ * test that went looking for a real part number found none.
+ */
 describe.skipIf(!hasDatabase)("part numbers in the shop", () => {
-  it("are on every variant we hold a price list for", async () => {
-    const missing = await prisma.variant.count({
-      where: {
-        partNumber: null,
-        product: { brand: { slug: { in: ["microsoft", "adobe"] } } },
+  const stamp = Date.now();
+  const brand = `pn-brand-${stamp}`;
+  const slug = `pn-product-${stamp}`;
+  const quotedSlug = `pn-quoted-${stamp}`;
+  const partNumber = `65297615BA01A${stamp}`;
+
+  beforeAll(async () => {
+    const category = await prisma.category.create({
+      data: { slug: `pn-cat-${stamp}`, name: "Part number test" },
+    });
+    const brandRow = await prisma.brand.create({
+      data: { slug: brand, name: `Part number test ${stamp}` },
+    });
+    const shared = { brandId: brandRow.id, categoryId: category.id };
+
+    await prisma.product.create({
+      data: {
+        ...shared,
+        slug,
+        name: "Licence with a publisher part number",
+        summary: "Carries the number its price list prints.",
+        variants: {
+          create: {
+            sku: `PN-SKU-${stamp}`,
+            partNumber,
+            name: "1 user, 1 year",
+            prices: {
+              create: [
+                { currency: "INR", listMinor: 10_000_00, priceMinor: 10_000_00 },
+              ],
+            },
+          },
+        },
       },
     });
-    expect(missing).toBe(0);
+
+    await prisma.product.create({
+      data: {
+        ...shared,
+        slug: quotedSlug,
+        name: "Licence we hold no price list for",
+        summary: "No published price and no part number.",
+        quoteOnly: true,
+        variants: { create: { sku: `PN-QUOTED-${stamp}`, name: "1 user, 1 year" } },
+      },
+    });
+  });
+
+  afterAll(async () => {
+    await prisma.product.deleteMany({ where: { slug: { in: [slug, quotedSlug] } } });
+    await prisma.brand.deleteMany({ where: { slug: brand } });
+    await prisma.category.deleteMany({ where: { slug: `pn-cat-${stamp}` } });
+  });
+
+  it("are stored exactly as the price list prints them", async () => {
+    const variant = await prisma.variant.findFirstOrThrow({
+      where: { sku: `PN-SKU-${stamp}` },
+      select: { partNumber: true },
+    });
+    expect(variant.partNumber).toBe(partNumber);
   });
 
   it("are absent where there is no price list to copy one from", async () => {
@@ -111,12 +168,7 @@ describe.skipIf(!hasDatabase)("part numbers in the shop", () => {
   });
 
   it("find the listing when somebody pastes one into the search box", async () => {
-    const variant = await prisma.variant.findFirstOrThrow({
-      where: { partNumber: { not: null }, product: { published: true } },
-      select: { partNumber: true, product: { select: { slug: true } } },
-    });
-
-    const found = await browse({ q: variant.partNumber! }, "INR");
-    expect(found.map((p) => p.slug)).toContain(variant.product.slug);
+    const found = await browse({ q: partNumber }, "INR");
+    expect(found.map((product) => product.slug)).toContain(slug);
   });
 });
