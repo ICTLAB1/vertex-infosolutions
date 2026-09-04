@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { getUser, normaliseEmail, type SignedInUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getSiteConfig } from "@/lib/site";
 
 /**
  * Who may run the store.
@@ -32,6 +33,29 @@ export function isAdmin(email: string | null | undefined): boolean {
   // An empty list means nobody, never everybody. A store whose configuration
   // failed to load must not hand the admin area to the next visitor.
   return adminEmails().some((entry) => entry === wanted);
+}
+
+/**
+ * Where a message meant for the shop itself goes.
+ *
+ * The support address first, because that is the mailbox somebody is paid to
+ * watch and the one printed on the site; then everybody who can run the back
+ * office, because an order that arrives at midnight should reach a person and
+ * not only an inbox. Deduplicated, since the two lists usually overlap.
+ *
+ * Empty is possible and is not an error — a shop with no support address
+ * configured still takes orders, and they are all in the back office. It means
+ * nothing is pushed anywhere, which is worth knowing rather than crashing on.
+ */
+export async function shopInboxes(): Promise<string[]> {
+  const support = (await getSiteConfig()).supportEmail;
+  return [
+    ...new Set(
+      [support ? normaliseEmail(support) : null, ...adminEmails()].filter(
+        (address): address is string => Boolean(address),
+      ),
+    ),
+  ];
 }
 
 export type Admin = SignedInUser;

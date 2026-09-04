@@ -49,6 +49,7 @@ export type NotifyTemplate =
   | "order.keys"
   | "order.pending"
   | "licence.expiring"
+  | "admin.order"
   | "enquiry.received"
   | "enquiry.acknowledged";
 
@@ -401,6 +402,36 @@ export async function compose(
 
     // To us, not to the customer. The one message in this file whose reader is
     // the shop rather than the person who wrote it.
+    // To the shop, the moment an order exists. Somebody has to know a sale
+    // happened without going and looking: a bank transfer needs watching for,
+    // a card order needs the licences checked, and either can go wrong in a
+    // way only a person notices. The customer's own confirmation has never
+    // been proof that anyone here saw it.
+    case "admin.order":
+      return {
+        subject: `New order ${data.number} · ${data.total} · ${data.state}`,
+        body: [
+          `${data.state === "paid" ? "Paid" : "Awaiting payment"} — ${data.number}`,
+          "",
+          `Customer: ${data.customer} <${data.customerEmail}>`,
+          `Total:    ${data.total} (${data.taxNote})`,
+          `Paid by:  ${data.method}`,
+          ...(data.market ? [`Market:   ${data.market}`] : []),
+          "",
+          data.lines,
+          "",
+          ...(data.state === "paid"
+            ? [
+                "Licence keys have been issued and sent. Nothing is required unless the customer writes.",
+              ]
+            : [
+                "No money has arrived yet. A bank transfer has to be matched against the statement by hand — the order number is the reference the customer was told to use.",
+              ]),
+          "",
+          `Open it: ${data.adminUrl}`,
+        ].join("\n"),
+      };
+
     case "enquiry.received":
       return {
         subject: `${data.kindLabel} from ${data.name}${data.company ? ` (${data.company})` : ""}`,

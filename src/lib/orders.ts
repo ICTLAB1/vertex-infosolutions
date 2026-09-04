@@ -8,6 +8,7 @@ import { formatMoney } from "@/lib/money";
 import { notify } from "@/lib/notify";
 import { expiryFor } from "@/lib/renewals";
 import { appUrl } from "@/lib/stripe";
+import { shopInboxes } from "@/lib/admin";
 import { bankTransferLines, getSiteConfig } from "@/lib/site";
 
 /** VX-4F2A-9C31-8BE0 — grouped so it can be read aloud on a support call. */
@@ -30,6 +31,68 @@ function licenceKey(): string {
  * callers; whichever loses gets zero rows and returns `alreadyDone`. No lock,
  * no queue, no window.
  */
+/**
+ * Tell the shop an order exists.
+ *
+ * The customer's confirmation has never been proof that anybody here saw it.
+ * A bank transfer has to be watched for on a statement, a card order has to
+ * have its licences checked, and both can go wrong in a way only a person
+ * notices — so this goes to the support address and to everyone who can open
+ * the back office, at the moment the order becomes real.
+ *
+ * Nothing it does can fail the order. It runs after the money and the keys are
+ * settled, `notify` records rather than throws, and a shop with no support
+ * address configured simply sends nothing: the order is in the back office
+ * either way, and an unreachable mailbox must never unwind a payment that has
+ * already been taken.
+ */
+async function alertTheShop(
+  orderId: string,
+  state: "paid" | "pending",
+): Promise<void> {
+  const inboxes = await shopInboxes();
+  if (inboxes.length === 0) return;
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { user: true, items: true },
+  });
+  if (!order) return;
+
+  const currency = order.currency as CurrencyCode;
+  const lines = order.items
+    .map(
+      (item) =>
+        `  ${item.qty} × ${item.name} — ${item.variantName}` +
+        `\n      ${item.partNumber ?? item.sku} · ${formatMoney(item.unitPriceMinor, currency)} each`,
+    )
+    .join("\n");
+
+  const data = {
+    number: order.number,
+    state,
+    customer: order.user.name,
+    customerEmail: order.email,
+    total: formatMoney(order.totalMinor, currency),
+    taxNote:
+      order.country === "IN"
+        ? "GST included"
+        : "zero-rated export, no Indian tax",
+    method:
+      order.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Card or wallet",
+    market: `${currency}${order.country ? ` · ${order.country}` : ""}`,
+    lines: lines || "  (no lines — this should not happen; look at the order)",
+    adminUrl: `${appUrl()}/admin/orders/${order.number}`,
+  };
+
+  // One message each rather than one with several recipients: a bounce then
+  // names the address that bounced, and one bad address in the list does not
+  // take the others down with it.
+  for (const inbox of inboxes) {
+    await notify("admin.order", { orderId: order.id, email: inbox }, data);
+  }
+}
+
 export async function fulfilOrder(
   orderId: string,
   payment: { intentId?: string | null } = {},
@@ -110,6 +173,7 @@ export async function fulfilOrder(
   );
 
   await sendKeys(orderId);
+  await alertTheShop(orderId, "paid");
 
   return { fulfilled: true, alreadyDone: false };
 }
@@ -195,4 +259,6 @@ export async function notifyPending(orderId: string): Promise<void> {
       orderUrl: `${appUrl()}/account/orders/${order.number}`,
     },
   );
+
+  await alertTheShop(orderId, "pending");
 }

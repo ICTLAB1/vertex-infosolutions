@@ -203,3 +203,52 @@ describe("what may not be redirected", () => {
     }
   });
 });
+
+/**
+ * The message that tells the shop a sale happened.
+ *
+ * A customer's confirmation was never proof that anybody here saw the order.
+ * These assert the two things somebody scanning a phone notification needs
+ * from the subject line alone — which order, and whether money has arrived —
+ * and that the two states do not read alike.
+ */
+describe("admin.order", () => {
+  const base = {
+    number: "VX-2026-430535",
+    customer: "A Buyer",
+    customerEmail: "buyer@example.test",
+    total: "$138.00",
+    taxNote: "zero-rated export, no Indian tax",
+    method: "Bank transfer",
+    market: "USD · AE",
+    lines: "  1 × Microsoft 365 Business Standard — 1 licence, 1 year",
+    adminUrl: "https://www.vertexinfosolutions.com/admin/orders/VX-2026-430535",
+  };
+
+  it("says which order and how much in the subject", async () => {
+    const paid = await compose("admin.order", { ...base, state: "paid" });
+    expect(paid.subject).toContain("VX-2026-430535");
+    expect(paid.subject).toContain("$138.00");
+    expect(paid.subject).toContain("paid");
+  });
+
+  it("does not let an unpaid order read like a paid one", async () => {
+    const pending = await compose("admin.order", { ...base, state: "pending" });
+    expect(pending.subject).toContain("pending");
+    expect(pending.body).toContain("Awaiting payment");
+    expect(pending.body).toContain("matched against the statement");
+    expect(pending.body).not.toContain("keys have been issued");
+  });
+
+  it("carries the customer, the lines and a way in", async () => {
+    const paid = await compose("admin.order", { ...base, state: "paid" });
+    expect(paid.body).toContain("buyer@example.test");
+    expect(paid.body).toContain("Microsoft 365 Business Standard");
+    expect(paid.body).toContain(base.adminUrl);
+  });
+
+  it("is email only — WhatsApp to the shop would need Meta's approval", async () => {
+    const paid = await compose("admin.order", { ...base, state: "paid" });
+    expect(paid.whatsapp).toBeUndefined();
+  });
+});
