@@ -117,7 +117,10 @@ export function configWarnings(config: SiteConfig): string[] {
   if (!config.registrationNumber) missing.push("COMPANY_REGISTRATION_NUMBER");
   if (!config.taxIdNumber) missing.push("COMPANY_TAX_ID");
   if (!config.supportEmail) missing.push("COMPANY_SUPPORT_EMAIL");
-  if (!config.supportPhone) missing.push("COMPANY_SUPPORT_PHONE");
+  // No phone number is deliberate, not an omission: this shop is contacted by
+  // email. Every surface that would print one already hides it when unset, so
+  // there is nothing to warn about — and a warning that is always on is a
+  // warning nobody reads.
   if (!config.complaintsName || !config.complaintsEmail) {
     missing.push("COMPANY_COMPLAINTS_OFFICER_NAME / _EMAIL");
   }
