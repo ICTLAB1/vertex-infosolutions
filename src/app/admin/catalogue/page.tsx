@@ -51,6 +51,7 @@ export default async function AdminCataloguePage() {
         select: {
           id: true,
           sku: true,
+          partNumber: true,
           name: true,
           seats: true,
           prices: { select: { id: true, currency: true, listMinor: true, priceMinor: true } },
@@ -151,6 +152,7 @@ export default async function AdminCataloguePage() {
                   <p className="text-[14px] font-semibold text-ink">
                     {variant.name}
                     <span className="ml-2 font-mono text-[12px] font-normal text-faint">
+                      {variant.partNumber ? `${variant.partNumber} · ` : ""}
                       {variant.sku}
                     </span>
                     {variant.seats > 1 ? (

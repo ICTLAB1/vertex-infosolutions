@@ -126,7 +126,9 @@ export default async function OrderPage(
                       : ""}
                   </p>
                   <p className="font-mono text-[12px] text-faint">
-                    {item.sku}
+                    {/* The publisher's number leads, because it is the one a
+                        customer quotes to anybody outside this shop. */}
+                    {item.partNumber ?? item.sku}
                     {domestic && item.sacCode ? ` · SAC ${item.sacCode}` : ""}
                   </p>
 

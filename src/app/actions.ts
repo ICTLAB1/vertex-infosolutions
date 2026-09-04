@@ -320,6 +320,10 @@ export async function placeOrder(
           fulfilmentId: fulfilment.id,
           variantId: line.variantId,
           sku: line.variant.sku,
+          // Copied at the moment of sale. A purchase order raised against this
+          // invoice quotes the publisher's number, so it has to be the number
+          // that was on the listing that day.
+          partNumber: line.variant.partNumber,
           name: line.variant.product.name,
           variantName: line.variant.name,
           seats: line.variant.seats,

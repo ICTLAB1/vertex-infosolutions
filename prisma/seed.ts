@@ -483,6 +483,7 @@ async function main() {
     for (const variant of product.variants) {
       const shape = {
         productId: row.id,
+        partNumber: variant.partNumber ?? null,
         name: variant.name,
         seats: variant.seats,
       };

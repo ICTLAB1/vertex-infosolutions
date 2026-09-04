@@ -11,6 +11,12 @@ export type Term = "ANNUAL_SUBSCRIPTION" | "MONTHLY_COMMITMENT" | "PERPETUAL";
 
 export type SeedVariant = {
   sku: string;
+  /**
+   * The publisher's own number for this item, exactly as their price list
+   * prints it. Absent where we hold no price list — a part number is a fact
+   * copied from a document, never derived.
+   */
+  partNumber?: string;
   name: string;
   seats: number;
   /**

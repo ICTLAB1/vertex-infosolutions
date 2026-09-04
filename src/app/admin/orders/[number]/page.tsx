@@ -104,7 +104,9 @@ export default async function AdminOrderPage(
                     </span>
                   </div>
                   <p className="text-[13px] text-muted">
-                    {item.variantName} · {item.sku} · quantity {item.qty}
+                    {item.variantName} ·{" "}
+                    {item.partNumber ? `${item.partNumber} · ` : ""}
+                    {item.sku} · quantity {item.qty}
                     {item.sacCode ? ` · SAC ${item.sacCode}` : ""}
                   </p>
                   {item.licenceKey ? (

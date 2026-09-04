@@ -120,6 +120,15 @@ infra/main.bicep         the whole Azure estate
   American one in adjacent requests.
 - **Prices come from the database, every time.** A form says what the customer
   wants, never what it costs.
+- **Every listing shows the publisher's own part number.** Adobe's Part Number,
+  Microsoft's ProductId and SkuId — copied from their price lists, never
+  derived from our SKU, which carries a prefix so two publishers cannot
+  collide. It is what a buyer raises a purchase order against and what a
+  finance team matches an invoice on, so it appears on the card, the listing,
+  the basket, the keys email and the invoice line, and it is copied onto the
+  order at the moment of sale rather than looked up later. A publisher whose
+  price list we do not hold gets no part number at all: it is a fact from a
+  document, and inventing one is the same mistake as inventing a price.
 - **Card details never reach this application.** There is no card field
   anywhere in this repository, and that is deliberate.
 - **Export control is checked before anything else** about the billing country,

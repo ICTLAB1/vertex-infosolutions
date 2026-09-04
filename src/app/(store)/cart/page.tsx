@@ -205,7 +205,9 @@ function CartRow({
         <p className="text-[13px] text-muted">
           {variant.name} · {TERM_LABELS[product.term]}
         </p>
-        <p className="mt-0.5 font-mono text-[12px] text-faint">{variant.sku}</p>
+        <p className="mt-0.5 font-mono text-[12px] text-faint">
+          {variant.partNumber ?? variant.sku}
+        </p>
         {product.cspNewTenant && <TenantNotice tone="line" />}
 
         {gone ? (

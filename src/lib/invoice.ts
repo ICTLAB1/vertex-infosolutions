@@ -36,6 +36,12 @@ import { getSiteConfig, type SiteConfig } from "@/lib/site";
 export type InvoiceLine = {
   description: string;
   variant: string;
+  /**
+   * The publisher's own number, as it stood on the day of sale. A buyer
+   * matching this invoice against their purchase order matches on this, not on
+   * our SKU, so it is printed on the line rather than left to be looked up.
+   */
+  partNumber: string | null;
   sacCode: string | null;
   qty: number;
   seats: number;
@@ -67,6 +73,7 @@ export type InvoiceOrder = {
   items: {
     name: string;
     variantName: string;
+    partNumber: string | null;
     sacCode: string | null;
     qty: number;
     seats: number;
@@ -174,6 +181,7 @@ export function invoiceFor(order: InvoiceOrder, seller: SiteConfig): Invoice {
     lines: order.items.map((item) => ({
       description: item.name,
       variant: item.variantName,
+      partNumber: item.partNumber,
       sacCode: domestic ? item.sacCode : null,
       qty: item.qty,
       seats: item.seats,
@@ -367,6 +375,7 @@ export function invoicePages(
     );
     const detail = [
       line.variant,
+      line.partNumber,
       // Only when the variant itself covers several seats. Multiplying by the
       // quantity would print "2 seats" beside a Qty column already reading 2.
       line.seats > 1 ? `${line.seats} seats each` : null,
@@ -557,6 +566,7 @@ export async function invoiceById(orderId: string): Promise<Invoice | null> {
         select: {
           name: true,
           variantName: true,
+          partNumber: true,
           sacCode: true,
           qty: true,
           seats: true,

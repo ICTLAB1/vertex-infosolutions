@@ -39,6 +39,9 @@ export function ProductCard({
   const off = price ? discountPercent(price.listMinor, price.priceMinor) : 0;
   const perSeat =
     price && cheapest ? Math.round(price.priceMinor / cheapest.seats) : 0;
+  // The cheapest variant's number when there is one, otherwise the first — a
+  // card shows one listing, so it shows one number.
+  const partNumber = (cheapest ?? product.variants[0])?.partNumber ?? null;
 
   return (
     <article className="group flex h-full flex-col rounded-lg border border-line bg-surface p-3 transition-shadow hover:shadow-md">
@@ -121,6 +124,15 @@ export function ProductCard({
           {TERM_LABELS[product.term]}
           {price && domestic ? " · incl. GST" : ""}
         </p>
+
+        {/* The publisher's own number, on the card as well as the page: a buyer
+            comparing two shops is matching part numbers, and making them open
+            the listing to find it is making them leave. */}
+        {partNumber ? (
+          <p className="mt-0.5 truncate font-mono text-[11px] text-faint">
+            {partNumber}
+          </p>
+        ) : null}
 
         {sellable.length > 1 ? (
           <p className="mt-0.5 text-[12px] text-muted">

@@ -198,6 +198,22 @@ export function QuoteOnlyProduct({
                       {product.brand.name} — Vertex is an authorised reseller
                     </td>
                   </tr>
+                  {/* No part number row. We hold no price list for this
+                      publisher, and a part number is a fact copied from a
+                      document — inventing one would be the same mistake as
+                      inventing the price. It comes with the quote. */}
+                  <tr>
+                    <th
+                      scope="row"
+                      className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
+                    >
+                      Part number
+                    </th>
+                    <td className="px-3 py-2 text-muted">
+                      Confirmed with the quote, from {product.brand.name}&apos;s
+                      current price list.
+                    </td>
+                  </tr>
                   <tr>
                     <th
                       scope="row"

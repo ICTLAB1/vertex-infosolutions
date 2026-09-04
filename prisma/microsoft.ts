@@ -332,6 +332,11 @@ export const MICROSOFT_PRODUCTS: SeedProduct[] = (() => {
       variants: [
         {
           sku: `MS-${row.productId}-${row.skuId}`,
+          // Microsoft's own identity for a CSP catalogue item, written the way
+          // Microsoft writes it: the price list carries ProductId and SkuId in
+          // two columns, and a partner quotes them joined by a colon. Both
+          // values are verbatim from the sheet.
+          partNumber: `${row.productId}:${row.skuId}`,
           name: "1 licence, 1 year",
           seats: 1,
           // List and price are the same number. The list price is what

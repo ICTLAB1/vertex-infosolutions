@@ -16,6 +16,7 @@ import {
   getProduct,
   priceOf,
   ratingOf,
+  partNumberLabel,
   sellableVariants,
   specRows,
   TERM_LABELS,
@@ -172,7 +173,11 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             "@type": "Product",
             name: product.name,
             description: product.summary,
-            sku: variant.sku,
+            // The publisher's number where we have it: it is what a shopping
+            // engine matches this listing against other sellers' listings of
+            // the same item, which our own prefixed SKU cannot do.
+            sku: variant.partNumber ?? variant.sku,
+            ...(variant.partNumber ? { mpn: variant.partNumber } : {}),
             brand: { "@type": "Brand", name: product.brand.name },
             category: product.category.name,
             ...(product.logo ? { image: absolute(product.logo) } : {}),
@@ -319,6 +324,13 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
                           ? ` · ${formatMoney(Math.round(optionPrice.priceMinor / option.seats), currency)}/seat`
                           : ""}
                       </span>
+                      {/* Each seat option is a different item with a different
+                          number, so the number moves with the choice. */}
+                      {option.partNumber ? (
+                        <span className="block font-mono text-[11px] text-faint">
+                          {option.partNumber}
+                        </span>
+                      ) : null}
                     </Link>
                   );
                 })}
@@ -382,12 +394,25 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
                       {product.brand.name} — Vertex is an authorised reseller
                     </td>
                   </tr>
+                  {variant.partNumber ? (
+                    <tr className="border-b border-line-soft">
+                      <th
+                        scope="row"
+                        className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
+                      >
+                        {partNumberLabel(product.brand.slug)}
+                      </th>
+                      <td className="px-3 py-2 font-mono text-[12px] text-ink">
+                        {variant.partNumber}
+                      </td>
+                    </tr>
+                  ) : null}
                   <tr>
                     <th
                       scope="row"
                       className="bg-ground/60 px-3 py-2 text-left font-semibold text-ink"
                     >
-                      SKU
+                      Our SKU
                     </th>
                     <td className="px-3 py-2 font-mono text-[12px] text-muted">
                       {variant.sku}
@@ -409,6 +434,11 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               {variant.name}
               {market.domestic ? " · incl. GST" : ""}
             </p>
+            {variant.partNumber ? (
+              <p className="mt-0.5 font-mono text-[12px] text-faint">
+                {variant.partNumber}
+              </p>
+            ) : null}
 
             <p className="mt-2 text-[13px] text-muted">
               <span className="font-semibold text-ok">

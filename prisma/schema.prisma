@@ -179,6 +179,20 @@ model Variant {
   id        String @id @default(cuid())
   productId String
   sku       String @unique
+
+  /// The publisher's own number for this item, exactly as their price list
+  /// prints it — Adobe's part number, Microsoft's ProductId:SkuId.
+  ///
+  /// Not the same thing as `sku`, which is ours and carries a prefix so two
+  /// publishers cannot collide. This is the string a customer quotes to their
+  /// procurement department, matches against a purchase order, or reads off a
+  /// competitor's page to check they are buying the same item — so it is shown
+  /// on the listing, carried onto the order line and printed on the invoice.
+  ///
+  /// Null where we hold no price list for the publisher, because a part number
+  /// is a fact from a document and not something to derive.
+  partNumber String?
+
   /// "1 user, 1 year", "5 seats, 1 year" — what distinguishes this from its
   /// siblings. A product with one variant repeats the product name.
   name      String
@@ -192,6 +206,8 @@ model Variant {
   orderItems OrderItem[]
 
   @@index([productId])
+  /// Looked up when somebody pastes a part number into the search box.
+  @@index([partNumber])
 }
 
 /// One row per currency the variant is sold in.
@@ -369,6 +385,10 @@ model OrderItem {
   /// The catalogue can be edited or a SKU withdrawn; an order is a record of
   /// what was sold on the day, so the line copies what it needs.
   sku            String
+  /// The publisher's own number, copied at the moment of sale. A purchase
+  /// order raised against this invoice quotes it, so it has to be the number
+  /// that was on the listing that day and not whatever the catalogue says now.
+  partNumber     String?
   name           String
   variantName    String
   seats          Int    @default(1)

@@ -166,6 +166,9 @@ export const ADOBE_PRODUCTS: SeedProduct[] = (() => {
       variants: [
         {
           sku: `ADBE-${row.partNumber}`,
+          // Adobe's Part Number column, verbatim. This is the string a customer
+          // puts on a purchase order.
+          partNumber: row.partNumber,
           name: isConsumption(row.family) ? "1 pack, 1 year" : "1 seat, 1 year",
           seats: 1,
           // List and price are the same number: the street price is what

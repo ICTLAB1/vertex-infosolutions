@@ -45,6 +45,7 @@ export function productSelect(currency: CurrencyCode) {
       select: {
         id: true,
         sku: true,
+        partNumber: true,
         name: true,
         seats: true,
         prices: {
@@ -206,6 +207,15 @@ export async function browse(filters: BrowseFilters, currency: CurrencyCode) {
                 some: { sku: { contains: term, mode: "insensitive" as const } },
               },
             },
+            // Somebody who pastes a publisher's part number in expects to land
+            // on the listing, not on nothing.
+            {
+              variants: {
+                some: {
+                  partNumber: { contains: term, mode: "insensitive" as const },
+                },
+              },
+            },
           ],
         })),
       ],
@@ -296,3 +306,24 @@ export const TERM_NOTES: Record<string, string> = {
   MONTHLY_COMMITMENT: "Billed monthly across a twelve-month term.",
   PERPETUAL: "Bought outright. Yours to keep, with no renewal.",
 };
+
+/**
+ * What the publisher calls their own number.
+ *
+ * Each of the three uses a different word for the same thing, and using the
+ * wrong one is the kind of small wrongness a procurement officer notices
+ * immediately: Adobe prints "Part Number", Microsoft prints ProductId and
+ * SkuId. Falling back to the neutral phrase is right for a publisher whose
+ * price list we do not hold — and those carry no number at all, so the label
+ * is never shown for them anyway.
+ */
+export function partNumberLabel(brandSlug: string): string {
+  switch (brandSlug) {
+    case "adobe":
+      return "Adobe part number";
+    case "microsoft":
+      return "Microsoft product ID";
+    default:
+      return "Publisher part number";
+  }
+}

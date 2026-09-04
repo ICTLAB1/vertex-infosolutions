@@ -143,9 +143,17 @@ export async function sendKeys(orderId: string): Promise<boolean> {
       name: order.user.name,
       number: order.number,
       keys: order.items
-        .map(
-          (item) =>
-            `${item.name} — ${item.variantName}\n  ${item.licenceKey ?? "pending"}`,
+        .map((item) =>
+          [
+            `${item.name} — ${item.variantName}`,
+            // The publisher's own number, so the customer can file this
+            // against a purchase order or quote it to the publisher's support
+            // without going back to the website for it.
+            item.partNumber ? `  ${item.partNumber}` : null,
+            `  ${item.licenceKey ?? "pending"}`,
+          ]
+            .filter((line) => line !== null)
+            .join("\n"),
         )
         .join("\n\n"),
       orderUrl: `${appUrl()}/account/orders/${order.number}`,

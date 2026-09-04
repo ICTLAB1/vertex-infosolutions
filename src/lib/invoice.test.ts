@@ -57,8 +57,9 @@ const ORDER: InvoiceOrder = {
   taxLabel: "GST",
   items: [
     {
-      name: "Autodesk AutoCAD",
+      name: "Adobe Photoshop for teams",
       variantName: "1 user, 1 year",
+      partNumber: "65297615BA01A12",
       sacCode: "997331",
       qty: 2,
       seats: 1,
@@ -256,5 +257,72 @@ describe("the file", () => {
     expect(invoiceFilename(invoiceFor(EXPORT, SELLER))).toBe(
       "invoice-VX-2026-004183.pdf",
     );
+  });
+});
+
+describe("the part number on an invoice", () => {
+  it("is printed on the line", () => {
+    // A finance team matches this invoice against a purchase order raised on
+    // the publisher's number. Leaving it to be looked up is leaving it out.
+    expect(invoiceFor(ORDER, SELLER).lines[0].partNumber).toBe(
+      "65297615BA01A12",
+    );
+  });
+
+  it("is copied from the order line, not looked up in the catalogue", () => {
+    // The catalogue can be re-priced, renumbered or withdrawn; the invoice is
+    // a record of what was sold on the day, so the number travels with it.
+    const renumbered = {
+      ...ORDER,
+      items: [{ ...ORDER.items[0], partNumber: "SOMETHING-ELSE" }],
+    };
+    expect(invoiceFor(renumbered, SELLER).lines[0].partNumber).toBe(
+      "SOMETHING-ELSE",
+    );
+  });
+
+  it("survives an order line that never had one", () => {
+    const noNumber = {
+      ...ORDER,
+      items: [{ ...ORDER.items[0], partNumber: null }],
+    };
+    expect(invoiceFor(noNumber, SELLER).lines[0].partNumber).toBeNull();
+  });
+});
+
+describe("the part number on the printed page", () => {
+  /** Every string the layout actually draws. */
+  const drawn = (invoice: ReturnType<typeof invoiceFor>) =>
+    invoicePages(invoice)
+      .flatMap((page) => page.ops)
+      .filter((op) => op.kind === "text")
+      .map((op) => (op as { text: string }).text);
+
+  it("reaches the paper, not just the data", () => {
+    expect(drawn(invoiceFor(ORDER, SELLER)).join(" ")).toContain(
+      "65297615BA01A12",
+    );
+  });
+
+  it("does not push a long detail line past the right margin", () => {
+    // The detail row now carries the variant, the part number, the seat count
+    // and the SAC code. A wrap that fails puts text over the price column.
+    const wordy = {
+      ...ORDER,
+      items: [
+        {
+          ...ORDER.items[0],
+          variantName: "1 user, 1 year, annual commitment billed yearly",
+          partNumber: "CFQ7TTC0LH2Z:1",
+          seats: 25,
+        },
+      ],
+    };
+    for (const page of invoicePages(invoiceFor(wordy, SELLER))) {
+      for (const op of page.ops) {
+        if (op.kind !== "text") continue;
+        expect(op.x, op.text).toBeLessThan(595 - 30);
+      }
+    }
   });
 });
