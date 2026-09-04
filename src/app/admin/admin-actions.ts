@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import { recordAdminAction, requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
@@ -9,6 +10,7 @@ import type { CurrencyCode } from "@/lib/market";
 import { formatMoneyExact, parseMoneyMinor } from "@/lib/money";
 import { notifyPending, fulfilOrder, sendKeys } from "@/lib/orders";
 import { looksLikeEmail } from "@/lib/enquiries";
+import { pingIndexNow } from "@/lib/indexnow";
 import { CREDENTIAL_TEMPLATES, type NotifyTemplate } from "@/lib/notify";
 
 /**
@@ -173,7 +175,9 @@ export async function updatePrice(
 
   const existing = await prisma.price.findUnique({
     where: { id: priceId },
-    include: { variant: { include: { product: { select: { name: true } } } } },
+    include: {
+      variant: { include: { product: { select: { name: true, slug: true } } } },
+    },
   });
   if (!existing) return { ok: false, message: "No such price." };
 
@@ -199,6 +203,10 @@ export async function updatePrice(
   // The storefront reads prices on every render, so the pages that show this
   // one have to be re-rendered rather than served from the cache.
   revalidatePath("/", "layout");
+  // And tell the search engines, after this page has already gone back to the
+  // administrator — a price shown in a search result is worth correcting
+  // quickly, and none of it is worth making them wait for.
+  after(() => pingIndexNow([`/product/${existing.variant.product.slug}`]));
   return {
     ok: true,
     message: `Saved. ${existing.variant.sku} is now ${formatMoneyExact(price, currency)}.`,
@@ -241,6 +249,10 @@ export async function setProductPublished(
   revalidatePath("/admin/catalogue");
   revalidatePath(`/product/${product.slug}`);
   revalidatePath("/", "layout");
+  // A withdrawn listing is submitted too, and deliberately: it is how a search
+  // engine finds out the page is gone, instead of going on offering it for
+  // weeks and sending customers to a 404.
+  after(() => pingIndexNow([`/product/${product.slug}`, "/s"]));
   return {
     ok: true,
     message: published

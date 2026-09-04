@@ -14,6 +14,36 @@ const nextConfig: NextConfig = {
   // generated on the server come back as http:// and the browser blocks them.
   poweredByHeader: false,
 
+  /**
+   * One address for the shop, not two.
+   *
+   * Both `vertexinfosolutions.com` and `www.vertexinfosolutions.com` reach this
+   * server. Left alone, a search engine sees two copies of every page and has
+   * to guess which is the real one — so the ranking a listing earns is split
+   * between two addresses instead of counting once. `APP_URL` already says the
+   * www form is the real one, and every canonical tag, the sitemap and
+   * robots.txt are built from it; this makes the server agree, by sending
+   * anyone who arrives without the www to the same page with it.
+   *
+   * 308 rather than 301: it means the same thing to a search engine and, unlike
+   * 301, browsers are required to keep the request method, so a form posted to
+   * the bare domain still arrives as a POST.
+   *
+   * Query strings ride along without being mentioned — Next.js carries them to
+   * the destination — which matters because a link with `?utm_source=` on the
+   * end is exactly the kind that gets shared.
+   */
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "vertexinfosolutions.com" }],
+        destination: "https://www.vertexinfosolutions.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {

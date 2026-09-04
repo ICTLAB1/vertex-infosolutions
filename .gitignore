@@ -49,6 +49,8 @@ next-env.d.ts
 
 # the template is meant to be committed; the real .env is not
 !.env.example
+# development-only defaults, no secrets — see the file for why
+!.env.development
 
 # The deployment parameters hold live secrets. The example beside it does not.
 /infra/main.parameters.json
