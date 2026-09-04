@@ -309,6 +309,20 @@ export function specRows(specs: unknown): [string, string][] {
   );
 }
 
+/**
+ * The specification table as editable text, one "Label: value" per line.
+ *
+ * Lives here rather than beside the action that parses it back, because a
+ * `"use server"` module may export nothing but async functions — a plain
+ * helper exported from one is a build error, not a lint warning.
+ */
+export function specsToText(specs: unknown): string {
+  if (!specs || typeof specs !== "object" || Array.isArray(specs)) return "";
+  return Object.entries(specs as Record<string, unknown>)
+    .map(([label, value]) => `${label}: ${String(value)}`)
+    .join("\n");
+}
+
 export const TERM_LABELS: Record<string, string> = {
   ANNUAL_SUBSCRIPTION: "Annual subscription",
   MONTHLY_COMMITMENT: "Monthly, annual commitment",
