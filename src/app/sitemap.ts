@@ -19,6 +19,21 @@ const STATIC_PAGES: [path: string, priority: number][] = [
 ];
 
 /**
+ * Read at request time, not at build time.
+ *
+ * Two reasons, and either alone would be enough. A sitemap frozen at build
+ * time starts lying the moment somebody withdraws a listing in the back
+ * office: it goes on pointing a crawler at a page that now 404s, which is
+ * exactly the signal of neglect the `published` filter below exists to avoid.
+ * And prerendering it means the build needs a database — so `npm run build`
+ * with none, which is how the image is built and what CI checks, fails on this
+ * one route while every other page in the shop is dynamic already.
+ *
+ * The cost is a query per crawler fetch of one URL. That is nothing.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * Every page worth indexing.
  *
  * Products carry their own `updatedAt`, so a crawler re-reads a listing whose

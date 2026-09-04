@@ -372,6 +372,7 @@ before writing to it, drop one a release later.
 | `npm run build` | production build (standalone output) |
 | `npm run typecheck` | `next typegen`, then `tsc --noEmit` — the route types (`PageProps`, `LayoutProps`) are generated, and a fresh checkout has none |
 | `npm run lint` | eslint |
+| `./scripts/ci-locally.sh` | run what CI runs, in CI's order, against an empty scratch database and a build with no `DATABASE_URL` — the two conditions a comfortable local run does not reproduce |
 | `npm run db:migrate` | create and apply a migration |
 | `python3 scripts/import-price-list.py <file.xlsx>` | refresh `prisma/data/microsoft-price-list.json` from a new distributor price list (needs `pip install openpyxl`) |
 | `python3 scripts/public-price-list.py <file.xlsx>` | make a shareable copy of a distributor price list with every cost column stripped — use this before sending one to anybody outside the company |
