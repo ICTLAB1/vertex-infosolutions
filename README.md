@@ -260,6 +260,11 @@ lint and build; then build the image, push it to ACR, run
 `prisma migrate deploy`, seed the catalogue **if the database is empty**, point
 the Web App at the new tag, and poll `/api/health` until it returns 200.
 
+Refreshing the live catalogue after a price-book change is a **Run workflow**
+button on the Actions tab with **reseed** ticked, not a shell session. It is
+off by default and never part of an automatic deploy, because rewriting prices
+from the code would silently undo one corrected in the back office.
+
 The seed step is safe to run every time, and now safe to run deliberately:
 `prisma/seed.ts` upserts. It writes the catalogue this file describes and
 touches nothing a customer created — no order, basket, review or account —

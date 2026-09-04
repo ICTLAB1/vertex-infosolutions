@@ -29,7 +29,16 @@ on:
   # every PR; `deploy` is guarded below so it never fires from one.
   pull_request:
     branches: [main]
+  # Run on demand, and — with `reseed` — refresh the live catalogue without
+  # anybody opening a shell. Everything else about a deploy is automatic; this
+  # was the one step that was not, and it is needed every time a price book
+  # changes.
   workflow_dispatch:
+    inputs:
+      reseed:
+        description: "Rewrite the live catalogue from prisma/seed.ts (prices, names, listings). Leave off unless the catalogue changed."
+        type: boolean
+        default: false
 
 permissions:
   id-token: write
@@ -136,12 +145,24 @@ jobs:
 
       # Migrations create empty tables, so without this a brand-new environment
       # comes up as a working store with nothing in it. The seed refuses to run
-      # against a database that already holds products or orders, so this is a
-      # no-op on every deploy after the first and cannot wipe a live catalogue.
+      # against a database that already holds products, so this is a no-op on
+      # every deploy after the first.
       - name: Seed the catalogue if the database is empty
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run db:seed
+
+      # The same seed, told to go ahead on a database that already has a
+      # catalogue. It upserts and never touches an order, basket, review or
+      # account, so this is safe on a live shop — but it does rewrite names and
+      # prices from the code, which would silently undo a price corrected in
+      # the back office. That is why it is a deliberate choice on a manual run
+      # and never part of an automatic deploy.
+      - name: Rewrite the catalogue (asked for explicitly)
+        if: inputs.reseed
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:seed -- --force
 
       # `az webapp config container set` tries to fetch registry admin
       # credentials, which this registry deliberately does not have — the app
