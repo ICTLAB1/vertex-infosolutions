@@ -3,19 +3,26 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
 import { absolute } from "@/lib/seo";
 
-/** Pages that exist regardless of the catalogue, with how much they matter. */
-const STATIC_PAGES: [path: string, priority: number][] = [
-  ["/", 1],
-  ["/s", 0.8],
-  ["/contact", 0.6],
-  ["/licensing", 0.6],
-  ["/delivery", 0.5],
-  ["/returns", 0.5],
-  ["/terms", 0.4],
-  ["/privacy", 0.4],
-  ["/cookies", 0.3],
-  ["/website-terms", 0.3],
-  ["/export-compliance", 0.3],
+/**
+ * Pages that exist regardless of the catalogue.
+ *
+ * The two that earn a daily crawl are the ones whose content actually moves:
+ * the home page and the catalogue. A policy page changes when a lawyer reads
+ * it, which is not weekly, and telling a crawler otherwise only teaches it to
+ * ignore the hint.
+ */
+const STATIC_PAGES: [path: string, priority: number, changeFrequency: "daily" | "monthly"][] = [
+  ["/", 1, "daily"],
+  ["/s", 0.9, "daily"],
+  ["/licensing", 0.5, "monthly"],
+  ["/delivery", 0.5, "monthly"],
+  ["/contact", 0.5, "monthly"],
+  ["/returns", 0.5, "monthly"],
+  ["/terms", 0.5, "monthly"],
+  ["/website-terms", 0.5, "monthly"],
+  ["/privacy", 0.5, "monthly"],
+  ["/cookies", 0.5, "monthly"],
+  ["/export-compliance", 0.5, "monthly"],
 ];
 
 /**
@@ -30,6 +37,10 @@ const STATIC_PAGES: [path: string, priority: number][] = [
  * one route while every other page in the shop is dynamic already.
  *
  * The cost is a query per crawler fetch of one URL. That is nothing.
+ *
+ * One sitemap is enough at this size. The protocol's ceiling is 50,000 URLs
+ * and this returns a few hundred; if the catalogue ever approaches that,
+ * `generateSitemaps` splits it into an index without changing anything here.
  */
 export const dynamic = "force-dynamic";
 
@@ -57,17 +68,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   return [
-    ...STATIC_PAGES.map(([path, priority]) => ({
+    ...STATIC_PAGES.map(([path, priority, changeFrequency]) => ({
       url: absolute(path),
       lastModified: now,
-      changeFrequency: "weekly" as const,
+      changeFrequency,
       priority,
     })),
+    // A brand page is where somebody searching "Adobe reseller India" lands,
+    // so it outranks a category page, which answers a narrower question.
     ...brands.map((brand) => ({
       url: absolute(`/s?brand=${brand.slug}`),
       lastModified: now,
       changeFrequency: "weekly" as const,
-      priority: 0.7,
+      priority: 0.8,
     })),
     ...categories.map((category) => ({
       url: absolute(`/s?category=${category.slug}`),

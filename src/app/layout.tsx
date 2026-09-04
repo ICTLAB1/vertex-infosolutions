@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Public_Sans } from "next/font/google";
 
+import {
+  GoogleTagManager,
+  GoogleTagManagerNoScript,
+} from "@/components/analytics";
 import { jsonLd, OG_IMAGE, siteUrl } from "@/lib/seo";
 
 import "./globals.css";
@@ -64,6 +68,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         shop — see `app/(store)/layout.tsx`.
       */}
       <body className="min-h-full font-sans">
+        {/* First thing in the body, where GTM's own instructions put it and
+            where its debugger looks for it. */}
+        <GoogleTagManagerNoScript />
+        <GoogleTagManager />
+
         {/* Who this business is, and how to search it. Stated once, at the
             root, rather than repeated per page. */}
         <script

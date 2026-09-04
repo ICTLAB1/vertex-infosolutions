@@ -13,12 +13,18 @@ export const metadata: Metadata = pageMetadata({
 
 export default function CookiesPage() {
   return (
-    <PolicyPage title="Cookie policy" updated="2 September 2026">
+    <PolicyPage title="Cookie policy" updated="4 September 2026">
       <p>
-        This website sets two cookies, both strictly necessary. There is no
-        consent banner because there is nothing to consent to — the law requires
-        consent for cookies that are not strictly necessary, and we do not set
-        any of those.
+        This website sets two cookies of its own, both strictly necessary, and
+        loads Google Tag Manager, which sets analytics cookies. Both kinds are
+        described below.
+      </p>
+      <p className="rounded-md border border-warn/40 bg-warn/5 p-4 text-warn">
+        <strong className="font-semibold">Consent is not yet asked for.</strong>{" "}
+        Analytics cookies are not strictly necessary, and UK and EU law requires
+        consent before they are set. Until a consent banner is in place, this
+        page is the notice — and if you would rather not be measured, the
+        section on refusing them below still works.
       </p>
 
       <H2>The basket cookie</H2>
@@ -125,11 +131,26 @@ export default function CookiesPage() {
         page benefits from being able to read its own currency.
       </p>
 
+      <H2>Analytics</H2>
+      <p>
+        Google Tag Manager loads on every page and, through it, Google
+        Analytics 4. These set Google&apos;s own cookies — typically{" "}
+        <span className="font-mono text-[13px]">_ga</span> and{" "}
+        <span className="font-mono text-[13px]">_ga_&lt;id&gt;</span>, lasting
+        up to two years — which count visits and tell us which pages people
+        actually read. They belong to Google, not to us, and are governed by
+        Google&apos;s policies as well as this one.
+      </p>
+      <p>
+        We use it to see which listings get looked at and where people give up.
+        We do not use it to build an advertising profile of you, and there is no
+        advertising or remarketing tag in the container.
+      </p>
+
       <H2>What we do not set</H2>
       <p>
-        No analytics cookies. No advertising or retargeting pixels. No social
-        media embeds. No session recording. No third-party script of any kind
-        runs on the pages where you shop.
+        No advertising or retargeting pixels. No social media embeds. No session
+        recording. Nothing that reads what you type.
       </p>
       <p>
         The payment provider sets its own cookies on its own page, once you are
@@ -139,10 +160,25 @@ export default function CookiesPage() {
 
       <H2>Refusing them</H2>
       <p>
-        Your browser can block them. The site will still let you browse and
-        search, but the basket will empty on every page load, and the store will
-        re-guess your market from your connection each time instead of
-        remembering what you picked.
+        Your browser can block them. Blocking the analytics ones costs you
+        nothing at all — the shop does not read them and does not behave
+        differently without them. Blocking ours lets you browse and search, but
+        the basket will empty on every page load, and the store will re-guess
+        your market from your connection each time instead of remembering what
+        you picked.
+      </p>
+      <p>
+        Browser-level &ldquo;do not track&rdquo; settings, tracker blockers and
+        Google&apos;s own{" "}
+        <a
+          href="https://tools.google.com/dlpage/gaoptout"
+          className="text-link underline"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          opt-out add-on
+        </a>{" "}
+        all stop the analytics side, and none of them break the shop.
       </p>
 
       <H2>Related</H2>

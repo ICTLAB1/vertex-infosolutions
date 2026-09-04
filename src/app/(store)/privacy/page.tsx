@@ -76,7 +76,12 @@ export default function PrivacyPage() {
           payment provider&apos;s own page and never reach this website. We could
           not disclose them if we were asked to.
         </li>
-        <li>Analytics or advertising identifiers. There are no trackers on this site.</li>
+        <li>
+          Advertising identifiers, or anything that follows you to another
+          site. Google Analytics measures visits to these pages — what it
+          collects, and how to stop it, is set out in the cookie policy — and
+          there is no advertising or remarketing tag anywhere on the site.
+        </li>
         <li>Anything about you from a third-party data broker.</li>
       </Ul>
 
@@ -175,9 +180,11 @@ export default function PrivacyPage() {
 
       <H2>Cookies</H2>
       <p>
-        Two: one holding the basket token, one remembering whether you chose
-        INR or USD. Both are strictly necessary for the store to work and there
-        is no tracking cookie to consent to. Detail in the{" "}
+        Two of ours: one holding the basket token, one remembering whether you
+        chose INR or USD. Both are strictly necessary for the store to work.
+        Google Analytics sets its own on top of those, which are not necessary
+        and which you can refuse without losing anything. Detail, including how
+        to refuse them, in the{" "}
         <Link href="/cookies" className="text-link underline">
           cookie policy
         </Link>
