@@ -54,7 +54,7 @@ export default async function OrderPage(
   // order waiting on the provider, and not an order already settled.
   const transfer =
     !paid && order.paymentMethod === "BANK_TRANSFER"
-      ? getSiteConfig().bank
+      ? (await getSiteConfig()).bank
       : null;
   const domestic = order.country === "IN";
 

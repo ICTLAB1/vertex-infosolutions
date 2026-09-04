@@ -12,8 +12,8 @@ import { CREDENTIAL_TEMPLATES, compose } from "@/lib/notify";
  * rather than left as a comment.
  */
 describe("what may travel over WhatsApp", () => {
-  it("never sends a one-time code", () => {
-    const verify = compose("otp.verify", {
+  it("never sends a one-time code", async () => {
+    const verify = await compose("otp.verify", {
       name: "Anita",
       code: "482913",
       ttl: "10 minutes",
@@ -21,7 +21,7 @@ describe("what may travel over WhatsApp", () => {
     expect(verify.whatsapp).toBeUndefined();
     expect(verify.body).toContain("482913");
 
-    const signin = compose("otp.signin", {
+    const signin = await compose("otp.signin", {
       name: "Anita",
       code: "482913",
       ttl: "10 minutes",
@@ -29,8 +29,8 @@ describe("what may travel over WhatsApp", () => {
     expect(signin.whatsapp).toBeUndefined();
   });
 
-  it("never sends a licence key", () => {
-    const keys = compose("order.keys", {
+  it("never sends a licence key", async () => {
+    const keys = await compose("order.keys", {
       name: "Anita",
       number: "VX-2026-123456",
       keys: "Microsoft 365\n  VX-9EF7-8F88-65F5",
@@ -40,8 +40,8 @@ describe("what may travel over WhatsApp", () => {
     expect(keys.body).toContain("VX-9EF7-8F88-65F5");
   });
 
-  it("sends a renewal reminder, carrying no key and no price", () => {
-    const reminder = compose("licence.expiring", {
+  it("sends a renewal reminder, carrying no key and no price", async () => {
+    const reminder = await compose("licence.expiring", {
       name: "Anita",
       number: "VX-2026-123456",
       summary: "Autodesk AutoCAD",
@@ -66,8 +66,8 @@ describe("what may travel over WhatsApp", () => {
     expect(reminder.body).toContain("This is a reminder, not a charge");
   });
 
-  it("sends an order confirmation, carrying no secret", () => {
-    const paid = compose("order.paid", {
+  it("sends an order confirmation, carrying no secret", async () => {
+    const paid = await compose("order.paid", {
       name: "Anita",
       number: "VX-2026-123456",
       total: "₹9,200",
@@ -87,7 +87,7 @@ describe("what may travel over WhatsApp", () => {
 });
 
 describe("template contents", () => {
-  it("gives every message a subject and a body", () => {
+  it("gives every message a subject and a body", async () => {
     const templates = [
       ["otp.verify", { name: "A", code: "111111", ttl: "10 minutes" }],
       ["otp.signin", { name: "A", code: "111111", ttl: "10 minutes" }],
@@ -121,7 +121,7 @@ describe("template contents", () => {
     ] as const;
 
     for (const [template, data] of templates) {
-      const message = compose(template, data as Record<string, string>);
+      const message = await compose(template, data as Record<string, string>);
       expect(message.subject.length).toBeGreaterThan(0);
       expect(message.body.length).toBeGreaterThan(0);
       // An unsubstituted placeholder is the classic broken-email bug.
@@ -130,8 +130,8 @@ describe("template contents", () => {
     }
   });
 
-  it("puts the code in the subject, where a phone shows it without opening", () => {
-    const verify = compose("otp.verify", {
+  it("puts the code in the subject, where a phone shows it without opening", async () => {
+    const verify = await compose("otp.verify", {
       name: "Anita",
       code: "482913",
       ttl: "10 minutes",
@@ -170,9 +170,9 @@ describe("what may not be redirected", () => {
     },
   };
 
-  it("covers every template that renders a code or a key", () => {
+  it("covers every template that renders a code or a key", async () => {
     for (const [template, data] of Object.entries(samples)) {
-      const mail = compose(template as Parameters<typeof compose>[0], data);
+      const mail = await compose(template as Parameters<typeof compose>[0], data);
       const carries = mail.body.includes(CODE) || mail.body.includes(KEY);
       expect(carries, `${template} sample does not exercise the credential`).toBe(
         true,
@@ -184,13 +184,13 @@ describe("what may not be redirected", () => {
     }
   });
 
-  it("also covers the one that says a password just changed", () => {
+  it("also covers the one that says a password just changed", async () => {
     // Not a credential itself, but the message somebody would want redirected
     // away from the real owner while taking over an account.
     expect(CREDENTIAL_TEMPLATES).toContain("account.password-changed");
   });
 
-  it("leaves the ordinary messages redirectable", () => {
+  it("leaves the ordinary messages redirectable", async () => {
     // The whole point of the feature: a confirmation that bounced on a typo.
     for (const template of [
       "order.paid",

@@ -12,8 +12,8 @@ export const metadata: Metadata = pageMetadata({
   path: "/website-terms",
 });
 
-export default function WebsiteTermsPage() {
-  const config = getSiteConfig();
+export default async function WebsiteTermsPage() {
+  const config = (await getSiteConfig());
 
   return (
     <PolicyPage title="Website terms of use" updated="2 September 2026">

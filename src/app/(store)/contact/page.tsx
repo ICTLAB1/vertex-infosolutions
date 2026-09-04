@@ -42,7 +42,7 @@ function first(value: string | string[] | undefined): string | undefined {
 }
 
 export default async function ContactPage(props: PageProps<"/contact">) {
-  const config = getSiteConfig();
+  const config = (await getSiteConfig());
   const params = await props.searchParams;
   const kind = kindFrom(params.about);
   const productSlug = first(params.product);

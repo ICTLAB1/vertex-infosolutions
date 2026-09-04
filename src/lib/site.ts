@@ -8,15 +8,18 @@
  * anyway, both by Indian e-commerce rules for the exporting entity and by EU
  * and UK consumer law for distance selling into those markets.
  *
- * Every value comes from the environment and nothing is invented. A field that
- * is not configured is not rendered, and `configWarnings()` lists what is
- * missing so it shows up before launch rather than after.
+ * Nothing here is invented. Every value is typed in on the settings page or
+ * set on the server, a field that is not configured is not rendered, and
+ * `configWarnings()` lists what is missing so it shows up before launch rather
+ * than after.
+ *
+ * Read from the database first and the App Service settings second — see
+ * `lib/settings.ts` for why that order, and for what deliberately cannot be
+ * changed from a web page.
  */
+import "server-only";
 
-function env(name: string): string | null {
-  const value = process.env[name]?.trim();
-  return value && value.length > 0 ? value : null;
-}
+import { serverValue, storedSettings } from "@/lib/settings";
 
 export type SiteConfig = {
   tradingName: string;
@@ -57,7 +60,13 @@ export type BankDetails = {
   swift: string | null;
 };
 
-export function getSiteConfig(): SiteConfig {
+export async function getSiteConfig(): Promise<SiteConfig> {
+  const stored = await storedSettings();
+  const env = (name: string): string | null => {
+    const own = stored.get(name)?.trim();
+    return own && own.length > 0 ? own : serverValue(name);
+  };
+
   return {
     tradingName: env("COMPANY_TRADING_NAME") ?? "Vertex Infosolutions",
     legalName: env("COMPANY_LEGAL_NAME"),
@@ -74,7 +83,7 @@ export function getSiteConfig(): SiteConfig {
       "Monday to Friday, 04:00–13:00 UTC (09:30–18:30 IST)",
     complaintsName: env("COMPANY_COMPLAINTS_OFFICER_NAME"),
     complaintsEmail: env("COMPANY_COMPLAINTS_OFFICER_EMAIL"),
-    bank: bankDetails(),
+    bank: bankDetails(env),
   };
 }
 
@@ -86,7 +95,7 @@ export function getSiteConfig(): SiteConfig {
  * three that a transfer actually needs are required together, and anything
  * short of that reads as "bank transfer is not set up".
  */
-function bankDetails(): BankDetails | null {
+function bankDetails(env: (name: string) => string | null): BankDetails | null {
   const accountNumber = env("BANK_ACCOUNT_NUMBER");
   const ifsc = env("BANK_IFSC");
   const bankName = env("BANK_NAME");

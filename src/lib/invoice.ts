@@ -576,7 +576,7 @@ export async function invoiceById(orderId: string): Promise<Invoice | null> {
     },
   });
   if (!order) return null;
-  return invoiceFor(order, getSiteConfig());
+  return invoiceFor(order, await getSiteConfig());
 }
 
 /**

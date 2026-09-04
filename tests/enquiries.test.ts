@@ -17,7 +17,7 @@ import {
  * submitting in a loop is.
  */
 describe("recognising an email address", () => {
-  it("accepts the addresses real people have", () => {
+  it("accepts the addresses real people have", async () => {
     for (const address of [
       "anita@example.com",
       "a.b+tag@sub.example.co.in",
@@ -28,7 +28,7 @@ describe("recognising an email address", () => {
     }
   });
 
-  it("rejects what is plainly not one", () => {
+  it("rejects what is plainly not one", async () => {
     for (const address of [
       "",
       "anita",
@@ -45,8 +45,8 @@ describe("recognising an email address", () => {
 });
 
 describe("how an enquiry reads to us", () => {
-  it("keeps the blank lines that separate header from message", () => {
-    const mail = compose("enquiry.received", {
+  it("keeps the blank lines that separate header from message", async () => {
+    const mail = await compose("enquiry.received", {
       kindLabel: KIND_LABELS.VOLUME_QUOTE,
       name: "Anita",
       email: "anita@example.com",
@@ -67,8 +67,8 @@ describe("how an enquiry reads to us", () => {
     expect(mail.subject).toBe("Quote request from Anita");
   });
 
-  it("names the company in the subject when there is one", () => {
-    const mail = compose("enquiry.received", {
+  it("names the company in the subject when there is one", async () => {
+    const mail = await compose("enquiry.received", {
       kindLabel: KIND_LABELS.GENERAL,
       name: "Anita",
       email: "anita@example.com",
@@ -83,10 +83,10 @@ describe("how an enquiry reads to us", () => {
     expect(mail.body).toContain("Company: Northwind");
   });
 
-  it("never sends the acknowledgement over WhatsApp", () => {
+  it("never sends the acknowledgement over WhatsApp", async () => {
     // The acknowledgement quotes back whatever they wrote, which may be
     // anything at all. It belongs in the mailbox they gave us and nowhere else.
-    const mail = compose("enquiry.acknowledged", {
+    const mail = await compose("enquiry.acknowledged", {
       name: "Anita",
       kindLabel: KIND_LABELS.LICENSING,
       message: "Can I move this licence to a new tenant?",

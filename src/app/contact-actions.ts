@@ -107,7 +107,7 @@ export async function submitEnquiry(
     ip,
   });
 
-  const config = getSiteConfig();
+  const config = (await getSiteConfig());
   const label = KIND_LABELS[kind];
 
   // To us. Without a support address configured the enquiry is still recorded

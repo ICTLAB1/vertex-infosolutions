@@ -235,11 +235,11 @@ export const WHATSAPP_TEMPLATES = {
     "vertex_licence_expiring",
 } as const;
 
-export function compose(
+export async function compose(
   template: NotifyTemplate,
   data: Record<string, string>,
-): Message {
-  const config = getSiteConfig();
+): Promise<Message> {
+  const config = await getSiteConfig();
   const brand = config.tradingName;
   const support = config.supportEmail ?? "our support address";
 
@@ -489,7 +489,7 @@ export async function notify(
   recipient: Recipient,
   data: Record<string, string>,
 ): Promise<void> {
-  const message = compose(template, data);
+  const message = await compose(template, data);
 
   const emailRow = await prisma.notification.create({
     data: {

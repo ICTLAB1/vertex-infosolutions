@@ -234,6 +234,33 @@ model Price {
   @@index([currency])
 }
 
+/// A setting an administrator can change without a deployment.
+///
+/// Everything here was an App Service setting first, and most of it stays
+/// available that way — the row is an override, and the settings page shows
+/// both so nobody wonders which one is winning. What moved is the shop's
+/// identity: its legal name, its address, its GSTIN, where a bank transfer
+/// goes. Those are facts about the business that change on a Tuesday, and
+/// needing a container rebuild to correct a typo in an address that appears
+/// on every invoice is how the typo stays there for a month.
+///
+/// What deliberately did not move is anything that is a secret or a key to
+/// something else: the database URL, the Stripe keys, the mail credentials,
+/// the WhatsApp token, the scheduled-job secret. They would be readable by
+/// anything that reaches this table, which includes every bug in this
+/// application, and a settings page is not worth that. `ADMIN_EMAILS` stays
+/// out for a sharper version of the same reason: the list of people who can
+/// use this page must not be editable from it.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+  /// Who last changed it. The settings page shows it, because "when did the
+  /// GSTIN on our invoices change, and who changed it?" is a question that
+  /// gets asked once and needs an answer.
+  updatedBy String?
+}
+
 model Review {
   id        String   @id @default(cuid())
   productId String

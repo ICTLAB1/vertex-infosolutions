@@ -12,8 +12,8 @@ export const metadata: Metadata = pageMetadata({
   path: "/privacy",
 });
 
-export default function PrivacyPage() {
-  const config = getSiteConfig();
+export default async function PrivacyPage() {
+  const config = (await getSiteConfig());
 
   return (
     <PolicyPage title="Privacy policy" updated="2 September 2026">

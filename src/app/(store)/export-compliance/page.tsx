@@ -12,8 +12,8 @@ export const metadata: Metadata = pageMetadata({
   path: "/export-compliance",
 });
 
-export default function ExportCompliancePage() {
-  const config = getSiteConfig();
+export default async function ExportCompliancePage() {
+  const config = (await getSiteConfig());
   const blocked = RESTRICTED_COUNTRIES.map((c) => c.name);
 
   return (

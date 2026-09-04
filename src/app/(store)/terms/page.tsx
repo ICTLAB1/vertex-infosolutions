@@ -12,8 +12,8 @@ export const metadata: Metadata = pageMetadata({
   path: "/terms",
 });
 
-export default function TermsPage() {
-  const config = getSiteConfig();
+export default async function TermsPage() {
+  const config = (await getSiteConfig());
   const seller = config.legalName ?? config.tradingName;
 
   return (

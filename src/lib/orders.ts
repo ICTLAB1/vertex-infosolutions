@@ -171,7 +171,7 @@ export async function notifyPending(orderId: string): Promise<void> {
   });
   if (!order) return;
 
-  const { bank } = getSiteConfig();
+  const { bank } = (await getSiteConfig());
 
   await notify(
     "order.pending",

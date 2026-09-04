@@ -9,7 +9,7 @@ import { getSiteConfig } from "@/lib/site";
  * checkout. They are drafts, not legal advice, and the banner says so until
  * somebody qualified has read them.
  */
-export function PolicyPage({
+export async function PolicyPage({
   title,
   updated,
   children,
@@ -18,7 +18,7 @@ export function PolicyPage({
   updated: string;
   children: React.ReactNode;
 }) {
-  const config = getSiteConfig();
+  const config = await getSiteConfig();
 
   return (
     <div className="mx-auto max-w-[820px] px-4 py-8">
