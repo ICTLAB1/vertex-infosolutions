@@ -162,7 +162,7 @@ export async function Header() {
               {user ? `Hello, ${user.name.split(" ")[0]}` : "Sign in"}
             </span>
             <span className="block text-[13px] font-semibold">
-              {user ? "Keys & orders" : "Your account"}
+              {user ? "Licences & orders" : "Your account"}
             </span>
           </Link>
 
@@ -235,7 +235,7 @@ export async function Header() {
           <span className="ml-auto hidden shrink-0 px-2.5 py-1 text-white/60 lg:block">
             {market.currency === "INR"
               ? "GST invoice on every order"
-              : "Keys by email, worldwide"}
+              : "Licences by email, worldwide"}
           </span>
         </div>
       </nav>

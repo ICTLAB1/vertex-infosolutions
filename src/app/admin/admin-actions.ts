@@ -92,7 +92,7 @@ export async function markPaymentReceived(
   redirect(`/admin/orders/${number}?recorded=1`);
 }
 
-/** Send the licence keys again, to the address on the order. */
+/** Send the licence details again, to the address on the order. */
 export async function resendKeys(
   _previous: AdminResult,
   form: FormData,
@@ -115,7 +115,7 @@ export async function resendKeys(
     admin,
     "order.resend-keys",
     number,
-    `Licence keys sent again to ${order.email}.`,
+    `Licence details sent again to ${order.email}.`,
   );
 
   revalidatePath(`/admin/orders/${number}`);
@@ -511,7 +511,7 @@ export async function reopenEnquiry(
  * and until now the only way out was for a customer who never got the email to
  * fix their own account.
  *
- * It refuses to redirect anything that carries a credential. A licence key or
+ * It refuses to redirect anything that carries a credential. A licence or
  * a one-time code sent to an address of an administrator's choosing is the
  * whole of an attack, not a convenience — those go to the address on the
  * account, and changing that is the customer's to do. The message is
@@ -542,7 +542,7 @@ export async function redirectNotification(
     return {
       ok: false,
       message:
-        "That message carries a licence key or a one-time code, so it can only go to the address on the account. The customer has to change it themselves.",
+        "That message carries a licence or a one-time code, so it can only go to the address on the account. The customer has to change it themselves.",
     };
   }
   if (!to) return { ok: false, message: "Enter the corrected address." };
@@ -1314,7 +1314,7 @@ export async function sendTestEmail(): Promise<AdminResult> {
     [
       `This is a test sent from the Vertex back office by ${admin.email}.`,
       "",
-      "If it arrived, the shop can send verification codes, licence keys and",
+      "If it arrived, the shop can send verification codes, licence details and",
       "invoices. If it did not, nothing else on the site can reach a customer",
       "either.",
     ].join("\n"),

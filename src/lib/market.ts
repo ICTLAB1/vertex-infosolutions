@@ -136,7 +136,8 @@ export function resolveMarket(
 /**
  * Countries the store will not supply, physically or electronically.
  *
- * A licence key is an export even though it travels by email, and supplying one
+ * A licensed product is an export even though it travels by email, and
+ * supplying one
  * into a comprehensively sanctioned territory is a criminal matter rather than
  * a commercial one. This list is a floor, not a compliance programme: it has to
  * be reviewed against current sanctions, and against the store's obligations as

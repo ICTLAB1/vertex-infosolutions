@@ -79,11 +79,11 @@ export function CheckoutForm({
 
         <fieldset className="rounded-lg border border-line bg-surface p-4">
           <legend className="px-1 text-[15px] font-bold text-ink">
-            Where the keys go
+            Where the licence goes
           </legend>
           <p className="mt-1 text-[13px] text-muted">
-            Nothing ships. Your licence keys are delivered into your account and
-            emailed to the confirmed address on it.
+            Nothing ships. Your licensed products and subscriptions are delivered
+            into your account and emailed to the confirmed address on it.
           </p>
           <p className="mt-2 rounded-md border border-line bg-ground/50 px-3 py-2 text-[14px]">
             <span className="font-semibold text-ink">{account.name}</span>
@@ -231,7 +231,7 @@ export function CheckoutForm({
             <p className="mt-3 rounded-md border border-warn/40 bg-warn/5 px-3 py-2 text-[13px] text-warn">
               <span className="font-semibold">Development only.</span> No Stripe
               key is configured, so paying online is simulated — no money moves
-              and keys are issued immediately. This fallback refuses to run in
+              and the licence is issued immediately. This fallback refuses to run in
               production.
             </p>
           ) : null}
@@ -242,9 +242,9 @@ export function CheckoutForm({
         <div className="rounded-lg border border-line bg-surface p-4">
           <SubmitButton total={total} method={method} />
           <p className="mt-3 text-[12px] leading-relaxed text-faint">
-            By placing this order you agree to the terms of sale. A licence key
-            once revealed cannot be returned — before then, the order can be
-            cancelled in full.
+            By placing this order you agree to the terms of sale. A licence once
+            issued cannot be returned — before then, the order can be cancelled
+            in full.
           </p>
           <p className="mt-2 flex items-center gap-1.5 text-[12px] text-faint">
             <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">

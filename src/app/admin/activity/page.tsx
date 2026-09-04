@@ -43,7 +43,7 @@ export default async function AdminActivityPage() {
           The sweep tried these and stopped — either the provider refused the
           address outright, or the attempts ran out. Nothing will try again on
           its own. An abandoned licence-key email means a customer has paid and
-          has nothing: open the order and send the keys again, to a corrected
+          has nothing: open the order and send the licence again, to a corrected
           address if that was the problem.
         </p>
         {abandoned.length === 0 ? (

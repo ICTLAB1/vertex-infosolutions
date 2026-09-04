@@ -61,8 +61,8 @@ export default async function VerifyPage() {
           )}
         </p>
         <p className="mt-2 mb-4 text-[13px] text-muted">
-          This is the address your licence keys and invoices go to, so it has to
-          be one you can actually read. Nothing can be bought until it is
+          This is the address your licences and invoices go to, so it has to be
+          one you can actually read. Nothing can be bought until it is
           confirmed.
         </p>
 

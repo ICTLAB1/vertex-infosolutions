@@ -36,7 +36,8 @@ export default async function ExportCompliancePage() {
         rather than accepted and quietly cancelled later.
       </p>
       <p>
-        A licence key is an export even though it travels by email. It is not
+        A licensed product is an export even though it travels by email. It is
+        not
         exempt because nothing physical crosses a border, and it is not exempt
         because it was delivered in seconds.
       </p>
@@ -79,7 +80,7 @@ export default async function ExportCompliancePage() {
         Every invoice states the true product, the real price paid and the
         actual buyer. Customers occasionally ask us to describe a licence as
         something else, split an invoice to stay under a threshold, or bill a
-        different entity from the one receiving the keys. The answer is always
+        different entity from the one receiving the licences. The answer is always
         no — that is invoice fraud, and it exposes the buyer far more than it
         exposes us.
       </p>

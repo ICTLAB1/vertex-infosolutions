@@ -5,7 +5,7 @@ import { CREDENTIAL_TEMPLATES, compose } from "@/lib/notify";
 /**
  * These assertions look pedantic and are not.
  *
- * A licence key or a one-time code that leaks into a WhatsApp template is a
+ * A licence or a one-time code that leaks into a WhatsApp template is a
  * credential sitting in a chat thread, forwardable, readable over a shoulder,
  * and outside the address we verified. The rule is easy to break by adding one
  * convenient variable to a template months from now — so it is asserted here
@@ -29,7 +29,7 @@ describe("what may travel over WhatsApp", () => {
     expect(signin.whatsapp).toBeUndefined();
   });
 
-  it("never sends a licence key", async () => {
+  it("never sends a licence", async () => {
     const keys = await compose("order.keys", {
       name: "Anita",
       number: "VX-2026-123456",

@@ -92,7 +92,7 @@ export function RegisterForm() {
         type="email"
         autoComplete="email"
         error={error}
-        hint="We send a code here to confirm it. Licence keys and invoices go to this address."
+        hint="We send a code here to confirm it. Your licences and invoices go to this address."
         required
       />
       <Field
@@ -124,7 +124,7 @@ export function RegisterForm() {
           <span className="font-semibold text-ink">
             Send order updates on WhatsApp.
           </span>{" "}
-          Order confirmations only — never licence keys, and never marketing.
+          Order confirmations only — never a licence, and never marketing.
           You can turn this off at any time in your account.
         </span>
       </label>
@@ -267,7 +267,7 @@ export function ProfileForm({
           <span className="font-semibold text-ink">
             Send order updates on WhatsApp.
           </span>{" "}
-          Order confirmations only — never licence keys.
+          Order confirmations only — never a licence.
         </span>
       </label>
       <Submit label="Save changes" busy="Saving…" />

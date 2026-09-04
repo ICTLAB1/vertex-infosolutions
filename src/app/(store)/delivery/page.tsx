@@ -15,10 +15,10 @@ export default function DeliveryPage() {
   return (
     <PolicyPage title="How delivery works" updated="2 September 2026">
       <p>
-        Nothing here is posted to you. Every product on this site is a software
-        licence, and a licence is a key, an account assignment or a licence file
-        — all of which arrive by email. There is no parcel, no carrier, no
-        customs, no duty and no delivery address to enter.
+        Nothing here is posted to you. Every product on this site is a licensed
+        product or a subscription, and what arrives is an account assignment, a
+        sign-in, or a licence file — all of them by email. There is no parcel,
+        no carrier, no customs, no duty and no delivery address to enter.
       </p>
 
       <H2>What arrives, and when</H2>
@@ -30,8 +30,8 @@ export default function DeliveryPage() {
       </p>
       <Ul>
         <li>
-          <strong className="text-ink">Microsoft subscriptions</strong> — not a
-          product key. We provision a{" "}
+          <strong className="text-ink">Microsoft subscriptions</strong> — nothing
+          to type in anywhere. We provision a{" "}
           <strong className="text-ink">new Microsoft tenant</strong> for your
           order and send you its tenant ID and the global administrator
           sign-in, which you use to assign the seats. It cannot be added to a
@@ -58,8 +58,8 @@ export default function DeliveryPage() {
 
       <H2>If the email has not arrived</H2>
       <p>
-        Check the spam folder first: an email carrying a long alphanumeric key
-        is a shape that filters dislike. If it is not there, your keys are on
+        Check the spam folder first: an email carrying long alphanumeric details
+        is a shape that filters dislike. If it is not there, your licence is on
         your order page regardless — find it with your order number and the
         email address you used. The email is a convenience; the order page is
         the record.
@@ -72,8 +72,8 @@ export default function DeliveryPage() {
       <H2>Bank transfer is different</H2>
       <p>
         Card, UPI, net banking and PayPal all confirm in seconds. A bank
-        transfer does not: we issue keys once the funds actually clear, which is
-        usually two to four business days and longer across a border. The order
+        transfer does not: we issue the licence once the funds actually clear,
+        which is usually two to four business days and longer across a border. The order
         page shows &ldquo;Awaiting payment&rdquo; until then, so there is never
         any doubt about which state it is in.
       </p>
@@ -89,8 +89,8 @@ export default function DeliveryPage() {
 
       <H2>Where we cannot supply</H2>
       <p>
-        A licence key is an export even though it travels by email, and there
-        are countries we cannot supply at all. An order to one of them is
+        A licensed product is an export even though it travels by email, and
+        there are countries we cannot supply at all. An order to one of them is
         refused at checkout rather than taken and cancelled — see{" "}
         <Link href="/export-compliance" className="text-link underline">
           export compliance

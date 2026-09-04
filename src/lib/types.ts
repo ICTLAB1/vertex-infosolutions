@@ -36,7 +36,7 @@ export function paymentMethodNote(
         ? "Card, UPI, net banking or wallet, on Stripe's own secure page. Vertex never sees your card or UPI details."
         : "Card or wallet, on Stripe's own secure page. Vertex never sees your card details.";
     case "BANK_TRANSFER":
-      return "We email an invoice with our bank details. Licence keys are issued once the funds clear, usually two to four business days.";
+      return "We email an invoice with our bank details. Your licence is issued once the funds clear, usually two to four business days.";
     default:
       return "";
   }

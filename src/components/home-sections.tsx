@@ -38,7 +38,7 @@ function Section({
  * Three steps, and the third is the one that has to stay honest.
  *
  * "Receive your licence by email" would be wrong for most of what this shop
- * sells: a Microsoft CSP subscription has no key to email, it arrives as the
+ * sells: a Microsoft CSP subscription has nothing to type in, it arrives as the
  * sign-in details for a tenant provisioned for the order, and it takes a
  * business day rather than a minute. The step says what actually happens.
  */
@@ -57,7 +57,7 @@ export function HowItWorks() {
     {
       n: 3,
       title: "Receive your licence",
-      body: `Issued to your Vertex account and emailed to you, ${DELIVERY_WINDOW}. Microsoft subscriptions arrive as the sign-in details for a new tenant rather than as a key.`,
+      body: `Issued to your Vertex account and emailed to you, ${DELIVERY_WINDOW}. Microsoft subscriptions arrive as the sign-in details for a new tenant.`,
     },
   ];
 
@@ -259,9 +259,9 @@ export async function TrustAndSecurity() {
         <>
           Authorised distribution. Microsoft subscriptions are supplied through
           the Cloud Solution Provider programme; Adobe through our certified
-          reseller agreement. They are not recovered consumer keys, not OEM keys
+          reseller agreement. They are not recovered consumer licences, not OEM licences
           detached from the hardware they were sold with, and not grey-market
-          volume keys — all three of which stop working when the publisher
+          volume licences — all three of which stop working when the publisher
           audits them, usually months later and always at your expense.{" "}
           <Link href="/licensing" className="text-link underline">
             How licensing works

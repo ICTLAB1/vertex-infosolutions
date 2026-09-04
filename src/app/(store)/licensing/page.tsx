@@ -124,8 +124,8 @@ export default function LicensingPage() {
 
       <H2>How to spot a licence that will stop working</H2>
       <p>
-        Grey-market keys are everywhere and the price is the giveaway. A key at
-        a fifth of the prices on this page is one of these:
+        Grey-market licences are everywhere and the price is the giveaway. A
+        licence at a fifth of the prices on this page is one of these:
       </p>
       <Ul>
         <li>
@@ -133,11 +133,11 @@ export default function LicensingPage() {
           publisher revokes when it notices.
         </li>
         <li>
-          A volume key from a large agreement, split up and resold — revoked
+          A volume licence from a large agreement, split up and resold — revoked
           when the audit happens.
         </li>
         <li>
-          A key bought with a stolen card, which is cancelled on chargeback,
+          A licence bought with a stolen card, which is cancelled on chargeback,
           usually two to three months in.
         </li>
         <li>

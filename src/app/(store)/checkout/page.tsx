@@ -18,8 +18,8 @@ export const metadata: Metadata = {
 };
 
 export default async function CheckoutPage() {
-  // Keys are delivered into an account, so there has to be one — and a
-  // confirmed address, or the keys go somewhere nobody can read.
+  // Licences are delivered into an account, so there has to be one — and a
+  // confirmed address, or they go somewhere nobody can read.
   const user = await getUser();
   if (!user) redirect("/signin?next=/checkout");
   if (!user.emailVerifiedAt) redirect("/verify");

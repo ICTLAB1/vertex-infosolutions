@@ -38,8 +38,8 @@ export default async function ForgotPage(props: PageProps<"/forgot">) {
         <Link href="/contact" className="text-link underline">
           Talk to us
         </Link>{" "}
-        — your licence keys are not lost, but proving the account is yours takes
-        a person.
+        — your licences are not lost, but proving the account is yours takes a
+        person.
       </p>
     </div>
   );

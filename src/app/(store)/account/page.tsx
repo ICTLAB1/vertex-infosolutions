@@ -79,8 +79,8 @@ export default async function AccountPage(props: PageProps<"/account">) {
           title="Your licences"
           body={
             keyCount === 0
-              ? "Keys appear here the moment an order is paid."
-              : `${keyCount} ${keyCount === 1 ? "key" : "keys"}, kept permanently.`
+              ? "They appear here the moment an order is paid."
+              : `${keyCount} ${keyCount === 1 ? "licence" : "licences"}, kept permanently.`
           }
           flag={
             renewCount > 0
@@ -91,7 +91,7 @@ export default async function AccountPage(props: PageProps<"/account">) {
         <Tile
           href="/account/orders"
           title="Your orders"
-          body="Invoices, payment status and licence keys, by order."
+          body="Invoices, payment status and licence details, by order."
         />
         <Tile
           href="/account/profile"

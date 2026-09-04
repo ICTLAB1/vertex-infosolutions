@@ -54,7 +54,7 @@ export default async function HomePage() {
             </h1>
             <p className="mt-3 text-white/75">
               No quotation to chase and no callback to wait for. Pick your
-              seats, pay, and the keys are in your inbox before you close the
+              seats, pay, and your licences are in your inbox before you close the
               tab.{" "}
               {market.domestic
                 ? "Prices in rupees, GST included, with a tax invoice carrying your GSTIN."

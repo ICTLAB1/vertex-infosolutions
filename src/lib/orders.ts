@@ -18,7 +18,7 @@ function licenceKey(): string {
 }
 
 /**
- * Mark an order paid, issue its licence keys, and tell the customer.
+ * Mark an order paid, issue its licences, and tell the customer.
  *
  * **This must happen exactly once, and it is called more than once by design.**
  * Stripe reports a completed payment twice — the browser returning from the
@@ -40,7 +40,7 @@ function licenceKey(): string {
  * notices — so this goes to the support address and to everyone who can open
  * the back office, at the moment the order becomes real.
  *
- * Nothing it does can fail the order. It runs after the money and the keys are
+ * Nothing it does can fail the order. It runs after the money and the licences are
  * settled, `notify` records rather than throws, and a shop with no support
  * address configured simply sends nothing: the order is in the back office
  * either way, and an unreachable mailbox must never unwind a payment that has
@@ -125,7 +125,7 @@ export async function fulfilOrder(
   });
   if (!order) return { fulfilled: false, alreadyDone: false };
 
-  // Keys are generated only for lines that do not have one. A retry that got
+  // A licence is generated only for a line that does not have one. A retry that got
   // this far — the claim succeeded but the process died before finishing —
   // completes rather than duplicating.
   await prisma.$transaction(async (tx) => {
@@ -150,7 +150,7 @@ export async function fulfilOrder(
   const currency = order.currency as CurrencyCode;
   const orderUrl = `${appUrl()}/account/orders/${order.number}`;
 
-  // Notifications come after the money and the keys are settled, and never
+  // Notifications come after the money and the licences are settled, and never
   // inside the transaction: a mail provider being down must not roll back a
   // payment that has already been taken.
   await notify(
@@ -179,13 +179,13 @@ export async function fulfilOrder(
 }
 
 /**
- * Send the licence keys for an order.
+ * Send the licence details for an order.
  *
  * Separate from `fulfilOrder` because it is also the thing an administrator
  * reaches for when a customer says the email never arrived — a bounced address
- * now fixed, a spam filter, a forwarding rule. It re-reads the keys rather than
+ * now fixed, a spam filter, a forwarding rule. It re-reads the licences rather than
  * taking them from a caller, so a resend cannot invent one, and it issues
- * nothing: an order with no keys yet gets no email.
+ * nothing: an order with no licence issued yet gets no email.
  */
 export async function sendKeys(orderId: string): Promise<boolean> {
   const order = await prisma.order.findUnique({

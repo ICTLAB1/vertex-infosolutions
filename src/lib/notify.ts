@@ -16,19 +16,19 @@ import { getSiteConfig } from "@/lib/site";
  * with no provider configured at all, which is how the flows below were
  * actually tested.
  *
- * Two channels. Email is the record — invoices, licence keys, anything the
+ * Two channels. Email is the record — invoices, licence details, anything the
  * customer may need in a year. WhatsApp is a nudge: short, timely, and never
- * carrying a licence key, because a WhatsApp message is one forwarded chat away
+ * carrying a licence, because a WhatsApp message is one forwarded chat away
  * from being somebody else's licence.
  */
 
 /**
  * Messages that may not be sent anywhere but the address on the account.
  *
- * Each of these carries something that *is* the credential — a licence key, a
+ * Each of these carries something that *is* the credential — a licence, a
  * one-time code — so "send it to this other address instead" is the whole of
  * an attack rather than a convenience. An administrator can redirect a
- * confirmation or a reminder that bounced; changing where a key goes is an
+ * confirmation or a reminder that bounced; changing where a licence goes is an
  * account change, made by the customer, after proving the new address.
  */
 export const CREDENTIAL_TEMPLATES: readonly NotifyTemplate[] = [
@@ -242,7 +242,7 @@ type Message = {
   body: string;
   /**
    * The WhatsApp side. Absent means this message is email-only — which is the
-   * right answer for anything carrying a licence key or a one-time code.
+   * right answer for anything carrying a licence or a one-time code.
    */
   whatsapp?: { template: string; variables: string[] };
 };
@@ -347,7 +347,7 @@ export async function compose(
           "",
           "Your email address is verified and your account is ready.",
           "",
-          "Every licence you buy is delivered into it and stays there — keys, invoices and renewal dates all in one place, so nothing depends on finding an old email.",
+          "Every licence you buy is delivered into it and stays there — licences, invoices and renewal dates all in one place, so nothing depends on finding an old email.",
           "",
           `${data.accountUrl}`,
           "",
@@ -365,7 +365,7 @@ export async function compose(
           "",
           `Your licence details will be in your account within one business day: ${data.orderUrl}`,
           "",
-          "You will get a second email the moment they are ready. Microsoft subscriptions arrive as the sign-in details for a new tenant rather than as a key.",
+          "You will get a second email the moment they are ready. Microsoft subscriptions arrive as the sign-in details for a new tenant.",
           "",
           `Your ${data.invoiceKind} is attached to this email as a PDF, and is on the order page if you need it again: ${data.invoiceUrl}`,
           "",
@@ -382,22 +382,22 @@ export async function compose(
 
     case "order.keys":
       return {
-        subject: `${brand} order ${data.number} — your licence keys`,
+        subject: `${brand} order ${data.number} — your licence details`,
         body: [
           `Hello ${data.name},`,
           "",
-          `The licence keys for order ${data.number} are ready.`,
+          `The licensed products and subscriptions on order ${data.number} are ready.`,
           "",
           data.keys,
           "",
           `They are also in your account, permanently: ${data.orderUrl}`,
           "",
-          "Keep them somewhere safe. A licence key is the licence.",
+          "Keep them somewhere safe. What is below is the licence itself.",
           "",
           `— ${brand}`,
         ].join("\n"),
-        // Deliberately email-only. A key forwarded in a chat is somebody
-        // else's licence.
+        // Deliberately email-only. A licence forwarded in a chat is
+        // somebody else's licence.
       };
 
     // To us, not to the customer. The one message in this file whose reader is
@@ -422,7 +422,7 @@ export async function compose(
           "",
           ...(data.state === "paid"
             ? [
-                "Licence keys have been issued and sent. Nothing is required unless the customer writes.",
+                "The licence has been issued and sent. Nothing is required unless the customer writes.",
               ]
             : [
                 "No money has arrived yet. A bank transfer has to be matched against the statement by hand — the order number is the reference the customer was told to use.",
@@ -536,8 +536,8 @@ export async function compose(
  * Queue a message and try to send it.
  *
  * Never throws. A notification failing must not roll back the order it is
- * telling somebody about — the payment has already been taken, and the keys
- * are in the account either way. Failures are recorded on the row for a retry
+ * telling somebody about — the payment has already been taken, and the licence
+ * is in the account either way. Failures are recorded on the row for a retry
  * sweep to pick up.
  */
 export async function notify(

@@ -124,15 +124,15 @@ export default async function TermsPage() {
         </li>
         <li>
           Where a licence is restricted to a territory, the product page says so.
-          A key you cannot activate in your territory is a fault we refund.
+          A licence you cannot activate in your territory is a fault we refund.
         </li>
       </Ul>
 
       <H2>6. Refunds</H2>
       <p>
-        Full refund before the key is issued. None after it has been revealed,
-        because a key cannot be un-issued. A key that will not activate is a
-        different matter and we fix or refund it. Full terms in{" "}
+        Full refund before the licence is issued. None after it has been issued
+        to you, because a licence cannot be un-issued. A licence that will not
+        activate is a different matter and we fix or refund it. Full terms in{" "}
         <Link href="/returns" className="text-link underline">
           refunds &amp; cancellations
         </Link>
@@ -154,7 +154,8 @@ export default async function TermsPage() {
 
       <H2>8. Export control and sanctions</H2>
       <p>
-        A licence key is an export even though it travels by email. You confirm
+        A licensed product is an export even though it travels by email. You
+        confirm
         that you are not ordering on behalf of anyone subject to trade
         sanctions, that the software is not for a prohibited end use, and that
         you will not re-export it in breach of any applicable control. See{" "}

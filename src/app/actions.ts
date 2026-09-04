@@ -171,7 +171,7 @@ export async function placeOrder(
   _previous: CheckoutError | null,
   form: FormData,
 ): Promise<CheckoutError | null> {
-  // Licence keys are delivered into an account, so there has to be one, and it
+  // Licences are delivered into an account, so there has to be one, and it
   // has to be a verified address or the keys go somewhere nobody can read.
   const user = await getUser();
   if (!user) redirect("/signin?next=/checkout");

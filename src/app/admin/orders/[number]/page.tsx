@@ -19,7 +19,8 @@ export const metadata: Metadata = { title: "Order" };
 /**
  * One order, and the three things a person can do to it.
  *
- * The licence keys are shown in full. An administrator who can mark an order
+ * The licence details are shown in full. An administrator who can mark an
+ * order
  * paid and re-send its keys can already see them; masking them here would only
  * stop support reading one back to a customer on the phone, which is the
  * commonest reason to open this page.
@@ -75,7 +76,7 @@ export default async function AdminOrderPage(
 
       {recorded ? (
         <p className="mb-4 rounded-lg border border-ok/30 bg-ok/5 px-4 py-3 text-[14px] text-ok">
-          <span className="font-semibold">Payment recorded.</span> Licence keys
+          <span className="font-semibold">Payment recorded.</span> The licence
           have been issued and sent to {order.email}, and the reference is on
           the record below.
         </p>
@@ -248,7 +249,7 @@ export default async function AdminOrderPage(
           </Panel>
 
           {paid ? (
-            <Panel title="Send the keys again">
+            <Panel title="Send the licence details again">
               <ResendKeysForm number={order.number} email={order.email} />
             </Panel>
           ) : (

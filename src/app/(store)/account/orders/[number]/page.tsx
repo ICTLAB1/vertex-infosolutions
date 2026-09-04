@@ -23,7 +23,7 @@ export const metadata: Metadata = {
  *
  * Behind the account, and scoped to its owner: the query filters on `userId`
  * as well as the order number, so guessing a number gets a 404 rather than
- * somebody else's licence keys. An order number is six digits — short enough
+ * somebody else's licences. An order number is six digits — short enough
  * that this is the whole of what protects them.
  */
 export default async function OrderPage(
@@ -78,10 +78,10 @@ export default async function OrderPage(
         </h1>
         <p className="mt-1 text-[15px] text-ink">
           {paid
-            ? `Payment received. Your keys are below, and your ${domestic ? "GST" : "commercial"} invoice can be downloaded from this page.`
+            ? `Payment received. Your licence details are below, and your ${domestic ? "GST" : "commercial"} invoice can be downloaded from this page.`
             : transfer
-              ? `Send the payment to the account below, quoting ${order.number}. We have emailed the same details to ${order.email}. Keys are issued once the funds clear.`
-              : "Keys are issued once the payment clears."}
+              ? `Send the payment to the account below, quoting ${order.number}. We have emailed the same details to ${order.email}. Your licence is issued once the funds clear.`
+              : "Your licence is issued once the payment clears."}
         </p>
         <p className="mt-2 font-mono text-[14px] text-muted">
           Order {order.number}
@@ -201,8 +201,8 @@ export default async function OrderPage(
 
                   <p className="mt-1.5 text-[12px] text-faint">
                     {item.licenceKey
-                      ? "Not returnable — the key has been revealed."
-                      : "Refundable in full until the key is issued."}
+                      ? "Not returnable — the licence has been issued to you."
+                      : "Refundable in full until the licence is issued."}
                   </p>
                 </div>
                 <span className="shrink-0 text-right text-[15px] font-semibold text-ink">

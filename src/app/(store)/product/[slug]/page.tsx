@@ -565,7 +565,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               <div className="flex gap-2">
                 <dt className="w-24 shrink-0 text-faint">Refunds</dt>
                 <dd className="text-ink">
-                  Full refund before the key is revealed
+                  Full refund before the licence is issued
                 </dd>
               </div>
             </dl>

@@ -27,7 +27,7 @@ const STATUSES = ["ABANDONED", "FAILED", "QUEUED", "SENT", "SKIPPED"] as const;
  *
  * Three decisions: try it again, give up on it, or — for the commonest cause,
  * a typo in an address — send it somewhere corrected. The third is not offered
- * on a message carrying a licence key or a one-time code, because "send this
+ * on a message carrying a licence or a one-time code, because "send this
  * credential to an address of my choosing" is not a support tool.
  */
 export default async function MessagesPage(props: PageProps<"/admin/messages">) {
@@ -77,7 +77,7 @@ export default async function MessagesPage(props: PageProps<"/admin/messages">) 
         <h2 className="text-[15px] font-bold text-ink">Is email working?</h2>
         <p className="mb-2 text-[13px] text-muted">
           Nothing in this shop reaches a customer without it — not a
-          verification code, not a licence key, not an invoice. A new account
+          verification code, not a licence, not an invoice. A new account
           cannot be finished without one, so a mail outage stops every sale.
         </p>
         <TestEmailForm email={admin.email} />
@@ -159,14 +159,14 @@ export default async function MessagesPage(props: PageProps<"/admin/messages">) 
                     />
                   ) : null}
                   {/* Offered only where it is allowed. A message carrying a
-                      licence key or a one-time code goes to the address on the
+                      licence or a one-time code goes to the address on the
                       account and nowhere else, so the field is absent rather
                       than present and always refused. */}
                   {CREDENTIAL_TEMPLATES.includes(
                     message.template as NotifyTemplate,
                   ) ? (
                     <p className="max-w-sm text-[12px] text-muted">
-                      This one carries a licence key or a one-time code, so it
+                      This one carries a licence or a one-time code, so it
                       can only go to the address on the account. If that address
                       is wrong, the customer has to change it.
                     </p>

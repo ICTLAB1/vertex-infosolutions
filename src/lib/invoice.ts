@@ -461,7 +461,7 @@ export function invoicePages(
   text(
     invoice.paid
       ? `Paid in full by ${invoice.paymentMethod}${invoice.paidOn ? ` on ${dateFormat.format(invoice.paidOn)}` : ""}.`
-      : `Awaiting payment by ${invoice.paymentMethod}. Licence keys are issued when the funds clear.`,
+      : `Awaiting payment by ${invoice.paymentMethod}. The licence is issued when the funds clear.`,
     valueX,
     9,
     { align: "right", grey: MUTED },

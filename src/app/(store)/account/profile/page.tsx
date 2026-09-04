@@ -71,14 +71,14 @@ export default async function ProfilePage() {
         <ul className="mt-2 space-y-1.5 text-[14px] text-muted">
           <li>
             <span className="font-semibold text-ink">Email</span> — order
-            confirmations, licence keys, invoices and renewal reminders. This is
+            confirmations, licence details, invoices and renewal reminders. This is
             the record, and it cannot be turned off while you have orders.
           </li>
           <li>
             <span className="font-semibold text-ink">WhatsApp</span> — order
             confirmations only, and only if you opt in.{" "}
-            <span className="text-ink">Never a licence key</span>: a key
-            forwarded in a chat is somebody else&apos;s licence.
+            <span className="text-ink">Never a licence</span>: one forwarded in a
+            chat is somebody else&apos;s licence.
           </li>
           <li>No marketing on either channel. There is no list to be on.</li>
         </ul>

@@ -15,37 +15,39 @@ export default function ReturnsPage() {
   return (
     <PolicyPage title="Refunds & cancellations" updated="2 September 2026">
       <p>
-        There is nothing to post back — every product here is a licence. So the
-        question is not whether you can return it, but whether the key has been
-        revealed.
+        There is nothing to post back — every product here is a licensed product
+        or a subscription. So the question is not whether you can return it, but
+        whether it has been issued to you.
       </p>
 
       <H2>The rule, in one line</H2>
       <p className="rounded-md border border-line bg-ground/50 p-4 text-ink">
-        <strong>Before the key is issued: refunded in full, no questions.</strong>{" "}
-        Once the key has been shown to you or assigned to your account, it has
-        been transferred and cannot be taken back.
+        <strong>
+          Before it is issued: refunded in full, no questions.
+        </strong>{" "}
+        Once the licence has been shown to you or assigned to your account, it
+        has been transferred and cannot be taken back.
       </p>
       <p>
-        This is not us being difficult. A licence key cannot be un-issued: once
-        you have seen it, it can be redeemed, and the publisher has already
-        counted it against our allocation. Anyone promising otherwise is either
-        absorbing the loss or reselling your key to somebody else.
+        This is not us being difficult. A licence cannot be un-issued: once you
+        have it, it can be redeemed, and the publisher has already counted it
+        against our allocation. Anyone promising otherwise is either absorbing
+        the loss or reselling your licence to somebody else.
       </p>
 
       <H2>Full refund — always</H2>
       <Ul>
         <li>
           You paid by bank transfer and cancel before the funds clear and the
-          keys are issued.
+          licence is issued.
         </li>
         <li>
           We could not fulfil the order — allocation gone, an export control we
           could not clear, a publisher restriction in your territory.
         </li>
         <li>
-          The key does not activate and we cannot resolve it with the publisher.
-          A dead licence is not a licence.
+          The licence does not activate and we cannot resolve it with the
+          publisher. A dead licence is not a licence.
         </li>
         <li>
           You were sold the wrong product because our page described it wrongly.
@@ -53,25 +55,25 @@ export default function ReturnsPage() {
         </li>
       </Ul>
 
-      <H2>When a key does not activate</H2>
+      <H2>When a licence does not activate</H2>
       <p>
         Contact us. This is a problem to fix, not a refund to argue about. We
         will either resolve the activation with the publisher or issue a
-        replacement key at no cost. We only refund if neither works.
+        replacement at no cost. We only refund if neither works.
       </p>
       <p>
         Activation failures are almost always one of three things: a region
-        mismatch, a key already redeemed against another account, or a product
-        that needs to be assigned in an admin console rather than typed in. All
-        three are ours to sort out.
+        mismatch, a licence already redeemed against another account, or a
+        product that has to be assigned in an admin console rather than entered
+        anywhere. All three are ours to sort out.
       </p>
 
       <H2>Buying the wrong thing</H2>
       <p>
         If you ordered an annual subscription and meant perpetual, or bought
-        AutoCAD LT when you needed full AutoCAD, tell us before you redeem the
-        key and we will exchange it. Once redeemed, the publisher counts it as
-        used and we cannot.
+        AutoCAD LT when you needed full AutoCAD, tell us before you redeem it and
+        we will exchange it. Once redeemed, the publisher counts it as used and
+        we cannot.
       </p>
       <p>
         Which is why{" "}
@@ -86,7 +88,7 @@ export default function ReturnsPage() {
         Consumers in the EU and the UK have a fourteen-day right to cancel a
         distance purchase. That right is waived for digital content once
         delivery begins with your express consent — which is exactly what
-        happens when you ask for a key and we issue it in seconds.
+        happens when you order and we issue the licence in seconds.
       </p>
       <p>
         We tell you this at checkout rather than in a clause you never read,

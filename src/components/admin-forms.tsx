@@ -83,12 +83,12 @@ export function MarkPaidForm({ number }: { number: string }) {
           className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2 text-[14px]"
         />
         <span className="mt-1 block text-[12px] text-faint">
-          Recorded against this order. Issuing keys sends the customer their
-          confirmation and their licence keys, so do this once the funds have
+          Recorded against this order. Issuing the licence sends the customer their
+          confirmation and their licence details, so do this once the funds have
           actually cleared.
         </span>
       </label>
-      <Go label="Mark paid and issue keys" busy="Issuing…" tone="loud" />
+      <Go label="Mark paid and issue the licence" busy="Issuing…" tone="loud" />
     </form>
   );
 }
@@ -100,7 +100,7 @@ export function ResendKeysForm({ number, email }: { number: string; email: strin
     <form action={action} className="space-y-2">
       <Outcome result={result} />
       <input type="hidden" name="number" value={number} />
-      <Go label="Send the keys again" busy="Sending…" />
+      <Go label="Send the licence details again" busy="Sending…" />
       <p className="text-[12px] text-faint">
         Goes to {email}, the address on the order. Changing where it goes means
         changing the account.
@@ -253,7 +253,7 @@ export function HandleEnquiryForm({ enquiryId }: { enquiryId: string }) {
 /**
  * Sending a bounced message to a corrected address.
  *
- * Shown only where it is allowed. A message carrying a licence key or a
+ * Shown only where it is allowed. A message carrying a licence or a
  * one-time code is refused by the action whatever is typed here, and the page
  * does not offer the field at all — an input that always fails is worse than
  * no input.

@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Customer" };
  *
  * Assembled so the questions a support call actually opens with — can they
  * buy, what did they order, did the email reach them, who is signed in — are
- * answered without navigating anywhere. Licence keys are deliberately not
+ * answered without navigating anywhere. Licence details are deliberately not
  * shown: an administrator can re-send them to the customer, which is the
  * legitimate need, and cannot read them off the screen, which is not.
  */

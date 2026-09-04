@@ -17,8 +17,8 @@ export const metadata: Metadata = {
 /**
  * The licence vault.
  *
- * This is what an account is *for*. A key emailed once can be lost in a
- * mailbox; a key here is findable in a year, when the renewal comes round and
+ * This is what an account is *for*. A licence emailed once can be lost in a
+ * mailbox; one here is findable in a year, when the renewal comes round and
  * somebody has to prove what the company owns.
  */
 export default async function LicencesPage() {
@@ -84,15 +84,16 @@ export default async function LicencesPage() {
 
       <h1 className="text-2xl font-bold text-ink">Your licences</h1>
       <p className="mt-1 text-[14px] text-muted">
-        Every key you have bought, kept permanently. A licence key is the
-        licence — treat it like a password.
+        Every licensed product and subscription you have bought, kept
+        permanently. What is shown below is the licence itself — treat it like
+        a password.
       </p>
 
       {items.length === 0 ? (
         <div className="mt-5 rounded-lg border border-line bg-surface p-10 text-center">
           <p className="text-lg font-semibold text-ink">No licences yet</p>
           <p className="mt-1 text-muted">
-            Keys appear here the moment an order is paid.
+            Your licences appear here the moment an order is paid.
           </p>
           <Link
             href="/s"
@@ -125,8 +126,8 @@ export default async function LicencesPage() {
               </h2>
               <p className="mt-1 text-[13px] text-warn/90">
                 {waiting.length === 1 ? "One licence is" : `${waiting.length} licences are`}{" "}
-                reserved against an order whose funds have not cleared. Keys are
-                issued the moment they do.
+                reserved against an order whose funds have not cleared. They are
+                issued the moment the money lands.
               </p>
               <ul className="mt-2 text-[13px] text-warn/90">
                 {waiting.map((item) => (
@@ -211,8 +212,8 @@ export default async function LicencesPage() {
 
       <p className="mt-6 rounded-lg border border-line bg-surface p-4 text-[13px] text-muted">
         <span className="font-semibold text-ink">A note on keeping these.</span>{" "}
-        We keep your keys here for as long as you have an account, but keep your
-        own copy too — of the key and of the invoice. If you ever lose access to
+        We keep these here for as long as you have an account, but keep your own
+        copy too — of the licence and of the invoice. If you ever lose access to
         this account, the invoice is what lets the publisher confirm the licence
         is yours.
       </p>

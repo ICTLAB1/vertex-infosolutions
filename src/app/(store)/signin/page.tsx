@@ -28,7 +28,7 @@ export default async function SignInPage(props: PageProps<"/signin">) {
       <div className="rounded-lg border border-line bg-surface p-6">
         <h1 className="text-2xl font-bold text-ink">Sign in</h1>
         <p className="mt-1 mb-4 text-[14px] text-muted">
-          Your licence keys, invoices and renewal dates are in your account.
+          Your licences, invoices and renewal dates are in your account.
         </p>
         <SignInForm next={next} />
       </div>
