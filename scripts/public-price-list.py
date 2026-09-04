@@ -4,6 +4,7 @@ Make a shareable copy of a distributor price list: public columns only.
 
     pip install openpyxl
     python3 scripts/public-price-list.py ~/Downloads/SAVEX_CHANNEL_PRICE_LIST_SEPT_2026.xlsx
+    python3 scripts/public-price-list.py ~/Downloads/Channel_Pricelist.xlsx
 
 Writes <name>-public-list-price.xlsx beside the input.
 
@@ -42,20 +43,53 @@ except ImportError:  # pragma: no cover - a setup error, not a code path
     sys.exit("openpyxl is not installed. Run: pip install openpyxl")
 
 
-# Microsoft's own published figure — the Estimated Retail Price. This is the
-# number on the shelf, and the only money that may leave this building.
+# The two publishers' own published figures — Microsoft's Estimated Retail
+# Price and Adobe's Estimated Street Price. Those are the numbers on the shelf,
+# and the only money that may leave this building.
 PUBLIC = {
+    # Savex / Microsoft
     "Publisher",
     "ChangeIndicator",
     "ProductId",
     "SkuId",
     "SkuTitle",
     "Tags",
-    "Segment",
     "TermDuration",
     "BillingPlan",
     "ERP Price",
     "ERP",
+    # Adobe VIP
+    "ACD Indicator",
+    "ACD Description",
+    "ACD Effective Date",
+    "First Order Date",
+    "Last Order Date",
+    "Part Number",
+    "Product Family",
+    "Version",
+    "Operating System",
+    "Language",
+    "Product Type",
+    "Product Type Detail",
+    "Additional Detail",
+    "Users",
+    "Metric",
+    "Bridge",
+    "Level Detail",
+    "Duration",
+    "Media",
+    "UPC/EAN Code",
+    # Adobe's Estimated Street Price — their published per-seat figure, and the
+    # Adobe half of the only money this script lets out.
+    "ESP per Year/Per Txn",
+    # A VIP licensing attribute, not a cost: mostly zero, otherwise a band code
+    # like HVD_L17_POST. It says nothing about what we paid.
+    "Pool",
+    "Points",
+    # Ordering conditions ("Approval Required from Adobe"), not prices.
+    "Remarks",
+    # Shared
+    "Segment",
 }
 
 # Named rather than merely absent from PUBLIC, so the error message can say
@@ -67,12 +101,38 @@ WITHHELD = {
     "Discount %": "the discount off list, which is the margin",
     "Qty": "quote-builder scratch, multiplied against the buy price",
     "Total": "quantity times the buy price",
+    # Adobe's distributor transfer price. Worse than Microsoft's equivalent,
+    # because it sits below the street price on every single row at close to a
+    # constant ratio — so publishing it gives away not one licence's margin but
+    # the discount rate on the whole book.
+    "DTP per Year /Per TXn": "the distributor transfer price — what we pay Adobe",
 }
 
 
 def norm(header: object) -> str:
     """Trailing spaces in a header are a formatting accident, not a column."""
     return str(header).strip() if header is not None else ""
+
+
+def find_header(rows) -> list[str] | None:
+    """
+    The first row that looks like column names, consuming everything above it.
+
+    Savex starts at row 1; Adobe leaves two blank rows above its header. A
+    fixed row number would either read Adobe's blanks as the column names —
+    keeping nothing, and silently producing an empty file that looks fine — or
+    need a per-publisher special case for something both files agree on: the
+    header is the first row with several filled cells.
+    """
+    for _ in range(20):
+        try:
+            row = next(rows)
+        except StopIteration:
+            return None
+        cells = [norm(cell) for cell in row]
+        if sum(1 for cell in cells if cell) >= 3:
+            return cells
+    return None
 
 
 def redact(source: pathlib.Path) -> pathlib.Path:
@@ -86,9 +146,8 @@ def redact(source: pathlib.Path) -> pathlib.Path:
     for name in book.sheetnames:
         sheet = book[name]
         rows = sheet.iter_rows(values_only=True)
-        try:
-            header = [norm(cell) for cell in next(rows)]
-        except StopIteration:
+        header = find_header(rows)
+        if header is None:
             continue  # An empty sheet has nothing to leak.
 
         for column in header:
