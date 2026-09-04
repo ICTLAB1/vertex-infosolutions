@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 
 import { pageMetadata } from "@/lib/seo";
 import { H2, PolicyPage } from "@/components/policy";
+import { ConsentControl } from "@/components/cookie-consent";
+import { CONSENT_COOKIE, readConsent } from "@/lib/consent";
 
 export const metadata: Metadata = pageMetadata({
   title: "Cookie policy",
@@ -11,7 +14,9 @@ export const metadata: Metadata = pageMetadata({
   path: "/cookies",
 });
 
-export default function CookiesPage() {
+export default async function CookiesPage() {
+  const consent = readConsent((await cookies()).get(CONSENT_COOKIE)?.value);
+
   return (
     <PolicyPage title="Cookie policy" updated="4 September 2026">
       <p>
@@ -19,13 +24,11 @@ export default function CookiesPage() {
         loads Google Tag Manager, which sets analytics cookies. Both kinds are
         described below.
       </p>
-      <p className="rounded-md border border-warn/40 bg-warn/5 p-4 text-warn">
-        <strong className="font-semibold">Consent is not yet asked for.</strong>{" "}
-        Analytics cookies are not strictly necessary, and UK and EU law requires
-        consent before they are set. Until a consent banner is in place, this
-        page is the notice — and if you would rather not be measured, the
-        section on refusing them below still works.
+      <p>
+        The analytics ones are not set unless you agree. Nothing asks twice, and
+        you can change the answer here at any time:
       </p>
+      <ConsentControl consent={consent} />
 
       <H2>The basket cookie</H2>
       <div className="overflow-x-auto">
@@ -131,10 +134,13 @@ export default function CookiesPage() {
         page benefits from being able to read its own currency.
       </p>
 
-      <H2>Analytics</H2>
+      <H2>Analytics — only if you agree</H2>
       <p>
-        Google Tag Manager loads on every page and, through it, Google
-        Analytics 4. These set Google&apos;s own cookies — typically{" "}
+        If you allow them, Google Tag Manager loads and, through it, Google
+        Analytics 4. Until then neither is on the page at all: the tags are not
+        merely inactive, they are absent from the HTML the server sends, so
+        there is nothing to fire early or to fail closed. These set
+        Google&apos;s own cookies — typically{" "}
         <span className="font-mono text-[13px]">_ga</span> and{" "}
         <span className="font-mono text-[13px]">_ga_&lt;id&gt;</span>, lasting
         up to two years — which count visits and tell us which pages people
@@ -145,6 +151,46 @@ export default function CookiesPage() {
         We use it to see which listings get looked at and where people give up.
         We do not use it to build an advertising profile of you, and there is no
         advertising or remarketing tag in the container.
+      </p>
+
+      <H2>The cookie that remembers your answer</H2>
+      <div className="overflow-x-auto">
+        <table className="w-full text-[14px]">
+          <tbody>
+            <tr className="border-b border-line-soft">
+              <th scope="row" className="w-40 py-2 pr-4 text-left font-semibold text-ink">
+                Name
+              </th>
+              <td className="py-2 font-mono text-[13px]">vx_consent</td>
+            </tr>
+            <tr className="border-b border-line-soft">
+              <th scope="row" className="py-2 pr-4 text-left font-semibold text-ink">
+                Contents
+              </th>
+              <td className="py-2">
+                One word — <span className="font-mono">granted</span> or{" "}
+                <span className="font-mono">denied</span>.
+              </td>
+            </tr>
+            <tr className="border-b border-line-soft">
+              <th scope="row" className="py-2 pr-4 text-left font-semibold text-ink">
+                Lifetime
+              </th>
+              <td className="py-2">One year</td>
+            </tr>
+            <tr>
+              <th scope="row" className="py-2 pr-4 text-left font-semibold text-ink">
+                Category
+              </th>
+              <td className="py-2">Strictly necessary</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Set only once you have answered. Remembering a refusal is the only way
+        to avoid asking again on every page, which is why this one needs no
+        consent of its own.
       </p>
 
       <H2>What we do not set</H2>
@@ -160,9 +206,14 @@ export default function CookiesPage() {
 
       <H2>Refusing them</H2>
       <p>
-        Your browser can block them. Blocking the analytics ones costs you
-        nothing at all — the shop does not read them and does not behave
-        differently without them. Blocking ours lets you browse and search, but
+        The analytics ones: say no above, or never answer at all — an ignored
+        banner is a no, and the tags stay off. Refusing costs you nothing; the
+        shop does not read those cookies and does not behave differently
+        without them.
+      </p>
+      <p>
+        Your browser can block any of them too. Blocking ours lets you browse
+        and search, but
         the basket will empty on every page load, and the store will re-guess
         your market from your connection each time instead of remembering what
         you picked.

@@ -78,9 +78,10 @@ export default function PrivacyPage() {
         </li>
         <li>
           Advertising identifiers, or anything that follows you to another
-          site. Google Analytics measures visits to these pages — what it
-          collects, and how to stop it, is set out in the cookie policy — and
-          there is no advertising or remarketing tag anywhere on the site.
+          site. Google Analytics measures visits to these pages, but only for
+          visitors who agree to it — what it collects, and how to change your
+          answer, is in the cookie policy — and there is no advertising or
+          remarketing tag anywhere on the site.
         </li>
         <li>Anything about you from a third-party data broker.</li>
       </Ul>
@@ -182,9 +183,9 @@ export default function PrivacyPage() {
       <p>
         Two of ours: one holding the basket token, one remembering whether you
         chose INR or USD. Both are strictly necessary for the store to work.
-        Google Analytics sets its own on top of those, which are not necessary
-        and which you can refuse without losing anything. Detail, including how
-        to refuse them, in the{" "}
+        Google Analytics sets its own on top of those, but only once you have
+        agreed — you are asked on your first visit, an ignored banner counts as
+        no, and the answer can be changed at any time. Detail in the{" "}
         <Link href="/cookies" className="text-link underline">
           cookie policy
         </Link>

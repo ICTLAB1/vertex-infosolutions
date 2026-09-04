@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Public_Sans } from "next/font/google";
 
+import { cookies } from "next/headers";
+
 import {
   GoogleTagManager,
   GoogleTagManagerNoScript,
 } from "@/components/analytics";
+import { CookieConsent } from "@/components/cookie-consent";
+import { analyticsAllowed, CONSENT_COOKIE, readConsent } from "@/lib/consent";
 import { jsonLd, OG_IMAGE, siteUrl } from "@/lib/seo";
 
 import "./globals.css";
@@ -56,7 +60,13 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Read here, not in a client component: the analytics tags are then simply
+  // absent from the HTML until somebody has agreed, rather than injected after
+  // the fact by a script that could fire before the answer is known.
+  const consent = readConsent((await cookies()).get(CONSENT_COOKIE)?.value);
+  const consented = analyticsAllowed(consent);
+
   return (
     <html
       lang="en-IN"
@@ -70,8 +80,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full font-sans">
         {/* First thing in the body, where GTM's own instructions put it and
             where its debugger looks for it. */}
-        <GoogleTagManagerNoScript />
-        <GoogleTagManager />
+        <GoogleTagManagerNoScript consented={consented} />
+        <GoogleTagManager consented={consented} />
+
+        {/* Asks once, remembers the answer, and sets nothing until it has one.
+            Near the top of the document although it is painted at the bottom:
+            last in the DOM meant a keyboard user had to tab through the whole
+            page — every product link on the home page — before they could
+            reach the choice. Position is CSS; reachability is document order. */}
+        <CookieConsent decided={consent !== null} />
 
         {/* Who this business is, and how to search it. Stated once, at the
             root, rather than repeated per page. */}

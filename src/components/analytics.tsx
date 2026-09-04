@@ -22,13 +22,24 @@ import Script from "next/script";
  */
 export const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID ?? "GTM-PCS32N99";
 
-export function gtmEnabled(): boolean {
-  return process.env.NODE_ENV === "production" && GTM_ID.length > 0;
+/**
+ * Two gates, and both have to open.
+ *
+ * `consented` is the visitor's answer, read from a cookie on the server — so
+ * the tag is absent from the HTML until somebody has said yes, rather than
+ * being injected afterwards by a script that has to be raced. Denied and
+ * undecided are the same thing here; they differ only in whether the banner
+ * is still asking.
+ */
+export function gtmEnabled(consented: boolean): boolean {
+  return (
+    consented && process.env.NODE_ENV === "production" && GTM_ID.length > 0
+  );
 }
 
 /** The loader. Goes in the body; pairs with `GoogleTagManagerNoScript`. */
-export function GoogleTagManager() {
-  if (!gtmEnabled()) return null;
+export function GoogleTagManager({ consented }: { consented: boolean }) {
+  if (!gtmEnabled(consented)) return null;
 
   return (
     <Script id="gtm-loader" strategy="afterInteractive">
@@ -46,9 +57,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
  *
  * Must be the first thing inside `<body>`: that is where GTM's own
  * installation instructions put it, and where its debugger looks for it.
+ *
+ * Gated on consent like the loader, and for a sharper reason: a visitor
+ * without JavaScript cannot be shown a banner or record an answer, so this
+ * iframe would fire for somebody who was never asked. It therefore appears
+ * only for a visitor who has already said yes with JavaScript on.
  */
-export function GoogleTagManagerNoScript() {
-  if (!gtmEnabled()) return null;
+export function GoogleTagManagerNoScript({
+  consented,
+}: {
+  consented: boolean;
+}) {
+  if (!gtmEnabled(consented)) return null;
 
   return (
     <noscript>
