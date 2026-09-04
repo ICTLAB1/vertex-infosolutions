@@ -182,8 +182,10 @@ describe.skipIf(!hasDatabase)("the sign-in limit", () => {
  * it, because from its side a thousand addresses each asked once.
  */
 describe.skipIf(!hasDatabase)("asking for a reset code", () => {
+  // Unique per run: these count inside a rolling hour, and a key shared with
+  // an earlier run in that hour starts the count part-way through.
   const stamp = Date.now();
-  const ip = `198.51.100.${stamp % 200}`;
+  const ip = `198.51.100.${stamp}`;
 
   afterEach(async () => {
     await prisma.authAttempt.deleteMany({ where: { kind: "PASSWORD_RESET" } });
@@ -207,7 +209,7 @@ describe.skipIf(!hasDatabase)("asking for a reset code", () => {
     for (let i = 0; i < RESET_REQUEST_LIMITS.perIp; i += 1) {
       await recordResetRequest(`victim.${i}@example.test`, ip);
     }
-    expect((await resetRequestLimit(`203.0.113.${stamp % 200}`)).blocked).toBe(
+    expect((await resetRequestLimit(`203.0.113.${stamp}`)).blocked).toBe(
       false,
     );
   });

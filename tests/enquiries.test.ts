@@ -99,8 +99,21 @@ describe("how an enquiry reads to us", () => {
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
 describe.skipIf(!hasDatabase)("recording and limiting enquiries", () => {
+  /**
+   * A bucket key no other run shares.
+   *
+   * These count rows inside a rolling hour, so a key that repeats between two
+   * runs in that hour inherits the earlier run's rows and the limit trips
+   * early. `Date.now() % 200` looked like an address and collided about once
+   * in two hundred runs — which, in a suite that gates deployment, is a flake
+   * that shows up on somebody's release rather than in front of whoever wrote
+   * it. The limiter treats this as an opaque string, so it does not have to be
+   * a valid address; it has to be unique.
+   */
   const stamp = Date.now();
-  const ip = `203.0.113.${stamp % 200}`;
+  const ip = `203.0.113.${stamp}`;
+  const other = `198.51.100.${stamp}`;
+  const stale = `192.0.2.${stamp}`;
   const made: string[] = [];
 
   afterAll(async () => {
@@ -164,7 +177,7 @@ describe.skipIf(!hasDatabase)("recording and limiting enquiries", () => {
   });
 
   it("counts per address, so one caller cannot silence another", async () => {
-    expect(await enquiryLimitReached(`198.51.100.${stamp % 200}`)).toBe(false);
+    expect(await enquiryLimitReached(other)).toBe(false);
   });
 
   it("never limits a caller whose address the edge did not report", async () => {
@@ -180,13 +193,13 @@ describe.skipIf(!hasDatabase)("recording and limiting enquiries", () => {
         name: "Old",
         email: "old@example.com",
         message: "From last week.",
-        ip: `192.0.2.${stamp % 200}`,
+        ip: stale,
         createdAt: new Date(
           Date.now() - (ENQUIRY_LIMITS.windowMinutes + 5) * 60 * 1000,
         ),
       },
     });
     made.push(old.id);
-    expect(await enquiryLimitReached(`192.0.2.${stamp % 200}`)).toBe(false);
+    expect(await enquiryLimitReached(stale)).toBe(false);
   });
 });

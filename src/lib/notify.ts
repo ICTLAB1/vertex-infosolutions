@@ -453,6 +453,11 @@ export function compose(
           "",
           `We have your order ${data.number} for ${data.total}, and are waiting for the funds to clear.`,
           "",
+          // Absent when bank transfer is not configured, so this email never
+          // asks somebody to pay into nothing.
+          ...(data.bankDetails
+            ? ["Where to send it:", "", data.bankDetails, ""]
+            : []),
           "Your licence is issued within one business day of the funds clearing, and you will get another email then.",
           "",
           `${data.orderUrl}`,

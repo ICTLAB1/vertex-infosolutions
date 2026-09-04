@@ -8,7 +8,8 @@ import { DELIVERY_WINDOW } from "@/lib/delivery";
 import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { countryName, type CurrencyCode } from "@/lib/market";
-import { formatMoneyExact } from "@/lib/money";
+import { formatMoney, formatMoneyExact } from "@/lib/money";
+import { getSiteConfig } from "@/lib/site";
 import { expiryLabel } from "@/lib/renewals";
 import { PAYMENT_METHOD_LABELS, STATUS_LABELS } from "@/lib/types";
 
@@ -49,6 +50,12 @@ export default async function OrderPage(
 
   const currency = order.currency as CurrencyCode;
   const paid = order.paymentStatus === "PAID";
+  // The details belong to an unpaid transfer and nothing else: not a card
+  // order waiting on the provider, and not an order already settled.
+  const transfer =
+    !paid && order.paymentMethod === "BANK_TRANSFER"
+      ? getSiteConfig().bank
+      : null;
   const domestic = order.country === "IN";
 
   return (
@@ -72,12 +79,55 @@ export default async function OrderPage(
         <p className="mt-1 text-[15px] text-ink">
           {paid
             ? `Payment received. Your keys are below, and your ${domestic ? "GST" : "commercial"} invoice can be downloaded from this page.`
-            : `We have emailed our bank details to ${order.email}. Keys are issued once the funds clear.`}
+            : transfer
+              ? `Send the payment to the account below, quoting ${order.number}. We have emailed the same details to ${order.email}. Keys are issued once the funds clear.`
+              : "Keys are issued once the payment clears."}
         </p>
         <p className="mt-2 font-mono text-[14px] text-muted">
           Order {order.number}
         </p>
       </div>
+
+      {/* Shown on the page as well as emailed, because an email that has not
+          arrived yet is not a place to look something up — and this is the
+          page the customer is already on. Never for a paid order: the details
+          have done their job and repeating them invites a second payment. */}
+      {transfer ? (
+        <section className="mt-4 rounded-lg border border-line bg-surface p-5">
+          <h2 className="text-[16px] font-bold text-ink">Where to send it</h2>
+          <dl className="mt-3 grid gap-x-6 gap-y-2 text-[14px] sm:grid-cols-[max-content_1fr]">
+            {[
+              ["Account name", transfer.accountName],
+              ["Account number", transfer.accountNumber],
+              ["IFSC", transfer.ifsc],
+              [
+                "Bank",
+                transfer.branch
+                  ? `${transfer.bankName}, ${transfer.branch}`
+                  : transfer.bankName,
+              ],
+              ...(transfer.swift ? [["SWIFT", transfer.swift]] : []),
+              ["Reference", order.number],
+              [
+                "Amount",
+                formatMoney(order.totalMinor, order.currency as CurrencyCode),
+              ],
+            ].map(([label, value]) => (
+              <div key={label} className="contents">
+                <dt className="text-muted">{label}</dt>
+                <dd className="font-mono text-ink">{value}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-3 text-[13px] text-muted">
+            The reference is the only thing that ties your transfer to this
+            order, so please include it.
+            {order.currency !== "INR"
+              ? " Send the amount shown, in the currency shown — your bank's conversion and any correspondent charges are not included in it."
+              : ""}
+          </p>
+        </section>
+      ) : null}
 
       {order.fulfilments.map((fulfilment) => (
         <section

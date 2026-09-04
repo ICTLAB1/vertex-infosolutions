@@ -33,6 +33,7 @@ const SELLER: SiteConfig = {
   supportHours: "Monday to Friday",
   complaintsName: null,
   complaintsEmail: null,
+  bank: null,
 };
 
 const ORDER: InvoiceOrder = {

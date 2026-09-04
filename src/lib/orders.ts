@@ -8,6 +8,7 @@ import { formatMoney } from "@/lib/money";
 import { notify } from "@/lib/notify";
 import { expiryFor } from "@/lib/renewals";
 import { appUrl } from "@/lib/stripe";
+import { bankTransferLines, getSiteConfig } from "@/lib/site";
 
 /** VX-4F2A-9C31-8BE0 — grouped so it can be read aloud on a support call. */
 function licenceKey(): string {
@@ -170,6 +171,8 @@ export async function notifyPending(orderId: string): Promise<void> {
   });
   if (!order) return;
 
+  const { bank } = getSiteConfig();
+
   await notify(
     "order.pending",
     {
@@ -183,6 +186,12 @@ export async function notifyPending(orderId: string): Promise<void> {
       name: order.user.name,
       number: order.number,
       total: formatMoney(order.totalMinor, order.currency as CurrencyCode),
+      // Only for the payment method that needs them. A card order that is
+      // pending is pending on the provider, not on the customer.
+      bankDetails:
+        order.paymentMethod === "BANK_TRANSFER" && bank
+          ? bankTransferLines(bank, order.number, order.currency).join("\n")
+          : "",
       orderUrl: `${appUrl()}/account/orders/${order.number}`,
     },
   );
