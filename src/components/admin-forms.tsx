@@ -9,6 +9,7 @@ import {
   redirectNotification,
   resendKeys,
   resendPaymentInstructions,
+  sendTestEmail,
   updatePrice,
   type AdminResult,
 } from "@/app/admin/admin-actions";
@@ -290,6 +291,28 @@ export function RedirectMessageForm({
       <p className="text-[12px] text-faint">
         Fixes this message only. The address on the customer&apos;s account is
         left alone — changing that is theirs to do.
+      </p>
+      <Outcome result={result} />
+    </form>
+  );
+}
+
+/**
+ * "Is our email working?", answered in one click.
+ *
+ * The provider's own words come back on failure rather than a friendly
+ * paraphrase, because the useful part of "550 5.7.1 sender domain not
+ * verified" is the part a paraphrase throws away.
+ */
+export function TestEmailForm({ email }: { email: string }) {
+  const [result, run] = useActionState<AdminResult, FormData>(sendTestEmail, null);
+
+  return (
+    <form action={run} className="space-y-2">
+      <Go label="Send a test message to myself" busy="Sending…" />
+      <p className="text-[12px] text-faint">
+        Goes to {email} and nowhere else. It writes nothing to the outbox — it
+        only asks the provider whether it will take a message at all.
       </p>
       <Outcome result={result} />
     </form>

@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { ActionForm, RedirectMessageForm } from "@/components/admin-forms";
+import {
+  ActionForm,
+  RedirectMessageForm,
+  TestEmailForm,
+} from "@/components/admin-forms";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 import { CREDENTIAL_TEMPLATES, type NotifyTemplate } from "@/lib/notify";
@@ -27,7 +31,7 @@ const STATUSES = ["ABANDONED", "FAILED", "QUEUED", "SENT", "SKIPPED"] as const;
  * credential to an address of my choosing" is not a support tool.
  */
 export default async function MessagesPage(props: PageProps<"/admin/messages">) {
-  await requireAdmin("/admin/messages");
+  const admin = await requireAdmin("/admin/messages");
   const params = (await props.searchParams) as Record<string, string | undefined>;
   const status = STATUSES.find((s) => s === params.status);
 
@@ -65,6 +69,19 @@ export default async function MessagesPage(props: PageProps<"/admin/messages">) 
         Every email and WhatsApp the shop has tried to send. Showing{" "}
         {status ? status.toLowerCase() : "what needs attention"}.
       </p>
+
+      {/* Above the list on purpose. Somebody opening this page because
+          nothing is arriving wants to know whether sending works before they
+          read four hundred rows about individual messages that did not. */}
+      <section className="mt-4 rounded-lg border border-line bg-surface p-4">
+        <h2 className="text-[15px] font-bold text-ink">Is email working?</h2>
+        <p className="mb-2 text-[13px] text-muted">
+          Nothing in this shop reaches a customer without it — not a
+          verification code, not a licence key, not an invoice. A new account
+          cannot be finished without one, so a mail outage stops every sale.
+        </p>
+        <TestEmailForm email={admin.email} />
+      </section>
 
       <nav className="mt-3 flex flex-wrap gap-2 text-[13px]">
         <Link

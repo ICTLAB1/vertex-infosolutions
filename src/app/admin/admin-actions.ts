@@ -13,7 +13,12 @@ import { formatMoneyExact, MAX_MINOR, parseMoneyMinor } from "@/lib/money";
 import { notifyPending, fulfilOrder, sendKeys } from "@/lib/orders";
 import { looksLikeEmail } from "@/lib/enquiries";
 import { pingIndexNow } from "@/lib/indexnow";
-import { CREDENTIAL_TEMPLATES, type NotifyTemplate } from "@/lib/notify";
+import {
+  channelStatus,
+  CREDENTIAL_TEMPLATES,
+  sendRaw,
+  type NotifyTemplate,
+} from "@/lib/notify";
 
 /**
  * The handful of things a person still has to do.
@@ -1272,4 +1277,63 @@ export async function bulkSetPublished(
     ok: true,
     message: `${changing.length} ${changing.length === 1 ? "listing is" : "listings are"} now ${published ? "on sale" : "withdrawn"}. Existing orders are untouched.`,
   };
+}
+
+/**
+ * Prove the mail service works, from the back office.
+ *
+ * Written after an outage that took an afternoon to find: every verification
+ * code was failing, the settings were present and correct, Azure accepted the
+ * same message when asked directly from a command line, and the only way to
+ * see the actual error was to read a database column. Somebody who runs a shop
+ * should be able to answer "is our email working?" with one click, and get the
+ * provider's own words back when it is not.
+ *
+ * It sends to the administrator's own address and nowhere else. An arbitrary
+ * destination would make this a way to send mail from the shop's domain to
+ * anyone, which is a spam relay with a login page in front of it.
+ */
+// Takes neither the previous result nor the form: there is nothing to read
+// from either. Fewer parameters than the caller passes is still a valid
+// action, and inventing two unused ones only to match a shape is noise.
+export async function sendTestEmail(): Promise<AdminResult> {
+  const admin = await requireAdmin("/admin/messages");
+
+  const { email: emailWorks } = channelStatus();
+  if (!emailWorks) {
+    return {
+      ok: false,
+      message:
+        "Nothing was sent: this server has no mail settings. ACS_CONNECTION_STRING and EMAIL_FROM are both needed, and one or both is missing or empty. Note that a setting added after the site started does not reach it until the site is restarted.",
+    };
+  }
+
+  const result = await sendRaw(
+    admin.email,
+    "Vertex: test message from the back office",
+    [
+      `This is a test sent from the Vertex back office by ${admin.email}.`,
+      "",
+      "If it arrived, the shop can send verification codes, licence keys and",
+      "invoices. If it did not, nothing else on the site can reach a customer",
+      "either.",
+    ].join("\n"),
+  );
+
+  await recordAdminAction(
+    admin,
+    "mail.test",
+    admin.email,
+    result.ok ? "Test message accepted by the provider." : `Test message refused: ${result.error}`,
+  );
+
+  return result.ok
+    ? {
+        ok: true,
+        message: `The provider accepted a message to ${admin.email}. Check that it arrives — accepted is not the same as delivered, and a spam folder is the usual difference.`,
+      }
+    : {
+        ok: false,
+        message: `The provider refused it, in its own words: ${result.error}`,
+      };
 }

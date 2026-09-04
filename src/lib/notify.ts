@@ -78,9 +78,19 @@ function whatsappConfigured(): boolean {
 /**
  * Send an email.
  *
- * Resend's HTTP API, because it is one fetch with no SMTP connection pool to
- * manage from a container that may be scaled to zero. Swapping it for SES or
- * SMTP means changing this function and nothing else.
+ * Azure Communication Services, over its own SDK rather than SMTP: there is no
+ * connection pool to manage from a container that may be scaled to zero, and
+ * the sending domain lives in the same subscription as everything else here.
+ * Swapping it for SES, Resend or SMTP means changing this function and nothing
+ * else.
+ *
+ * Two settings decide whether any of it happens, and both are needed:
+ * `ACS_CONNECTION_STRING` and `EMAIL_FROM`. They are read from the environment
+ * at the moment of sending, which is to say from the process as it was
+ * started — a setting added to the web app after it booted does not reach a
+ * running container until it restarts. That has caught us out: mail settings
+ * were added, nothing was sent, and everything looked correctly configured
+ * from the outside.
  */
 export type MailAttachment = { filename: string; content: string };
 
@@ -103,6 +113,21 @@ function senderAddress(from: string): string {
   return (bracketed ? bracketed[1] : from).trim();
 }
 
+
+/**
+ * The send itself, exposed so the back office can test it.
+ *
+ * Deliberately not routed through `notify`: this writes no outbox row, has no
+ * recipient to look up and no template to compose. It is the one message whose
+ * only purpose is to find out whether sending works at all.
+ */
+export async function sendRaw(
+  to: string,
+  subject: string,
+  body: string,
+): Promise<{ ok: true; ref: string | null } | { ok: false; error: string }> {
+  return sendEmail(to, subject, body);
+}
 
 async function sendEmail(
   to: string,
