@@ -9,7 +9,12 @@ import { BulkQuoteLine } from "@/components/bulk-quote";
 import { TenantNotice } from "@/components/tenant-notice";
 import { QuoteOnlyProduct } from "./quote-only";
 import { deliveryHeadline, deliverySummary } from "@/lib/delivery";
-import { absolute, jsonLd, OG_IMAGE } from "@/lib/seo";
+import {
+  absolute,
+  jsonLd,
+  priceValidUntil,
+  productImages,
+} from "@/lib/seo";
 import { Stars } from "@/components/stars";
 import { getMarket, MAX_QTY } from "@/lib/cart";
 import {
@@ -32,6 +37,7 @@ export async function generateMetadata(
   const product = await getProduct(slug, market.currency);
   if (!product) return { title: "Product not found" };
 
+  const images = productImages(product);
   const price = product.variants.find((v) => v.prices.length > 0)?.prices[0];
   const priced = price
     ? ` ${formatMoney(price.priceMinor, market.currency)}${market.domestic ? " incl. GST" : ""}.`
@@ -52,15 +58,17 @@ export async function generateMetadata(
       title: product.name,
       description: product.summary,
       url: `/product/${slug}`,
-      // Most product logos are SVG, and no social platform renders an SVG
-      // preview — the card comes out blank. Only a raster logo is used; the
-      // rest fall back to the wordmark, which is a picture that actually
-      // appears when somebody pastes a link into WhatsApp or LinkedIn.
-      images: [
-        product.logo && /\.(png|jpe?g|webp)$/i.test(product.logo)
-          ? { url: product.logo, alt: `${product.name} logo` }
-          : OG_IMAGE,
-      ],
+      // The same picture the structured data names, so a listing shared into
+      // WhatsApp and a listing in Google Shopping show one thing rather than
+      // two. It was the shop's wordmark on every product before this, which
+      // made four hundred different links look like the same link.
+      images: [{ url: images.social, alt: product.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description: product.summary,
+      images: [images.social],
     },
   };
 }
@@ -109,6 +117,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
   const price = priceOf(variant)!;
 
   const { average, count } = ratingOf(product.reviews);
+  const images = productImages(product);
   const off = discountPercent(price.listMinor, price.priceMinor);
   const perSeat = Math.round(price.priceMinor / variant.seats);
   const specs = specRows(product.specs);
@@ -180,16 +189,52 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             ...(variant.partNumber ? { mpn: variant.partNumber } : {}),
             brand: { "@type": "Brand", name: product.brand.name },
             category: product.category.name,
-            ...(product.logo ? { image: absolute(product.logo) } : {}),
+            // Never conditional. A Product with no image is dropped from
+            // shopping results outright, so `productImages` always returns
+            // something — the listing's own picture where one exists, its
+            // publisher's card otherwise.
+            image: images.all,
             offers: {
               "@type": "Offer",
               url: absolute(`/product/${product.slug}`),
+              // The currency this page is actually showing. Structured data
+              // that disagrees with the visible price is worse than none, and
+              // Google checks — so this follows the market rather than being
+              // pinned to one side of it.
               priceCurrency: currency,
               price: (price.priceMinor / 100).toFixed(2),
+              priceValidUntil: priceValidUntil(),
               availability: "https://schema.org/InStock",
               itemCondition: "https://schema.org/NewCondition",
               seller: { "@type": "Organization", name: "Vertex Infosolutions" },
             },
+            // Ratings only where there are ratings. An aggregateRating of 0
+            // out of 0, or a placeholder five stars, is a manual penalty
+            // waiting to happen — and it would be a lie told to a customer
+            // before it was ever a lie told to Google. With no reviews both
+            // fields are simply absent.
+            ...(count > 0
+              ? {
+                  aggregateRating: {
+                    "@type": "AggregateRating",
+                    ratingValue: average.toFixed(1),
+                    reviewCount: count,
+                  },
+                  review: product.reviews.slice(0, 5).map((entry) => ({
+                    "@type": "Review",
+                    author: { "@type": "Person", name: entry.author },
+                    datePublished: entry.createdAt.toISOString().slice(0, 10),
+                    reviewRating: {
+                      "@type": "Rating",
+                      ratingValue: entry.rating,
+                      bestRating: 5,
+                      worstRating: 1,
+                    },
+                    name: entry.title,
+                    reviewBody: entry.body,
+                  })),
+                }
+              : {}),
               },
             ],
           }),

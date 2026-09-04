@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Assurance } from "@/components/assurance";
 import { ProductImage } from "@/components/product-image";
 import { specRows, TERM_LABELS, TERM_NOTES, type CatalogueProduct } from "@/lib/catalogue";
-import { absolute, jsonLd } from "@/lib/seo";
+import { absolute, jsonLd, productImages } from "@/lib/seo";
 
 /**
  * A product we sell without a published price.
@@ -85,7 +85,10 @@ export function QuoteOnlyProduct({
                 sku: product.variants[0]?.sku,
                 brand: { "@type": "Brand", name: product.brand.name },
                 category: product.category.name,
-                ...(product.logo ? { image: absolute(product.logo) } : {}),
+                // Present even though this listing has no offer. A quote-only
+                // page is still a product page, and an image is what decides
+                // whether it can appear as one at all.
+                image: productImages(product).all,
               },
             ],
           }),

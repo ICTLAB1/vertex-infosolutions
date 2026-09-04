@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import "server-only";
 
 import { prisma } from "@/lib/db";
@@ -89,7 +91,19 @@ export function isListable<T extends { quoteOnly: boolean; variants: { prices: u
   return product.quoteOnly || sellableVariants(product.variants).length > 0;
 }
 
-export async function getProduct(slug: string, currency: CurrencyCode) {
+/**
+ * One listing, with everything its page shows.
+ *
+ * Memoised per request. A product page asks for this twice — once in
+ * `generateMetadata` to build the title, description and social card, and
+ * again in the page itself — and they are the same question with the same
+ * answer. Without this every product view is two identical queries carrying
+ * the variants, the prices and the reviews.
+ */
+export const getProduct = cache(async function getProduct(
+  slug: string,
+  currency: CurrencyCode,
+) {
   return prisma.product.findUnique({
     where: { slug, ...ON_SALE },
     select: {
@@ -109,7 +123,7 @@ export async function getProduct(slug: string, currency: CurrencyCode) {
       },
     },
   });
-}
+});
 
 export type CatalogueProduct = Awaited<ReturnType<typeof getProduct>>;
 

@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import "server-only";
 
 import { randomBytes } from "node:crypto";
@@ -30,12 +32,17 @@ function newToken(): string {
  * The market for this request: an explicit choice if one has been made,
  * otherwise whatever the edge and the browser imply.
  *
+ * Memoised for the length of one request. A page and its `generateMetadata`
+ * both need the market, and both run while the same request is being served —
+ * without this the basket is looked up twice to answer the same question, on
+ * every page of the shop.
+ *
  * An existing basket overrides both. Prices are fixed when the first item goes
  * in, because a total that changes between the cart and the payment page —
  * because a geo lookup flapped, or the visitor crossed a border — is the kind
  * of thing that ends a sale.
  */
-export async function getMarket(): Promise<Market> {
+export const getMarket = cache(async function getMarket(): Promise<Market> {
   const [jar, head] = await Promise.all([cookies(), headers()]);
   const chosen = jar.get(MARKET_COOKIE)?.value ?? null;
   const resolved = resolveMarket(head, chosen);
@@ -56,7 +63,7 @@ export async function getMarket(): Promise<Market> {
     domestic: cart.currency === "INR",
     source: resolved.source,
   };
-}
+});
 
 export const cartInclude = {
   items: {

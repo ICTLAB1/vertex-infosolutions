@@ -26,6 +26,76 @@ export const OG_IMAGE = {
 };
 
 /**
+ * The picture a search engine and a social platform are given for a listing.
+ *
+ * Neither will take what the page itself shows. The icons under
+ * `public/logos/` are 256 pixels at their largest — they exist to mark a
+ * listing in a grid — and Google's product guidance asks for 1200 or more; a
+ * smaller one is not a small picture in the results, it is a rich result that
+ * is rejected. So until there is real product photography, a listing points at
+ * the card for its publisher, built by `scripts/make-og-cards.py`.
+ *
+ * Two shapes, because the two consumers crop differently: square is on
+ * Google's list of accepted product ratios, and 16:9 is what a link preview
+ * becomes on Facebook, LinkedIn and WhatsApp. Both are offered, best first,
+ * and something is always offered — a `Product` with no `image` is the single
+ * most common reason a listing is dropped from shopping results.
+ */
+const CARD_BRANDS = ["microsoft", "adobe", "autodesk"];
+
+export function productImages(product: {
+  logo: string | null;
+  brand: { slug: string };
+}): { primary: string; all: string[]; social: string } {
+  // Only a raster. An SVG is sharp on the page and invisible in a social
+  // preview — no platform renders one — so a listing whose icon is vector
+  // falls through to its publisher's card rather than to a blank rectangle.
+  const own =
+    product.logo && /\.(png|jpe?g|webp)$/i.test(product.logo)
+      ? product.logo
+      : null;
+
+  const brand = product.brand.slug;
+  const square = CARD_BRANDS.includes(brand)
+    ? `/og/product-${brand}-1x1.png`
+    : null;
+  const wide = CARD_BRANDS.includes(brand)
+    ? `/og/product-${brand}-16x9.png`
+    : null;
+
+  // Google first: the listing's own picture if it has one, then the square
+  // card. The shop's wordmark is the last resort and appears only when there
+  // is nothing else — it is 900 pixels wide and says nothing about the
+  // product, so it is a floor rather than a choice.
+  const schema = [own, square, wide].filter(
+    (path): path is string => Boolean(path),
+  );
+  const all = schema.length > 0 ? schema : [OG_IMAGE.url];
+
+  // Social platforms crop a preview to 16:9, so they are given that one
+  // first — a square card in a link preview is cropped through the middle of
+  // the lettering.
+  const social = wide ?? own ?? OG_IMAGE.url;
+
+  return {
+    primary: absolute(all[0]),
+    all: all.map(absolute),
+    social: absolute(social),
+  };
+}
+
+/**
+ * How long the price on this page can be believed.
+ *
+ * Google wants an expiry on an offer and treats a missing one as a warning.
+ * The end of the current year is the honest answer here: publisher price books
+ * are reissued annually, and this shop reseeds from a new one when they are.
+ */
+export function priceValidUntil(now: Date = new Date()): string {
+  return `${now.getUTCFullYear()}-12-31`;
+}
+
+/**
  * JSON-LD, rendered into a script tag.
  *
  * Serialised with the closing-brace sequence escaped: a product name
