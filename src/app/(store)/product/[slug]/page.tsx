@@ -11,7 +11,9 @@ import { QuoteOnlyProduct } from "./quote-only";
 import { deliveryHeadline, deliverySummary } from "@/lib/delivery";
 import {
   absolute,
+  applicationCategory,
   jsonLd,
+  operatingSystems,
   priceValidUntil,
   productImages,
 } from "@/lib/seo";
@@ -179,7 +181,13 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
                 ],
               },
               {
-            "@type": "Product",
+            // Both types on one node rather than two nodes describing the same
+            // thing. `Product` is what a shopping result is built from;
+            // `SoftwareApplication` is what says the product is software and
+            // what sort. Split across two nodes they compete to be the page's
+            // subject; combined, a search engine has one entity with both sets
+            // of properties, which is what this actually is.
+            "@type": ["Product", "SoftwareApplication"],
             name: product.name,
             description: product.summary,
             // The publisher's number where we have it: it is what a shopping
@@ -188,7 +196,40 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             sku: variant.partNumber ?? variant.sku,
             ...(variant.partNumber ? { mpn: variant.partNumber } : {}),
             brand: { "@type": "Brand", name: product.brand.name },
+            // The publisher, said in the vocabulary software uses. A reseller
+            // is not the author of what it sells, and a listing that implies
+            // otherwise is the listing a publisher asks to have taken down.
+            publisher: { "@type": "Organization", name: product.brand.name },
             category: product.category.name,
+            ...(applicationCategory(product.category.slug)
+              ? { applicationCategory: applicationCategory(product.category.slug) }
+              : {}),
+            ...(operatingSystems(product.specs)
+              ? { operatingSystem: operatingSystems(product.specs) }
+              : {}),
+            // What is actually being sold, which for almost everything here is
+            // a year rather than a copy. It is the single fact buyers most
+            // often get wrong, so it is stated in the data as well as on the
+            // page.
+            ...(product.term === "PERPETUAL"
+              ? {}
+              : { isAccessibleForFree: false }),
+            additionalProperty: [
+              {
+                "@type": "PropertyValue",
+                name: "Licence term",
+                value: TERM_LABELS[product.term],
+              },
+              ...(variant.seats > 1
+                ? [
+                    {
+                      "@type": "PropertyValue",
+                      name: "Seats",
+                      value: String(variant.seats),
+                    },
+                  ]
+                : []),
+            ],
             // Never conditional. A Product with no image is dropped from
             // shopping results outright, so `productImages` always returns
             // something — the listing's own picture where one exists, its

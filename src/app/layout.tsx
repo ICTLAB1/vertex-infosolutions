@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Public_Sans } from "next/font/google";
 
 import { jsonLd, OG_IMAGE, siteUrl } from "@/lib/seo";
+import { getSiteConfig } from "@/lib/site";
 
 import "./globals.css";
 
@@ -52,7 +53,9 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const seller = await getSiteConfig();
+
   return (
     <html
       lang="en-IN"
@@ -73,13 +76,84 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               "@context": "https://schema.org",
               "@graph": [
                 {
+                  /*
+                    Organization, and deliberately not LocalBusiness.
+
+                    LocalBusiness is for a business customers come to — a shop,
+                    a clinic, a branch — and it is what makes a map pin and
+                    opening hours eligible. This one sells licences over the
+                    internet to buyers outside India who will never visit an
+                    address. Marking it up as a local business to try for a map
+                    result is misrepresentation of the kind Google issues
+                    manual actions for, and the result it wins would send
+                    nobody anywhere useful. Organization is the correct type,
+                    and it carries everything that actually establishes who
+                    this seller is.
+
+                    Every field below is rendered only when it is configured.
+                    An organisation whose legal name or tax number is a
+                    placeholder is worse than one that stays quiet: the whole
+                    value of this block is that a search engine can check it
+                    against a company register and find it true.
+                  */
                   "@type": "Organization",
                   "@id": `${siteUrl()}/#organization`,
-                  name: "Vertex Infosolutions",
+                  name: seller.tradingName,
+                  ...(seller.legalName ? { legalName: seller.legalName } : {}),
                   url: siteUrl(),
-                  logo: `${siteUrl()}${OG_IMAGE.url}`,
+                  logo: {
+                    "@type": "ImageObject",
+                    url: `${siteUrl()}${OG_IMAGE.url}`,
+                    width: OG_IMAGE.width,
+                    height: OG_IMAGE.height,
+                  },
                   description:
-                    "Authorised reseller of Microsoft, Adobe and Autodesk software licences.",
+                    "Authorised reseller of Microsoft, Adobe and Autodesk software licences. Microsoft Solutions Partner, Adobe Certified Reseller and Autodesk Reseller, supplying worldwide by electronic delivery.",
+                  ...(seller.address
+                    ? {
+                        address: {
+                          "@type": "PostalAddress",
+                          streetAddress: seller.address,
+                          addressCountry: "IN",
+                        },
+                      }
+                    : {}),
+                  // The tax registration is the strongest identity signal a
+                  // seller has: it is a number anybody can check against a
+                  // government register, which no amount of marketing copy is.
+                  ...(seller.taxIdNumber
+                    ? {
+                        taxID: seller.taxIdNumber,
+                        identifier: {
+                          "@type": "PropertyValue",
+                          name: seller.taxIdLabel ?? "Tax ID",
+                          value: seller.taxIdNumber,
+                        },
+                      }
+                    : {}),
+                  ...(seller.supportEmail
+                    ? {
+                        contactPoint: {
+                          "@type": "ContactPoint",
+                          contactType: "customer support",
+                          email: seller.supportEmail,
+                          availableLanguage: ["en"],
+                          areaServed: "001",
+                        },
+                      }
+                    : {}),
+                  // Who this shop is authorised by. A reseller's whole claim is
+                  // that its supply chain is real, and naming the three
+                  // publishers as related entities is how that claim is made
+                  // in data rather than in a badge image.
+                  knowsAbout: [
+                    "Microsoft 365",
+                    "Microsoft Azure",
+                    "Adobe Creative Cloud",
+                    "Autodesk AutoCAD",
+                    "Software licensing",
+                    "Cloud Solution Provider programme",
+                  ],
                 },
                 {
                   "@type": "WebSite",

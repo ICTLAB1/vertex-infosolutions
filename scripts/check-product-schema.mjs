@@ -34,7 +34,13 @@ function products(html) {
       throw new Error("ld+json on the page is not valid JSON");
     }
     const nodes = parsed["@graph"] ?? [parsed];
-    found.push(...nodes.filter((n) => n["@type"] === "Product"));
+    // `@type` is an array on a priced listing — it is both a Product and a
+    // SoftwareApplication — and a bare string on a quote-only one. Comparing
+    // for equality quietly stopped matching the moment the second type was
+    // added, and reported every product page as having no Product on it.
+    found.push(
+      ...nodes.filter((n) => [].concat(n["@type"] ?? []).includes("Product")),
+    );
   }
   return found;
 }

@@ -96,6 +96,52 @@ export function priceValidUntil(now: Date = new Date()): string {
 }
 
 /**
+ * What kind of software a listing is, in schema.org's vocabulary.
+ *
+ * Every product here is software, and saying so is worth more than it looks:
+ * a `Product` alone tells a search engine this is a thing with a price, while
+ * `SoftwareApplication` tells it what the thing does. That is what lets a
+ * listing be understood as "Adobe Photoshop, a design application" rather than
+ * as a string of words that happens to cost $138 — which is the difference
+ * between competing on price alone and competing on being the right answer.
+ *
+ * Mapped from the shelf a product sits on, because that is the only statement
+ * of category this shop actually holds. An unmapped shelf gets nothing rather
+ * than a guess: a wrong `applicationCategory` is worse than none, since it
+ * teaches the wrong association.
+ */
+const APPLICATION_CATEGORIES: Record<string, string> = {
+  productivity: "BusinessApplication",
+  creative: "DesignApplication",
+  cad: "DesignApplication",
+  servers: "BusinessApplication",
+  analytics: "BusinessApplication",
+  "business-apps": "BusinessApplication",
+  security: "SecurityApplication",
+  "cloud-desktop": "BusinessApplication",
+};
+
+export function applicationCategory(categorySlug: string): string | null {
+  return APPLICATION_CATEGORIES[categorySlug] ?? null;
+}
+
+/**
+ * The platforms a licence runs on, read from the listing's own spec table.
+ *
+ * Only ever what the price book said. A subscription whose specs do not name a
+ * platform gets no `operatingSystem` at all, because "Windows, macOS" written
+ * by a developer who assumed is a claim this shop cannot stand behind — and it
+ * is exactly the sort of claim a buyer checks after it has stopped working.
+ */
+export function operatingSystems(specs: unknown): string | null {
+  if (!specs || typeof specs !== "object" || Array.isArray(specs)) return null;
+  const platform = (specs as Record<string, unknown>)["Platform"];
+  return typeof platform === "string" && platform.trim().length > 0
+    ? platform.trim()
+    : null;
+}
+
+/**
  * JSON-LD, rendered into a script tag.
  *
  * Serialised with the closing-brace sequence escaped: a product name
