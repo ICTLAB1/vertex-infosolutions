@@ -78,7 +78,7 @@ jobs:
       DATABASE_URL: postgresql://vertex:vertex@localhost:5432/vertex_test?schema=public
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -110,7 +110,34 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      # Say which setting is missing, in one line, before anything else runs.
+      #
+      # Without this the run dies inside azure/login with "Ensure 'client-id'
+      # and 'tenant-id' are supplied" — which is true, and says nothing about
+      # where they go or that a one-time setup was never done. Every deploy
+      # from 4 September onward failed here and the message never once pointed
+      # at the cause.
+      - name: Check the deploy is configured
+        run: |
+          missing=""
+          [ -n "${{ secrets.AZURE_CLIENT_ID }}" ]       || missing="$missing\n  secret   AZURE_CLIENT_ID"
+          [ -n "${{ secrets.AZURE_TENANT_ID }}" ]       || missing="$missing\n  secret   AZURE_TENANT_ID"
+          [ -n "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ] || missing="$missing\n  secret   AZURE_SUBSCRIPTION_ID"
+          [ -n "${{ secrets.DATABASE_URL }}" ]          || missing="$missing\n  secret   DATABASE_URL"
+          [ -n "${{ vars.AZURE_RESOURCE_GROUP }}" ]     || missing="$missing\n  variable AZURE_RESOURCE_GROUP"
+          [ -n "${{ vars.AZURE_REGISTRY }}" ]           || missing="$missing\n  variable AZURE_REGISTRY"
+          [ -n "${{ vars.AZURE_WEBAPP_NAME }}" ]        || missing="$missing\n  variable AZURE_WEBAPP_NAME"
+
+          if [ -n "$missing" ]; then
+            echo "::error title=Deploy is not set up yet::This repository cannot deploy until the Azure connection is configured once. Nothing is wrong with the code — verify passed."
+            printf 'Not set:%b\n\n' "$missing"
+            echo "Follow docs/deploy-setup.md. It is a one-time job of about ten minutes,"
+            echo "after which every push to main deploys itself."
+            exit 1
+          fi
+          echo "All seven settings present."
+
+      - uses: actions/checkout@v5
 
       - name: Sign in to Azure
         uses: azure/login@v2
