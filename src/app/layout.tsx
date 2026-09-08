@@ -51,6 +51,25 @@ export const metadata: Metadata = {
     images: [OG_IMAGE.url],
   },
   robots: { index: true, follow: true },
+  /*
+    Proving to Google and Bing that this site is ours.
+
+    A DNS record is the better proof — it covers every subdomain and survives a
+    redeploy — but it needs access to whoever holds the domain, and a meta tag
+    needs only a setting. Both are offered because the one that gets done is
+    the one that gets done.
+
+    Absent unless configured, so no empty verification tag is ever shipped: an
+    empty one is not neutral, it is a failed check.
+  */
+  verification: {
+    ...(process.env.GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+      : {}),
+    ...(process.env.BING_SITE_VERIFICATION
+      ? { other: { "msvalidate.01": process.env.BING_SITE_VERIFICATION } }
+      : {}),
+  },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

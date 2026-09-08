@@ -20,6 +20,30 @@ export default function LicensingPage() {
         the phone.
       </p>
 
+      <div className="rounded-md border border-line bg-ground/50 p-4">
+        <p className="text-[14px] font-semibold text-ink">
+          The two questions we are asked most
+        </p>
+        <ul className="mt-2 space-y-1.5 text-[14px]">
+          <li>
+            <Link
+              href="/licensing/csp-new-tenant"
+              className="text-link underline"
+            >
+              Why a Microsoft CSP order creates a new tenant
+            </Link>{" "}
+            — and what happens to the users and mailboxes you already have.
+          </li>
+          <li>
+            <Link href="/licensing/sac-997331" className="text-link underline">
+              SAC 997331, the GST code for a software licence
+            </Link>{" "}
+            — the rate, when a sale is a zero-rated export, and what the invoice
+            needs for input credit.
+          </li>
+        </ul>
+      </div>
+
       <H2>Subscription or perpetual</H2>
       <Ul>
         <li>

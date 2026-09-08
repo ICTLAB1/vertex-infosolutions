@@ -1,0 +1,49 @@
+# Disavow file for vertexinfosolutions.com
+#
+# Upload at https://search.google.com/search-console/disavow-links
+# Do this only AFTER the domain is verified in Search Console — filing it for
+# an unverified property is not possible, and filing it before the site is
+# indexed does nothing.
+#
+# ---------------------------------------------------------------------------
+# Why this file exists
+#
+# On 7 September 2026 a backlink index showed 19 referring domains pointing at
+# vertexinfosolutions.com and a spam score of 53 out of 100. Not one of the 19
+# is a genuine editorial link. Eight of them link to two unrelated software-key
+# sites as well, and the anchor text used across that network reads:
+#
+#   "High Quality Dofollow Backlinks DA 50 PA 40 Premium PBN Network Service
+#    Rank First Page Google Fast SEO Link Building Buy Backlinks Online Cheap"
+#
+# That is a link vendor's own advertising, indexed as a backlink. The earliest
+# appeared on 31 December 2025 and they were still arriving on 3 September 2026.
+#
+# Google ignores most link spam without being asked, and for an established
+# site a disavow is usually unnecessary. This one is different on two counts:
+# every link the domain has is from this network, and the domain is new with no
+# genuine links to outweigh them. Filing it is the cheaper side of the bet.
+#
+# Whoever is buying these should stop first. A disavow filed while the purchase
+# continues is a bucket under a leak.
+# ---------------------------------------------------------------------------
+
+domain:anchorurl.cloud
+domain:archive-hu.com
+domain:bestnz-poker-casinoslot.com
+domain:betulcrime.com
+domain:betwinnermirror.com
+domain:buzzshrink.website
+domain:drjack.world
+domain:fashionclothingnews.com
+domain:ggmap.us.com
+domain:homesforsaleoldgreenwichct.com
+domain:jake.eu
+domain:mediaboooster.com
+domain:quero.party
+domain:quotesblom.com
+domain:ready.pro
+domain:shortenurls.eu
+domain:theforbestimes.com
+domain:uncledspizza.com
+domain:urls-shortener.eu

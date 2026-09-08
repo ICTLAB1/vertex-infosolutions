@@ -23,6 +23,11 @@ const COLUMNS = [
       { href: "/account/licences", label: "Your licences" },
       { href: "/returns", label: "Returns & refunds" },
       { href: "/licensing", label: "How licensing works" },
+      // Linked from the footer, so they are reachable from every page rather
+      // than only from the one hub that mentions them. A page nothing links to
+      // is a page nothing finds.
+      { href: "/licensing/csp-new-tenant", label: "Microsoft CSP tenants" },
+      { href: "/licensing/sac-997331", label: "GST on software (SAC 997331)" },
       { href: "/cart", label: "Your cart" },
     ],
   },

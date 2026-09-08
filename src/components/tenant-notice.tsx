@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 /**
  * Says that a CSP licence arrives in a new Microsoft tenant.
  *
@@ -25,7 +27,14 @@ export function TenantNotice({ tone = "full" }: { tone?: "full" | "line" }) {
       for this order, with its own tenant ID. Because the subscription is bought
       in a different region from yours, it cannot be added to a Microsoft tenant
       you already have. Your existing users, mailboxes and data stay where they
-      are.
+      are.{" "}
+      {/* The full explanation, for somebody who wants it before they buy
+          rather than after. It is the question that costs the most support
+          time on Microsoft orders, so it has a page of its own. */}
+      <Link href="/licensing/csp-new-tenant" className="text-link underline">
+        What this means
+      </Link>
+      .
     </div>
   );
 }

@@ -15,6 +15,11 @@ const STATIC_PAGES: [path: string, priority: number, changeFrequency: "daily" | 
   ["/", 1, "daily"],
   ["/s", 0.9, "daily"],
   ["/licensing", 0.5, "monthly"],
+  // The two pages written to answer a question rather than to sell anything.
+  // They earn their priority: both are the only plain answer to a question
+  // buyers must settle before they can raise a purchase order.
+  ["/licensing/csp-new-tenant", 0.7, "monthly"],
+  ["/licensing/sac-997331", 0.7, "monthly"],
   ["/delivery", 0.5, "monthly"],
   ["/contact", 0.5, "monthly"],
   ["/returns", 0.5, "monthly"],
