@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { addToCart, buyNow } from "@/app/actions";
 import { ProductImage } from "@/components/product-image";
+import { ProductCard } from "@/components/product-card";
 import { Assurance } from "@/components/assurance";
 import { BulkQuoteLine } from "@/components/bulk-quote";
 import { TenantNotice } from "@/components/tenant-notice";
@@ -21,6 +22,7 @@ import { Stars } from "@/components/stars";
 import { getMarket, MAX_QTY } from "@/lib/cart";
 import {
   getProduct,
+  getRelated,
   priceOf,
   ratingOf,
   partNumberLabel,
@@ -120,6 +122,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
 
   const { average, count } = ratingOf(product.reviews);
   const images = productImages(product);
+  const related = await getRelated(product, currency, price.priceMinor);
   const off = discountPercent(price.listMinor, price.priceMinor);
   const perSeat = Math.round(price.priceMinor / variant.seats);
   const specs = specRows(product.specs);
@@ -615,6 +618,41 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
       </div>
 
       <Reviews reviews={product.reviews} average={average} count={count} />
+
+      {/*
+        Four ways out of this page.
+
+        Every product page used to be reachable only from the shelf that listed
+        it, and led nowhere: authority arrived and stopped, and a shopper who
+        landed here from a search had no route to the next product except the
+        back button. These are server-rendered links, so a crawler walking the
+        catalogue can move between listings the same way a person does.
+      */}
+      {related.length > 0 ? (
+        <section className="mt-6">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-lg font-bold text-ink">
+              More from {product.brand.name}
+            </h2>
+            <Link
+              href={`/s?brand=${product.brand.slug}&category=${product.category.slug}`}
+              className="text-[13px] text-link hover:underline"
+            >
+              All {product.brand.name} {product.category.name.toLowerCase()}
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {related.map((other) => (
+              <ProductCard
+                key={other.id}
+                product={other}
+                currency={currency}
+                domestic={market.domestic}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

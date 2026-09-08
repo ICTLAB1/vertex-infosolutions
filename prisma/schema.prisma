@@ -82,6 +82,17 @@ model Category {
   name     String
   /// One line under the category heading on a browse page.
   blurb    String?
+
+  /// The paragraphs shown above the grid, and the reason this page can rank
+  /// at all.
+  ///
+  /// A category page that is a title over a grid of tiles has almost no text
+  /// of its own, so there is nothing for a search engine to decide it is
+  /// about — which is why shelf pages on shops like this one rank for nothing
+  /// while their product pages rank fine. Written to answer what somebody
+  /// arriving on it actually wants to know: what is on this shelf, how it is
+  /// licensed, and what to watch out for.
+  intro    String?
   position Int       @default(0)
   products Product[]
 }
@@ -93,6 +104,17 @@ model Brand {
   slug     String    @unique
   name     String
   blurb    String?
+
+  /// The paragraphs shown above the grid, and the reason this page can rank
+  /// at all.
+  ///
+  /// A category page that is a title over a grid of tiles has almost no text
+  /// of its own, so there is nothing for a search engine to decide it is
+  /// about — which is why shelf pages on shops like this one rank for nothing
+  /// while their product pages rank fine. Written to answer what somebody
+  /// arriving on it actually wants to know: what is on this shelf, how it is
+  /// licensed, and what to watch out for.
+  intro    String?
   products Product[]
 }
 

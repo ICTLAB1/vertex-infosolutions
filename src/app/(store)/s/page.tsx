@@ -195,6 +195,11 @@ export default async function BrowsePage(props: PageProps<"/s">) {
     ? `Results for “${q}”`
     : (activeBrand?.name ?? activeCategory?.name ?? "All licences");
   const blurb = activeBrand?.blurb ?? activeCategory?.blurb ?? null;
+  // Only on page one. The description belongs to the shelf, not to each page
+  // of it, and repeating it on every page would make forty near-identical
+  // pages out of one distinctive shelf.
+  const intro =
+    shelf.page === 1 ? (activeBrand?.intro ?? activeCategory?.intro ?? null) : null;
 
   return (
     <div className="mx-auto max-w-[1500px] px-4 py-5">
@@ -316,6 +321,24 @@ export default async function BrowsePage(props: PageProps<"/s">) {
               ))}
             </div>
           </div>
+
+          {/*
+            The paragraph that makes this page about something.
+
+            A shelf that is a heading over a grid of tiles carries almost no
+            text of its own, so there is nothing for a search engine to decide
+            it is about — which is why shop category pages usually rank for
+            nothing while their product pages rank fine. Above the grid rather
+            than below it, because it is written to be read by somebody who has
+            just arrived and does not yet know what is on this shelf.
+          */}
+          {intro ? (
+            <div className="mb-4 rounded-lg border border-line bg-surface px-4 py-3.5">
+              <p className="max-w-[70ch] text-[14px] leading-relaxed text-muted">
+                {intro}
+              </p>
+            </div>
+          ) : null}
 
           {shelf.total === 0 ? (
             <div className="rounded-lg border border-line bg-surface p-10 text-center">

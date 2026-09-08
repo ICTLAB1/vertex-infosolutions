@@ -168,6 +168,100 @@ export async function getByCategory(
   });
 }
 
+/**
+ * Other listings worth seeing from this one.
+ *
+ * Internal links, and they are not decoration. Every product page was reachable
+ * only from the shelf that lists it, so authority arrived at a product and
+ * stopped there — and a shopper who landed on Photoshop from a search had no
+ * route to Illustrator except going back. Four links out of every product page
+ * turns 499 dead ends into a network a crawler can walk and a shopper can
+ * browse.
+ *
+ * Same publisher and same shelf first, because "other Adobe design tools" is a
+ * useful set and "other things that cost about the same" is not. If that is
+ * too narrow — a shelf holding one product — it widens to the publisher rather
+ * than returning nothing, since a page with no links out is the thing being
+ * fixed.
+ */
+export async function getRelated(
+  product: {
+    id: string;
+    brand: { slug: string };
+    category: { slug: string };
+  },
+  currency: CurrencyCode,
+  anchorMinor: number | null,
+  take = 4,
+) {
+  const shared = {
+    ...ON_SALE,
+    id: { not: product.id },
+    brand: { slug: product.brand.slug },
+  };
+
+  const pool = await prisma.product.findMany({
+    where: { ...shared, category: { slug: product.category.slug } },
+    select: productSelect(currency),
+    take: 60,
+  });
+
+  let candidates = pool.filter(isListable);
+
+  // Widen to the publisher when the shelf is too thin. A shelf holding one
+  // product is common in the smaller ranges, and returning nothing there would
+  // leave exactly the pages that most need links with none.
+  if (candidates.length < take) {
+    const wider = await prisma.product.findMany({
+      where: {
+        ...shared,
+        id: { notIn: [product.id, ...candidates.map((row) => row.id)] },
+      },
+      select: productSelect(currency),
+      take: 60,
+    });
+    candidates = [...candidates, ...wider.filter(isListable)];
+  }
+
+  /*
+    Ranked by price, not alphabetically.
+
+    Ordering by name put four "generative credits" packs under Photoshop,
+    because that is what sorts first in Adobe's range — which is a useless
+    suggestion to a shopper and a useless link to a search engine. What makes
+    two listings genuinely related here is that somebody deciding between them
+    would compare them, and price is the closest thing this shop holds to that:
+    a tool at roughly the price of the one you are reading about is a tool of
+    roughly the same kind, while a top-up pack at a fiftieth of it is not.
+
+    A featured listing edges ahead of an unfeatured one at a similar price,
+    because those are the ones written for a shop window. With no price to
+    anchor to — a quote-only product — featured order is all there is.
+  */
+  const priced = candidates.map((row) => {
+    const sellable = sellableVariants(row.variants);
+    const cheapest = sellable.reduce(
+      (low, variant) => Math.min(low, priceOf(variant)!.priceMinor),
+      Number.POSITIVE_INFINITY,
+    );
+    return { row, cheapest };
+  });
+
+  priced.sort((a, b) => {
+    if (a.row.featured !== b.row.featured) return a.row.featured ? -1 : 1;
+    if (anchorMinor === null) return a.row.name.localeCompare(b.row.name);
+    // Compared as a ratio rather than a difference: being ₹500 away means
+    // something different at ₹1,000 and at ₹200,000.
+    const distance = (n: number) =>
+      Number.isFinite(n) && n > 0
+        ? Math.abs(Math.log(n / anchorMinor))
+        : Number.POSITIVE_INFINITY;
+    return distance(a.cheapest) - distance(b.cheapest);
+  });
+
+  return priced.slice(0, take).map((entry) => entry.row);
+}
+
 export type BrowseFilters = {
   q?: string;
   category?: string;
