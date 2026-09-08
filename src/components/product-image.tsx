@@ -20,6 +20,7 @@ export function ProductImage({
   name,
   className,
   sizes,
+  eager = false,
 }: {
   logo: string | null;
   glyph: string;
@@ -27,6 +28,17 @@ export function ProductImage({
   /** Tailwind size classes for the square, e.g. "h-20 w-20". */
   className: string;
   sizes: string;
+  /**
+   * True for the handful of tiles above the fold.
+   *
+   * Largest Contentful Paint is measured on whatever the largest visible
+   * element turns out to be, and on a shelf that is one of the first product
+   * pictures. Lazy-loading it means the browser only starts fetching it after
+   * layout — which is to say, a page that is slow by construction. Everything
+   * further down the grid stays lazy, which is the whole point of only
+   * promoting a few.
+   */
+  eager?: boolean;
 }) {
   if (!logo) return <Glyph name={glyph} className={className} />;
 
@@ -38,6 +50,8 @@ export function ProductImage({
         fill
         sizes={sizes}
         className="object-contain"
+        priority={eager}
+        fetchPriority={eager ? "high" : "auto"}
       />
     </span>
   );

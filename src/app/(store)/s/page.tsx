@@ -7,6 +7,7 @@ import {
   browse,
   getBrands,
   getCategories,
+  PER_PAGE,
   TERM_LABELS,
 } from "@/lib/catalogue";
 import { formatMoney } from "@/lib/money";
@@ -69,8 +70,29 @@ export async function generateMetadata(
     ? `Buy genuine ${shelf} software licences from an authorised reseller. GST invoice on every Indian order, zero-rated exports elsewhere, and licence details issued within one business day.`
     : "Browse every Microsoft, Adobe and Autodesk licence we sell. Genuine licences from an authorised reseller, priced in INR with GST for India and USD everywhere else.";
 
+  /*
+    Every page of a shelf canonicals to itself.
+
+    Not to page one. Pointing page six at page one was the received wisdom for
+    years and Google said plainly in 2019 that it never worked that way: a
+    canonical claims two URLs are the same page, and page six holds forty-eight
+    products page one does not. The consequence of the old advice is that
+    everything past the first forty-eight is dropped from the index.
+
+    The page number goes in the title too, because two results reading
+    "Microsoft licences" with the same description are two results a person
+    cannot choose between.
+  */
+  const pageNumber = Math.max(1, Number.parseInt(one(params, "page") ?? "1", 10) || 1);
+  const paged = pageNumber > 1;
+  const canonical = paged ? `${path}${path.includes("?") ? "&" : "?"}page=${pageNumber}` : path;
+
   return {
-    ...pageMetadata({ title, description, path }),
+    ...pageMetadata({
+      title: paged ? `${title} — page ${pageNumber}` : title,
+      description,
+      path: canonical,
+    }),
     ...(narrowed ? NOINDEX : {}),
   };
 }
@@ -126,7 +148,9 @@ export default async function BrowsePage(props: PageProps<"/s">) {
   const maxPrice = maxPriceRaw ? Number.parseInt(maxPriceRaw, 10) : undefined;
   const minRating = minRatingRaw ? Number.parseInt(minRatingRaw, 10) : undefined;
 
-  const [products, categories, brands] = await Promise.all([
+  const pageNumber = Math.max(1, Number.parseInt(one(params, "page") ?? "1", 10) || 1);
+
+  const [shelf, categories, brands] = await Promise.all([
     browse(
       {
         q,
@@ -138,6 +162,7 @@ export default async function BrowsePage(props: PageProps<"/s">) {
         sort,
       },
       market.currency,
+      pageNumber,
     ),
     getCategories(),
     getBrands(),
@@ -156,6 +181,10 @@ export default async function BrowsePage(props: PageProps<"/s">) {
     // else keeps it but switching market drops it.
     if (value === undefined) next.delete(key);
     else next.set(key, value);
+    // Changing a filter goes back to the start. Page 6 of "all Adobe" is not
+    // page 6 of "Adobe under $500", and landing on an empty page because the
+    // narrower shelf is shorter reads as a broken filter.
+    if (key !== "page") next.delete("page");
     const query = next.toString();
     return query ? `/s?${query}` : "/s";
   }
@@ -262,9 +291,8 @@ export default async function BrowsePage(props: PageProps<"/s">) {
               <h1 className="text-lg font-bold text-ink">{heading}</h1>
               <p className="text-[13px] text-muted">
                 {blurb ? `${blurb} · ` : ""}
-                {products.length === 1
-                  ? "1 product"
-                  : `${products.length} products`}
+                {shelf.total === 1 ? "1 product" : `${shelf.total} products`}
+                {shelf.pages > 1 ? ` · page ${shelf.page} of ${shelf.pages}` : ""}
                 {maxPrice
                   ? ` under ${formatMoney(maxPrice, market.currency)}`
                   : ""}
@@ -289,7 +317,7 @@ export default async function BrowsePage(props: PageProps<"/s">) {
             </div>
           </div>
 
-          {products.length === 0 ? (
+          {shelf.total === 0 ? (
             <div className="rounded-lg border border-line bg-surface p-10 text-center">
               <p className="text-lg font-semibold text-ink">
                 Nothing matched those filters.
@@ -316,26 +344,91 @@ export default async function BrowsePage(props: PageProps<"/s">) {
                   __html: jsonLd({
                     "@context": "https://schema.org",
                     "@type": "ItemList",
-                    numberOfItems: products.length,
-                    itemListElement: products.map((product, i) => ({
+                    numberOfItems: shelf.total,
+                    itemListElement: shelf.items.map((product, i) => ({
                       "@type": "ListItem",
-                      position: i + 1,
+                      // Numbered from where this page starts, not from one.
+                      // The forty-ninth product is the forty-ninth product
+                      // whether or not it happens to be first on page two.
+                      position: (shelf.page - 1) * PER_PAGE + i + 1,
                       url: absolute(`/product/${product.slug}`),
                       name: product.name,
                     })),
                   }),
                 }}
               />
-              {products.map((product) => (
+              {shelf.items.map((product, i) => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   currency={market.currency}
                   domestic={market.domestic}
+                  // The first row is what Largest Contentful Paint is measured
+                  // on. Everything below it stays lazy; these four are asked
+                  // for immediately, because a lazy image that turns out to be
+                  // the largest one is a slow page by definition.
+                  eager={i < 4}
                 />
               ))}
             </div>
           )}
+
+          {shelf.pages > 1 ? (
+            /*
+              Real page links, not infinite scroll.
+
+              A crawler cannot scroll, and a shopper cannot send somebody
+              "the third page of Adobe" if it has no address. Every page is
+              its own URL, every page canonicals to itself, and the numbers
+              are links rather than buttons so they can be opened in a new
+              tab and followed by anything that reads HTML.
+            */
+            <nav
+              className="mt-5 flex flex-wrap items-center justify-center gap-1.5"
+              aria-label="Pages of results"
+            >
+              {shelf.page > 1 ? (
+                <Link
+                  href={withParam("page", shelf.page === 2 ? undefined : String(shelf.page - 1))}
+                  rel="prev"
+                  className="rounded-md border border-line bg-surface px-3 py-1.5 text-[14px] font-semibold text-link hover:bg-ground"
+                >
+                  ← Previous
+                </Link>
+              ) : null}
+
+              {pageWindow(shelf.page, shelf.pages).map((n, i) =>
+                n === null ? (
+                  <span key={`gap-${i}`} className="px-1 text-faint">
+                    …
+                  </span>
+                ) : (
+                  <Link
+                    key={n}
+                    href={withParam("page", n === 1 ? undefined : String(n))}
+                    aria-current={n === shelf.page ? "page" : undefined}
+                    className={`min-w-[2.25rem] rounded-md border px-2.5 py-1.5 text-center text-[14px] tabular-nums ${
+                      n === shelf.page
+                        ? "border-ink bg-ink font-bold text-white"
+                        : "border-line bg-surface text-muted hover:border-faint hover:text-ink"
+                    }`}
+                  >
+                    {n}
+                  </Link>
+                ),
+              )}
+
+              {shelf.page < shelf.pages ? (
+                <Link
+                  href={withParam("page", String(shelf.page + 1))}
+                  rel="next"
+                  className="rounded-md border border-line bg-surface px-3 py-1.5 text-[14px] font-semibold text-link hover:bg-ground"
+                >
+                  Next →
+                </Link>
+              ) : null}
+            </nav>
+          ) : null}
         </div>
       </div>
     </div>
@@ -383,4 +476,32 @@ function FilterLink({
       </Link>
     </li>
   );
+}
+
+/**
+ * Which page numbers to show, when there are more than fit.
+ *
+ * Always the first and the last, always the current one and its neighbours,
+ * and an ellipsis where a run is skipped. The ends matter more than they look:
+ * page one is the shelf's canonical entry point and the last page is how a
+ * crawler learns how deep the shelf goes, so neither is ever hidden behind a
+ * "next" it would have to click forty times to reach.
+ */
+function pageWindow(current: number, total: number): (number | null)[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+  const wanted = new Set([1, total, current, current - 1, current + 1]);
+  if (current <= 3) [2, 3, 4].forEach((n) => wanted.add(n));
+  if (current >= total - 2) [total - 3, total - 2, total - 1].forEach((n) => wanted.add(n));
+
+  const shown = [...wanted].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
+
+  const out: (number | null)[] = [];
+  let previous = 0;
+  for (const n of shown) {
+    if (previous && n - previous > 1) out.push(null);
+    out.push(n);
+    previous = n;
+  }
+  return out;
 }

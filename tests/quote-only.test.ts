@@ -149,7 +149,7 @@ describe.skipIf(!hasDatabase)("quote-only products in the shop", () => {
     // A priced product with no row in this currency would be hidden. This one
     // has no row in any currency and must not be.
     const listed = await browse({ brand }, "USD");
-    expect(listed.map((product) => product.slug)).toContain(quotedSlug);
+    expect(listed.items.map((product) => product.slug)).toContain(quotedSlug);
   });
 
   it("sort last whichever way the price sort points", async () => {
@@ -158,7 +158,7 @@ describe.skipIf(!hasDatabase)("quote-only products in the shop", () => {
     // which reads as a claim about its price.
     for (const sort of ["price-asc", "price-desc"] as const) {
       const listed = await browse({ brand, sort }, "USD");
-      expect(listed.map((product) => product.slug), sort).toEqual([
+      expect(listed.items.map((product) => product.slug), sort).toEqual([
         pricedSlug,
         quotedSlug,
       ]);
@@ -169,6 +169,6 @@ describe.skipIf(!hasDatabase)("quote-only products in the shop", () => {
     // A maximum price is an explicit statement about price. We cannot say this
     // product costs less than the ceiling, so we do not imply it.
     const listed = await browse({ brand, maxPrice: 100_000_00 }, "USD");
-    expect(listed.map((product) => product.slug)).toEqual([pricedSlug]);
+    expect(listed.items.map((product) => product.slug)).toEqual([pricedSlug]);
   });
 });

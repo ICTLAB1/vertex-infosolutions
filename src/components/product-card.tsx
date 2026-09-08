@@ -17,11 +17,14 @@ export function ProductCard({
   product,
   currency,
   domestic,
+  eager = false,
 }: {
   product: ListedProduct;
   currency: CurrencyCode;
   /** True in the Indian market, where displayed prices include GST. */
   domestic: boolean;
+  /** True for the first row of a shelf — see `ProductImage`. */
+  eager?: boolean;
 }) {
   const sellable = sellableVariants(product.variants);
   // A quote-only product has no price row anywhere and is still on sale; a
@@ -55,6 +58,7 @@ export function ProductCard({
           name={product.name}
           className="h-20 w-20"
           sizes="80px"
+          eager={eager}
         />
       </Link>
 

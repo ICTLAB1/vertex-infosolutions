@@ -185,7 +185,42 @@ export type BrowseFilters = {
  * from something cleverer, and above that it should be replaced with Postgres
  * full-text search rather than tuned.
  */
-export async function browse(filters: BrowseFilters, currency: CurrencyCode) {
+/** How many listings a shelf shows at once. See `browse` for why. */
+export const PER_PAGE = 48;
+
+export type BrowsePage = {
+  items: Awaited<ReturnType<typeof getFeatured>>;
+  total: number;
+  page: number;
+  pages: number;
+};
+
+/**
+ * A shelf, one page at a time.
+ *
+ * It used to return every match, and the catalogue page rendered all of them:
+ * two megabytes of HTML holding 998 links and 499 cards, on the page linked
+ * from every header and the one a search engine measures Core Web Vitals on.
+ * Compression hid the transfer cost and hid nothing else — a phone still had
+ * to parse all of it before the page could be touched.
+ *
+ * The link count was the quieter half of the same problem. Authority passed
+ * from a page is divided among its links, so a page linking to 499 products
+ * gave each of them a five-hundredth of it. Forty-eight to a page concentrates
+ * that roughly tenfold, and turns one enormous page that ranks for nothing
+ * into a series of pages that can each rank for something.
+ *
+ * The sort happens after the query rather than in it, because "cheapest" means
+ * the lowest price across a product's variants in this market, which is not a
+ * column. That costs one full read per shelf and is the reason this is not
+ * `skip`/`take` — the page slice is taken after sorting, so page two is the
+ * next forty-eight of the right order rather than of the database's.
+ */
+export async function browse(
+  filters: BrowseFilters,
+  currency: CurrencyCode,
+  page = 1,
+): Promise<BrowsePage> {
   const terms = (filters.q ?? "")
     .trim()
     .split(/\s+/)
@@ -288,7 +323,20 @@ export async function browse(filters: BrowseFilters, currency: CurrencyCode) {
       decorated.sort((a, b) => b.rating - a.rating || a.cheapest - b.cheapest);
   }
 
-  return decorated.map((row) => row.product);
+  const total = decorated.length;
+  const pages = Math.max(1, Math.ceil(total / PER_PAGE));
+  // A page number past the end shows the last page rather than nothing. A
+  // crawler that guesses ?page=99 should find a page, not a blank shelf that
+  // looks like a fault.
+  const current = Math.min(Math.max(1, page), pages);
+  const start = (current - 1) * PER_PAGE;
+
+  return {
+    items: decorated.slice(start, start + PER_PAGE).map((row) => row.product),
+    total,
+    page: current,
+    pages,
+  };
 }
 
 export function ratingOf(reviews: { rating: number }[]): {

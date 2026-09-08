@@ -169,6 +169,6 @@ describe.skipIf(!hasDatabase)("part numbers in the shop", () => {
 
   it("find the listing when somebody pastes one into the search box", async () => {
     const found = await browse({ q: partNumber }, "INR");
-    expect(found.map((product) => product.slug)).toContain(slug);
+    expect(found.items.map((product) => product.slug)).toContain(slug);
   });
 });
