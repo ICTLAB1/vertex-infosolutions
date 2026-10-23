@@ -48,8 +48,17 @@ export function ProductCard({
 
   return (
     <article className="group flex h-full flex-col rounded-lg border border-line bg-surface p-3 transition-shadow hover:shadow-md">
+      {/*
+       * The picture links to the same page as the title below it, so it is
+       * hidden from screen readers and taken out of the tab order. Left in,
+       * it was a second stop on every card announcing only "link" — it has no
+       * text of its own, and the picture is the product's logo rather than
+       * anything a reader needs described twice.
+       */}
       <Link
         href={`/product/${product.slug}`}
+        aria-hidden
+        tabIndex={-1}
         className="flex h-32 items-center justify-center rounded bg-ground/60 text-nav-2"
       >
         <ProductImage

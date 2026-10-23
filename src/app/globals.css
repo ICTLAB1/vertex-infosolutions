@@ -26,7 +26,10 @@
   /* Text */
   --color-ink: #0d1b24;
   --color-muted: #556670;
-  --color-faint: #7b8a93;
+  /* 4.89:1 on white. The previous #7b8a93 measured 3.56:1, below the 4.5:1
+     WCAG AA needs at the 11–13px sizes this is used at — the brand label on a
+     card, the part number, the small print. Same hue, darkened. */
+  --color-faint: #66737a;
 
   /* Brand and action */
   --color-brand: #0a6e78;

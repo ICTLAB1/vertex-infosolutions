@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/product-card";
 import { Assurance } from "@/components/assurance";
 import { BulkQuoteLine } from "@/components/bulk-quote";
 import { TenantNotice } from "@/components/tenant-notice";
+import { PlanComparison } from "@/components/plan-comparison";
 import { QuoteOnlyProduct } from "./quote-only";
 import { deliveryHeadline, deliverySummary } from "@/lib/delivery";
 import {
@@ -439,6 +440,8 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               </ul>
             </section>
           ) : null}
+
+          <PlanComparison slug={product.slug} />
 
           <section className="mt-5">
             <h2 className="mb-2 text-[15px] font-bold text-ink">
